@@ -1,0 +1,76 @@
+Objective: to implement the trading algorithms and reproduce the results
+(specifically, Figures 8, 9, 10, 11, and 17) described in the following
+paper: 
+[[file:~/projects/finance/literature/AvellanedaLeeStatArb20090616.pdf][M. Avellaneda and J.-H. Lee. Statistical Arbitrage in the U.S. Equities Market.]]
+
+My notes on the paper: 
+[[file:~/projects/finance/notes/avellaneda-lee-paper-notes.jnt][(jnt file)]]
+
+* Source data:
+  CRSP-97-08.csv.gz  CRSP-97-08_etf.csv.gz  CRSP-97-08_etf_shrt.csv.gz
+  Obtained from WRDS CRSP database using my reference universe (SPX tickers
+  as of Nov 2008 plus a list of ETFs).
+  Selected a bunch of fields, so need to filter out the relevant ones; on the
+  most basic level only need TICKER, DATE, RET (period returns,
+  i.e. returns with dividends correctly accounted for).
+
+  Date range: 01Jul1996 - 30Jun2009
+  Ticker list: [[file:~/projects/finance/spx_tickers_20081107.txt][SPX 20081107]] (~/projects/finance/spx_tickers_20081107.txt)
+  ETF list: (file:~/projects/finance/ETF_master_tkrs.txt)
+
+  Variables Selected:
+  DATE,CUSIP,DCLRDT,PAYDT,RCRDDT,SHRFLG,TICKER,PERMNO,EXCHCD,NAICS,PRIMEXCH,TRDSTAT,SECSTAT,DISTCD,DIVAMT,FACPR,FACSHR,ACPERM,ACCOMP,SHROUT,BIDLO,ASKHI,PRC,VOL,RET,BID,ASK,CFACPR,CFACSHR,OPENPRC,SXRET,BXRET,NUMTRD,RETX,vwretd,vwretx,ewretd,ewretx,sprtrn
+  Here we number them in emacs (via number-lines-region); 1-DATE; 7-TICKER; 25-RET; 
+  :DETAILS:
+ 1. DATE
+ 2. CUSIP
+ 3. DCLRDT
+ 4. PAYDT
+ 5. RCRDDT
+ 6. SHRFLG
+ 7. TICKER
+ 8. PERMNO
+ 9. EXCHCD
+10. NAICS
+11. PRIMEXCH
+12. TRDSTAT
+13. SECSTAT
+14. DISTCD
+15. DIVAMT
+16. FACPR
+17. FACSHR
+18. ACPERM
+19. ACCOMP
+20. SHROUT
+21. BIDLO
+22. ASKHI
+23. PRC
+24. VOL
+25. RET
+26. BID
+27. ASK
+28. CFACPR
+29. CFACSHR
+30. OPENPRC
+31. SXRET
+32. BXRET
+33. NUMTRD
+34. RETX
+35. vwretd
+36. vwretx
+37. ewretd
+38. ewretx
+39. sprtrn
+:END:
+
+  Isolate the DATE, TICKER, RET fields via
+  cut -d ',' -f 1,7,25 spx_data_full.csv > spx_data_ret.csv
+  cut -d ',' -f 1,7,25 etf_data_full.csv > etf_data_ret.csv
+  1669379 spx_data_ret.csv # num recs
+  655064 etf_data_ret.csv  # num recs
+
+  Convert to a returns matrix sorted by date, ticker:
+  ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
+  
+  Correlation matrix: get rid of the tickers that have too many NAs
+  proc_corr.r

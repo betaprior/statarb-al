@@ -1,16 +1,3 @@
-#Tally up the number of NAs:
-spx.ret.mtx.full <- read.csv("spx_ret_mtx",row.names=1)
-spx.ret.mtx.full <- spx.ret.mtx.full[nrow(spx.ret.mtx.full):1,]
-#> spx.ret.mtx.na.tally <- is.na(spx.ret.mtx.full)
-spx.ret.mtx.na.totals <- apply(is.na(spx.ret.mtx.full),2,sum)
-spx.ret.mtx.na.pct <- spx.ret.mtx.na.totals / dim(spx.ret.mtx.full)[1]
-# pick the tickers where num NAs < 5%
-na.pct.cutoff <- 0.05
-good.names <- names(spx.ret.mtx.na.pct[spx.ret.mtx.na.pct <= na.pct.cutoff])
-good.name.idxs <- as.numeric(na.omit(match(good.names,names(spx.ret.mtx.na.pct))))
-spx.ret.mtx.compl <- spx.ret.mtx.full[,good.name.idxs]
-dim(spx.ret.mtx.compl)
-## [1] 3272  357
 
 get.stock.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){
 ## reads in files if requested; performs data cleanup (removes symbols with excessive number of NAs)
@@ -48,21 +35,3 @@ get.etf.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=F
   good.name.idxs <- as.numeric(na.omit(match(good.names,names(ret.mtx))))
   ret.mtx <- ret.mtx[,good.name.idxs] #filtered
 }
-
-## testing, testing:
-test.etfs1 <- get.etf.returns("etf_ret_mtx",M=10,offset=0,file=TRUE)
-
-test1 <- get.adjusted.returns("spx_ret_mtx",M=10,offset=0,na.pct.cutoff=0.01,file=TRUE)
-
-head(get.adjusted.returns("spx_ret_mtx",M=10,offset=2,na.pct.cutoff=0.01,file=TRUE))
-spx.ret.mtx.full <- read.csv("spx_ret_mtx",row.names=1)
-spx.ret.mtx.full <- spx.ret.mtx.full[nrow(spx.ret.mtx.full):1,]
-
-test2 <- get.adjusted.returns(spx.ret.mtx.full,M=10,offset=0,na.pct.cutoff=0.01,file=FALSE)
-
-
-## figure out which offset corresponds to May 1 (the date used in the paper)
-data.offset <- which(as.logical(match(as.numeric(row.names(spx.ret.mtx.full)),20070501)))
-##[1] 547
-
-corr1 <- get.emp.corr(spx.ret.mtx.full,M=252,offset=data.offset,na.pct.cutoff=0.01,file=FALSE)

@@ -127,8 +127,58 @@ My notes on the paper:
    #  Isolate the DATE, TICKER, RET fields via
    cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
 
+*** ETF data as of 100109:
+    Discovered that ETF data hasn't been regenerated using the latest set of
+    fields/time periods; for now will stick to using it with the fields:
+    1-DATE; 2-TICKER; 16-RET
+    #  Isolate the DATE, TICKER, RET fields via
+    cut -d ',' -f 1,2,16 etf_data_full.csv > etf_data_ret.csv
+    :DETAILS:
+ 1. DATE
+ 2. TICKER
+ 3. PERMNO
+ 4. EXCHCD
+ 5. TRDSTAT
+ 6. SECSTAT
+ 7. DISTCD
+ 8. DIVAMT
+ 9. FACPR
+10. FACSHR
+11. SHROUT
+12. BIDLO
+13. ASKHI
+14. PRC
+15. VOL
+16. RET
+17. OPENPRC
+18. SXRET
+19. BXRET
+20. NUMTRD
+21. RETX
+    :END:
+    
+*** 15 ETFs from Table 3 and Table 4 of the paper:
+    :DETAILS:
+HHH
+IYR
+IYT
+OIH
+RKH
+RTH
+SMH
+UTH
+XLE
+XLF
+XLI
+XLK
+XLP
+XLV
+XLY
+    :END:
+
 ** Data processing:
    Convert to a returns matrix sorted by date, ticker:
+   ./convert.py -i etf_data_ret.csv -o etf_ret_mtx
    ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
    ./convert.py -i univ1_data_ret.csv -o univ1_ret_mtx
    

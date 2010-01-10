@@ -18,6 +18,7 @@ My notes on the paper:
   Ticker list: [[file:~/projects/finance/spx_tickers_20081107.txt][SPX 20081107]] (~/projects/finance/spx_tickers_20081107.txt)
   ETF list: (file:~/projects/finance/ETF_master_tkrs.txt)
 
+** Data generation: 100108
   Variables Selected:
   DATE,CUSIP,DCLRDT,PAYDT,RCRDDT,SHRFLG,TICKER,PERMNO,EXCHCD,NAICS,PRIMEXCH,TRDSTAT,SECSTAT,DISTCD,DIVAMT,FACPR,FACSHR,ACPERM,ACCOMP,SHROUT,BIDLO,ASKHI,PRC,VOL,RET,BID,ASK,CFACPR,CFACSHR,OPENPRC,SXRET,BXRET,NUMTRD,RETX,vwretd,vwretx,ewretd,ewretx,sprtrn
   Here we number them in emacs (via number-lines-region); 1-DATE; 7-TICKER; 25-RET; 
@@ -63,14 +64,73 @@ My notes on the paper:
 39. sprtrn
 :END:
 
-  Isolate the DATE, TICKER, RET fields via
+  #  Isolate the DATE, TICKER, RET fields via
   cut -d ',' -f 1,7,25 spx_data_full.csv > spx_data_ret.csv
   cut -d ',' -f 1,7,25 etf_data_full.csv > etf_data_ret.csv
-  1669379 spx_data_ret.csv # num recs
-  655064 etf_data_ret.csv  # num recs
+  # 1669379 spx_data_ret.csv # num recs
+  # 655064 etf_data_ret.csv  # num recs
 
-  Convert to a returns matrix sorted by date, ticker:
-  ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
-  
-  Correlation matrix: get rid of the tickers that have too many NAs
-  proc_corr.r
+** Data generation: 100109
+   Decided to expand the stock universe by merging the Nov 2008 SPX ticker
+   list with the Jun 2001 Russell 1000 and first half of Jun 2001 Russell
+   2000 lists for a grand total of 2079 ticker symbols.  Also selected
+   additional variables, among which is PERMCO to keep track of ticker
+   renamings, etc
+   Number them in emacs (via number-lines-region): 
+   1-DATE; 9-TICKER; 28-RET; 
+   10-PERMNO; 27-VOL
+   Call the dataset "universe 1"
+   :DETAILS:
+ 1. DATE
+ 2. HSICMG
+ 3. HSICIG
+ 4. CUSIP
+ 5. DCLRDT
+ 6. PAYDT
+ 7. RCRDDT
+ 8. SHRFLG
+ 9. TICKER
+ 10. PERMNO
+ 11. EXCHCD
+ 12. NAICS
+ 13. PRIMEXCH
+ 14. TRDSTAT
+ 15. SECSTAT
+ 16. PERMCO
+ 17. DISTCD
+ 18. DIVAMT
+ 19. FACPR
+ 20. FACSHR
+ 21. ACPERM
+ 22. ACCOMP
+ 23. SHROUT
+ 24. BIDLO
+ 25. ASKHI
+ 26. PRC
+ 27. VOL
+ 28. RET
+ 29. BID
+ 30. ASK
+ 31. CFACPR
+ 32. CFACSHR
+ 33. OPENPRC
+ 34. SXRET
+ 35. BXRET
+ 36. NUMTRD
+ 37. RETX
+ 38. vwretd
+ 39. vwretx
+ 40. ewretd
+ 41. ewretx
+ 42. sprtrn
+   :END:
+   #  Isolate the DATE, TICKER, RET fields via
+   cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
+
+** Data processing:
+   Convert to a returns matrix sorted by date, ticker:
+   ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
+   ./convert.py -i univ1_data_ret.csv -o univ1_ret_mtx
+   
+   Correlation matrix: get rid of the tickers that have too many NAs
+   proc_corr.r

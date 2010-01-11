@@ -27,11 +27,13 @@ get.emp.corr <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALS
 }
 
 
-get.etf.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){
+get.etf.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE
+                            , tickers=c("HHH","IYR","IYT","OIH","RKH","RTH"
+                                ,"SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")){
   if(file){ ret.mtx <- read.csv(ret.mtx,row.names=1); ret.mtx <- ret.mtx[nrow(ret.mtx):1,]}
   if(M+offset > dim(ret.mtx)[1]){ stop("Requested index exceeds num. of rows") }
   ret.mtx <- ret.mtx[(1+offset):(M+offset),]
-  good.names <- c("HHH","IYR","IYT","OIH","RKH","RTH","SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")
+  good.names <- tickers
   good.name.idxs <- as.numeric(na.omit(match(good.names,names(ret.mtx))))
   ret.mtx <- ret.mtx[,good.name.idxs] #filtered
 }

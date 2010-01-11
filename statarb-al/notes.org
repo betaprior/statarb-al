@@ -156,7 +156,15 @@ My notes on the paper:
 20. NUMTRD
 21. RETX
     :END:
-    
+*** ETF data as of 100110:
+    Regenerated the ETF data, fields are (like in the latest stock data)
+     1-DATE; 9-TICKER; 28-RET; 
+    10-PERMNO; 27-VOL
+    cut -d ',' -f 1,9,28 etf1_data_full.csv > etf_data_ret.csv
+*** List of dates available in file dates_vec_090630
+    when the full spx matrix was still loaded, did
+    dates.vector <- as.numeric(row.names(spx.ret.mtx.full))
+    write.csv(dates.vector,file="dates_vec_090630",row.names=F)
 *** 15 ETFs from Table 3 and Table 4 of the paper:
     :DETAILS:
 HHH
@@ -178,6 +186,7 @@ XLY
 
 ** Data processing:
    Convert to a returns matrix sorted by date, ticker:
+   # ./convert.py -i etf_data_ret.csv -o etf_old_ret_mtx
    ./convert.py -i etf_data_ret.csv -o etf_ret_mtx
    ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
    ./convert.py -i univ1_data_ret.csv -o univ1_ret_mtx

@@ -126,6 +126,78 @@ My notes on the paper:
    :END:
    #  Isolate the DATE, TICKER, RET fields via
    cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
+** Data generation: 100111
+   Realized needed the full GICS code field which wasn't selected, so reran
+   query for universe1 stocks with all fields selected.  All fields are
+   1-DATE; 18-TICKER; 50-RET; 
+   19-PERMNO; 49-VOL; 51-BID; 52-ASK
+   10-HSICCD; 2-HSICMG; 3-HSICIG
+   :DETAILS:
+ 1. DATE
+ 2. HSICMG
+ 3. HSICIG
+ 4. COMNAM
+ 5. CUSIP
+ 6. DCLRDT
+ 7. DLAMT
+ 8. DLPDT
+ 9. DLSTCD
+10. HSICCD
+11. ISSUNO
+12. NCUSIP
+13. NEXTDT
+14. PAYDT
+15. RCRDDT
+16. SHRCLS
+17. SHRFLG
+18. TICKER
+19. PERMNO
+20. NAMEENDT
+21. SHRCD
+22. EXCHCD
+23. SICCD
+24. TSYMBOL
+25. NAICS
+26. PRIMEXCH
+27. TRDSTAT
+28. SECSTAT
+29. PERMCO
+30. HEXCD
+31. DISTCD
+32. DIVAMT
+33. FACPR
+34. FACSHR
+35. ACPERM
+36. ACCOMP
+37. NWPERM
+38. DLRETX
+39. DLPRC
+40. DLRET
+41. SHROUT
+42. TRTSCD
+43. NMSIND
+44. MMCNT
+45. NSDINX
+46. BIDLO
+47. ASKHI
+48. PRC
+49. VOL
+50. RET
+51. BID
+52. ASK
+53. CFACPR
+54. CFACSHR
+55. OPENPRC
+56. SXRET
+57. BXRET
+58. NUMTRD
+59. RETX
+60. vwretd
+61. vwretx
+62. ewretd
+63. ewretx
+64. sprtrn
+:END:
 
 *** ETF data as of 100109:
     Discovered that ETF data hasn't been regenerated using the latest set of

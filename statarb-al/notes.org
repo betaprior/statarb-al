@@ -13,7 +13,7 @@ My notes on the paper:
   Selected a bunch of fields, so need to filter out the relevant ones; on the
   most basic level only need TICKER, DATE, RET (period returns,
   i.e. returns with dividends correctly accounted for).
-
+  
   Date range: 01Jul1996 - 30Jun2009
   Ticker list: [[file:~/projects/finance/spx_tickers_20081107.txt][SPX 20081107]] (~/projects/finance/spx_tickers_20081107.txt)
   ETF list: (file:~/projects/finance/ETF_master_tkrs.txt)
@@ -70,14 +70,14 @@ My notes on the paper:
   # 1669379 spx_data_ret.csv # num recs
   # 655064 etf_data_ret.csv  # num recs
 
-** Data generation: 100109
+** Data generation: "universe 1" (10/01/09)
    Decided to expand the stock universe by merging the Nov 2008 SPX ticker
    list with the Jun 2001 Russell 1000 and first half of Jun 2001 Russell
    2000 lists for a grand total of 2079 ticker symbols.  Also selected
    additional variables, among which is PERMCO to keep track of ticker
    renamings, etc
    Number them in emacs (via number-lines-region): 
-   1-DATE; 9-TICKER; 28-RET; 
+   1-DATE; 9-TICKER; 28-RET; 29-BID; 30-ASK
    10-PERMNO; 27-VOL
    Call the dataset "universe 1"
    :DETAILS:
@@ -126,12 +126,15 @@ My notes on the paper:
    :END:
    #  Isolate the DATE, TICKER, RET fields via
    cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
-** Data generation: 100111
+** Data generation: all fields (10/01/11)
    Realized needed the full GICS code field which wasn't selected, so reran
    query for universe1 stocks with all fields selected.  All fields are
    1-DATE; 18-TICKER; 50-RET; 
    19-PERMNO; 49-VOL; 51-BID; 52-ASK
    10-HSICCD; 2-HSICMG; 3-HSICIG
+   #  Isolate the DATE, TICKER, RET, PERMNO, VOL, HSI.. fields via
+   cut -d ',' -f 1,18,50,10,2,3 spx_data_full_allf.csv > univ1_data_xtrafields.csv
+
    :DETAILS:
  1. DATE
  2. HSICMG
@@ -256,6 +259,69 @@ XLV
 XLY
     :END:
 
+*** Industry sectors / determining ETF correspondence:
+NB: materials (15) will lump with industrials (20); telecom (50) with technology (45)
+HHH, Internet:
+451010
+IYR, RE:
+4040
+IYT, transportation:
+2030
+OIH, oil expl:
+101020
+RKH, regional banks:
+40101015
+RTH, retail:
+2550
+SMH, semi:
+4530
+UTH, utils:
+55
+XLE, energy:
+10 excl 101020
+XLF, financials:
+40 excl 4040 and 40101015
+XLI, industrials:
+20 excl 2030
+15 (materials)
+XLK, technology:
+45 excl 451010 and 4530
+50 (telecom)
+XLP, consumer staples:
+30
+XLV, healthcare:
+35
+XLY, consumer discretionary:
+25 excl 2550
+    
+*** industry sectors/etf correspondence: code and results
+    ./get_sector_etfs.pl < ticker_to_classifiations.csv |uniq > ticker_to_sec_etf.csv
+    for etf in HHH IYR IYT OIH RKH RTH SMH UTH XLE XLF XLI XLK XLP XLV XLY; do grep $etf ticker_to_sec_etf.csv |wc -l; done
+    # NB: get raw ticker/ETF pairing via:
+    # cut -d',' -f1,8 ticker_to_sec_etf.csv 
+    ## save tickers only in tickers_classified:
+    cut -d',' -f1 ticker_to_sec_etf.csv|sed '1d' > tickers_classified
+    wc -l tickers_classified 
+    ## 1696 tickers_classified
+
+    My equivalent of table 3 is given below:
+    :DETAILS:
+HHH  37   
+IYR  76 
+IYT  37 
+OIH  49 
+RKH  76 
+RTH  71 
+SMH  83 
+UTH  78 
+XLE  38 
+XLF  158
+XLI  244
+XLK  273
+XLP  75 
+XLV  216
+XLY  185
+    :END:
 ** Data processing:
    Convert to a returns matrix sorted by date, ticker:
    # ./convert.py -i etf_data_ret.csv -o etf_old_ret_mtx
@@ -265,3 +331,100 @@ XLY
    
    Correlation matrix: get rid of the tickers that have too many NAs
    proc_corr.r
+
+* Backtesting
+  Trading simulation: 
+  select stocks to trade against ETFs/synthetic ETFs
+  pre-generate signals
+  go through dates in chronological order
+  for every stock, examine signals
+  Note that because the short-to-open/buy-to-close and
+  buy-to-open/sell-to-close signals form bands above and below zero
+  respectively, we are either short or long, never both.
+** We also need to filter the beta-portfolio:
+   - eliminate values that are less than B.THR percent of that maximum
+     component in absolute value
+   - eliminate negative values
+
+** Trading process pseudocode:
+ for every day: for every stock:
+  if model.valid:
+    if STO:
+      if(!short): #flat or long (but shouldn't be long here)
+	sell stock, buy factors #opening short (if flat before, as we should be)
+	if(long): warning("STO tripped while long, weird jump?")
+      else: do nothing #already short
+    if CLOSE.SHORT:
+      if(short): 
+	buy stock, sell factors #closing short
+	else: do nothing
+    if BTO:
+      if(!long): #flat or short (but shouldn't be short here)
+        buy stock, sell factors #opening long
+	if(short): warning("BTO tripped while short, weird jump?")
+      else: do nothing #already long
+    if CLOSE.LONG:
+      if(long):
+        sell stock, buy factors #closing long
+      else: do nothing
+** Determining transaction quantities
+   We scale the investments in proportional to the current equity:
+   Q[t] = Equity[t]*Lambda[t], where lambda is determined by the desired
+   leverage (e.g. if expecting 100 long/100 short portfolio with 2+2
+   leverage, lambda=2/100; cf page 22 of AL paper)
+   For every stock and beta-portfolio component, we compute Q[t]/price,
+   round, and get the number of shares.
+** Trading setup:
+   first, we need to create price tables from data
+   for now, just use the convert python script with bid/asks instead of rets
+   1-DATE; 9-TICKER; 28-RET; 29-BID; 30-ASK
+*** shell commands to generate price tables
+   cut -d ',' -f 1,9,29 univ1_data_full.csv > univ1_data_bid.csv
+   cut -d ',' -f 1,9,30 univ1_data_full.csv > univ1_data_ask.csv
+   ./convert-bid.py -i univ1_data_bid.csv -o univ1_bid_mtx
+   ./convert-ask.py -i univ1_data_ask.csv -o univ1_ask_mtx
+   cut -d ',' -f 1,9,29 etf1_data_full.csv > etf_data_bid.csv
+   cut -d ',' -f 1,9,30 etf1_data_full.csv > etf_data_ask.csv
+   ./convert-bid.py -i etf_data_bid.csv -o etf_bid_mtx
+   ./convert-ask.py -i etf_data_ask.csv -o etf_ask_mtx
+*** Work with mid-prices; here's the code to generate master mid-price tables
+    test.ask <- get.mtx.gen("etf_ask_mtx",M=9*252,offset=offset.2009,file=TRUE)
+    test.bid <- get.mtx.gen("etf_bid_mtx",M=9*252,offset=offset.2009,file=TRUE)
+    stocks.mid.price <- (test.ask+test.bid)/2
+
+    test.ask <- get.mtx.gen("etf_ask_mtx",M=9*252,offset=offset.2009,file=TRUE)
+    test.bid <- get.mtx.gen("etf_bid_mtx",M=9*252,offset=offset.2009,file=TRUE)
+    etf.mid.price <- (test.ask+test.bid)/2
+
+    univ1.master.price <- cbind(etf.mid.price,stocks.mid.price)
+   
+** R issues with signal generation
+   Data structures in R are extremely wasteful if you liberally use lists
+   with mixed types and named objects.  This probably slows down the whole
+   calculation significantly.  Temporary fix is to compact all the generated
+   signals for a given date into a matrix; size is about 800K/400 stocks/25
+   days
+** Data offsets (assuming R data frames are reverse-chronologically sorted)
+   This assumes data sets ending on 20090630
+   which(as.logical(match(dates.vector,20090102)))
+   ## 124
+   which(as.logical(match(dates.vector,20080102)))
+   ## 377
+   which(as.logical(match(dates.vector,20070103)))
+   ##  628
+   which(as.logical(match(dates.vector,20060103)))
+   ##  879
+   which(as.logical(match(dates.vector,20050103)))
+   ## 1131
+   which(as.logical(match(dates.vector,20040102)))
+   ## 1383
+   which(as.logical(match(dates.vector,20030102)))
+   ##  1635
+
+   offset.2009 <- 124
+   offset.2008 <- 377
+   offset.2007 <- 628
+   offset.2006 <- 879
+   offset.2005 <- 1131
+   offset.2004 <- 1383
+   offset.2003 <- 1635

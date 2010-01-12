@@ -64,5 +64,73 @@ test2 <- get.adjusted.returns(spx.ret.mtx.full,M=10,offset=0,na.pct.cutoff=0.01,
 ## figure out which offset corresponds to May 1 (the date used in the paper)
 data.offset <- which(as.logical(match(as.numeric(row.names(spx.ret.mtx.full)),20070501)))
 ##[1] 547
+old.etf.offset <- which(as.logical(match(as.numeric(row.names(test.etfs1)),20070501)))
+
 
 corr1 <- get.emp.corr(spx.ret.mtx.full,M=252,offset=data.offset,na.pct.cutoff=0.01,file=FALSE)
+
+
+## general scratch code:
+
+unlist(get.s.score(fit.ar1(as.data.frame(get.ou.series(ret.s.jpm[1:61,,drop=F],ret.e.xlf[1:61,,drop=F])))))
+
+jpm.resid <- as.data.frame(get.ou.series(ret.s.jpm[1:61,,drop=F],ret.e.xlf[1:61,,drop=F]))
+
+ret.jpm.60 <- ret.s.jpm[1:61,,drop=T]
+ret.xlf.60 <- ret.e.xlf[1:61,,drop=T]
+
+
+plot(ret.jpm.60,type='l',col=1)
+
+lines(ret.xlf.60,type='l',col=2)
+
+beta.fit <- fit.stock(ret.s.jpm[1:61,,drop=F],ret.e.xlf[1:61,,drop=F],get.fit=TRUE)
+x11(); par(mfrow=c(2,2))
+plot(beta.fit)
+ 
+x11();
+plot(ret.jpm.60,type='l',col=1)
+lines(beta.fit$fitted.values,type='l',col=3)
+
+lines(1.064445042*ret.xlf.60+0.000075156,type='l',col=3)
+
+x11()
+plot(1.064445042*ret.xlf.60+0.000075156,type='l',col=3)
+lines(ret.jpm.60,col=1)
+
+resids <- beta.fit$residuals
+resids.fit <- fit.ar1(list(JPM=resids))
+print.ar1.estimates(resids.fit$JPM)
+
+xk.jpm <- get.ou.series(ret.s.jpm[1:61,,drop=F],ret.e.xlf[1:61,,drop=F])
+ar1.jpm <- fit.ar1(xk.jpm)
+print.ar1.estimates(ar1.jpm$JPM)
+get.s.score(ar1.jpm,subtract.average=F)
+
+
+png(filename = "z2.png", width = 1000, height = 500)
+plot(s.fac.df[,4],type='l',col=4)
+dev.off()
+
+
+
+
+
+## generate the s-score using old get.s.score function
+dates.range <- row.names(ret.s.jpm)[1:502]
+win <- 60 
+s.fac.df <- NULL
+for(i in seq(along=dates.range)){
+  s.fac.df <- rbind(s.fac.df,
+                    unlist(get.s.score(fit.ar1(get.ou.series(ret.s.jpm[i:(i+win),,drop=F],ret.e.xlf[i:(i+win),,drop=F]),method="yw"),subtract.average=F)))
+}
+row.names(s.fac.df) <- dates.range
+
+
+
+for(i in seq(along=dates.range)){
+  s.fac.df <- rbind(s.fac.df,
+                    unlist(get.s.score(fit.ar1(get.ou.series(ret.s.jpm[i:(i+win),,drop=F],ret.e.xlf[i:(i+win),,drop=F]),method="yw"),subtract.average=F)))
+}
+row.names(s.fac.df) <- dates.range
+

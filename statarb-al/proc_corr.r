@@ -148,3 +148,7 @@ lines(as.numeric(s.sto)*abs(thresholds["sso"]),col=3)
 lines(as.numeric(s.close.short)*abs(thresholds["sbc"]),col=4)
 lines(-as.numeric(s.close.long)*abs(thresholds["ssc"]),col=5)
 ## #dev.off()
+
+png(filename = "fail.png", width = 1000, height = 500)
+plot(equity,type='l')
+dev.off()

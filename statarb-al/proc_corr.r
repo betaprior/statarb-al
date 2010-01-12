@@ -134,3 +134,17 @@ for(i in seq(along=dates.range)){
 }
 row.names(s.fac.df) <- dates.range
 
+
+
+## #png(filename = "jpm.sig.png", width = 1000, height = 500)
+plot(as.numeric(s),type='l')
+thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
+abline(h=-thresholds["sbo"],lty=2)
+abline(h=thresholds["sso"],lty=2)
+abline(h=thresholds["sbc"],lty=2)
+abline(h=-thresholds["ssc"],lty=2)
+lines(-as.numeric(s.bto)*abs(thresholds["sbo"]),col=2)
+lines(as.numeric(s.sto)*abs(thresholds["sso"]),col=3)
+lines(as.numeric(s.close.short)*abs(thresholds["sbc"]),col=4)
+lines(-as.numeric(s.close.long)*abs(thresholds["ssc"]),col=5)
+## #dev.off()

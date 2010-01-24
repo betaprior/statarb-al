@@ -22,7 +22,7 @@ date.offset <- offset.2005-offset.2009
 load("sig.0405.RObj")
 stocks <- sig.list.04.05$tickers
 stocks <- stocks %w/o% c("JCP","ADBE","KEY","USB","ATI", "TXN", "WLP")
-##stocks <- c("AA")
+stocks <- c("JPM")
 ##portfolio.stocks <- c("~S~")
 portfolio.stocks <- stocks
 signals <- rev(sig.list.04.05$sig.dates)
@@ -45,9 +45,11 @@ row.names(positions) <- stocks
 
 cash <- 100000
 lambda <- 2/length(stocks)
+lambda <- 0.01 #for single-instr debugging
 
 equity <- rep(0,length(dates))
 s <- array(0,c(length(stocks),length(dates)))
+s.action <- array(0,c(length(stocks),length(dates)))
 s.bto <- array(0,c(length(stocks),length(dates)))
 s.sto <- array(0,c(length(stocks),length(dates)))
 s.close.short <- array(0,c(length(stocks),length(dates)))
@@ -85,7 +87,8 @@ for(i in seq(along=dates)){
 
 k <- 0
 #lambda <- lambda/100
-debug <- FALSE
+debug <- TRUE
+debug.name <- "JPM"
 warn <- FALSE
 for(i in seq(along=dates)){
   cat(i," ")
@@ -113,7 +116,8 @@ for(i in seq(along=dates)){
       price.s.b <- c(current.univ.price[i,this.name], current.univ.price[i,pair.name])
       num.shrs <- long.shr.amounts(rat,tot, price.s.b[1],
                                     price.s.b[2])*c(1,-1)
-      if(debug && this.name=="INTC") cat(i,"pos:",this.p,",inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"\n")
+      if(betas >=1 && num.shrs[1] <=0){ num.shrs <- -num.shrs }
+      if(debug && this.name==debug.name) cat(i,"pos:",this.p,",inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"\n")
       if(sig["sto"]){
         if(!(this.p<0)&& (-num.shrs["s.shares"])<0){ #flat or long (but shouldn't be long here)
           ##	sell stock, buy factors #opening short (if flat before, as we should
@@ -123,8 +127,9 @@ for(i in seq(along=dates)){
           positions[j,this.name] <- positions[j,this.name] + num.shrs["s.shares"]
           positions[j,pair.name] <- positions[j,pair.name] + num.shrs["b.shares"]
           cash <- cash - sum(price.s.b * num.shrs)
-          if(debug && this.name=="INTC") cat("STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"\n")
-          if(this.p>0) if(this.name=="INTC") cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name))
+          s.action[k,i] <- 1
+          if(debug && this.name==debug.name) cat("STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"\n")
+          if(this.p>0) if(this.name==debug.name) cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name))
         }
       } #else do nothing #already short 
       if(sig["close.short"]){
@@ -132,7 +137,8 @@ for(i in seq(along=dates)){
           ## buy stock, sell factors #closing short
           cash <- cash +
             sum(price.s.b*c(positions[j,this.name],positions[j,pair.name]))
-          if(debug && this.name=="INTC") cat("CLOSING SHORT: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
+          s.action[k,i] <- 1
+          if(debug && this.name==debug.name) cat("CLOSING SHORT: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
           positions[j,this.name] <- 0
           positions[j,pair.name] <- 0
           
@@ -144,15 +150,18 @@ for(i in seq(along=dates)){
           positions[j,this.name] <- positions[j,this.name] + num.shrs["s.shares"]
           positions[j,pair.name] <- positions[j,pair.name] + num.shrs["b.shares"]
           cash <- cash - sum(price.s.b * num.shrs)
+          s.action[k,i] <- 1
           if(this.p<0) cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name))
-          if(debug && this.name=="INTC") cat("BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"\n")
+          if(debug && this.name==debug.name) cat("BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"\n")
         }# else: do nothing #already long
       }
       if(sig["close.long"]){
         if(this.p>0){
 ##          sell stock, buy factors #closing long
-          cash <- cash + sum(price.s.b*c(positions[j,this.name],positions[j,pair.name]))
-          if(debug && this.name=="INTC") cat("CLOSING LONG: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
+          cash <- cash +
+            sum(price.s.b*c(positions[j,this.name],positions[j,pair.name]))
+          s.action[k,i] <- 1
+          if(debug && this.name==debug.name) cat("CLOSING LONG: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
           positions[j,this.name] <- 0
           positions[j,pair.name] <- 0
 

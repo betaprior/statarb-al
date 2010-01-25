@@ -23,6 +23,9 @@ ret.s <- get.stock.returns("spx_ret_mtx",M=5*252,offset=offset.2005,na.pct.cutof
 ret.e <- get.etf.returns("etf_ret_mtx",M=5*252,offset=offset.2005,file=TRUE)
 stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 
+ret.s <- reverse.rows(ret.s)
+ret.e <- reverse.rows(ret.e)
+
 sig.list.04.05 <- stock.etf.signals(ret.s,ret.e,tickers.classified,num.days=num.days,compact.output=TRUE)
 
 save(sig.list.04.05,file="sig.0405.RObj")

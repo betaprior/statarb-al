@@ -1,5 +1,5 @@
 ##~ quick-and-dirty utility functions
-reverse.rows <- function(d){ d[nrow(d):1,] }
+reverse.rows <- function(d){ d[nrow(d):1,,drop=F] }
 "%w/o%" <- function(x,y) x[!x %in% y] #--  x without y (defined in help for %in%)
 
 logical2int <- function(x) { sum(x * 2^(rev(seq(along=x)) - 1)) }
@@ -17,6 +17,8 @@ encode <- function(number, base) {
 int2logical <- function(x,num.bits) { as.logical(encode(x,rep(2,num.bits))) }
 
 ##~ utility functions (to be placed in their own file)
+## {{{
+testObject <- function(object){ exists(as.character(substitute(object))) }
 
 sort.data.frame <- function(x, by){
     # Author: Kevin Wright
@@ -82,6 +84,7 @@ yapply <- function(X,FUN, ...) {
   if( ! "NAMES" %in% fnames ){
     formals(FUN) <- append( formals(FUN), alist(NAMES=) )   }
   mapply(FUN,X,INDEX=index, NAMES=namesX,MoreArgs=list(...)) } 
+## }}}
 
 ##~ functions related to AL paper analysis
 get.stock.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){

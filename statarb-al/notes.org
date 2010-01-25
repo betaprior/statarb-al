@@ -332,6 +332,29 @@ XLY  185
    Correlation matrix: get rid of the tickers that have too many NAs
    proc_corr.r
 
+* Signal generation
+** Current format: list with 
+   (1) list of dates and 
+   (2) list of dates with a signal matrix attached
+   Signal generation is performed via a command like
+   sig.list.04.05 <- stock.etf.signals(ret.s,ret.e,tickers.classified,num.days=num.days,compact.output=TRUE)
+   the compact.output=T is necessary to avoid a (giant) overhead of named
+   attributes
+#+BEGIN_SRC R
+  ## compact output format:
+  ## matrix with rows corresponding to stocks; each row is an unnamed numeric array A
+  ## int2logical(A[1],5) gives logical w/ names corr to
+  ## c("model.valid", "bto", "sto", "close.short", "close.long")
+  ## A[2:8] are mr.params, names c("s","k","m","mbar","a","b","varz")
+  ## A[9...] are betas (determined from stock names)
+  For date i and ticker j, extract parameters from the matrix via something
+  like
+  sig <- decode.signals(signals[[i]][j,])
+  params <- decode.params(signals[[i]][j,])
+  betas <- decode.betas(signals[[i]][j,])
+#+END_SRC scheme
+
+
 * Backtesting
   Trading simulation: 
   select stocks to trade against ETFs/synthetic ETFs
@@ -428,3 +451,26 @@ XLY  185
    offset.2005 <- 1131
    offset.2004 <- 1383
    offset.2003 <- 1635
+
+* Debugging backtesting
+** First, need to ascertain that the returns datasets and the prices datasets are consistent
+   -> did a spot check on XLF and JPM, the computed logreturns, returns, and
+      reported returns are all consistent
+** Isolated pair trading sequence: JPM and XLF -- examine the signals
+   (Using 04-05 data)
+   First signal:
+56  56 pos: 0 ,inv.targ: 1000 ratio  0.80809  prices:  41.005 28.925  num shares:  103 -180 
+BTO: 'acquiring' 103 -180  paying  -982.985 
+beta.56 <- 1.237
+What do we expect to happen if beta remains constant:
+assuming alpha is negligible relative to mean-reverting contribution, we
+   predict JPM prices from beta and XLF prices; the true price by the time
+   the sell signal trips is expected to be higher due to positive increment
+   in the mean-reverting Xt process.
+88  88 pos: 103 ,inv.targ: 997.9351 ratio  0.7612402  prices:  36.475 27.48  num shares:  87 -152 
+CLOSING LONG: paying  1189.475 
+  Cash inflow is negative, so something went wrong
+To examine the signals, take the debug output, save it to a file and extract
+   the fields via somn like
+ perl -lane 'print "$F[7],$F[9],$F[10]"' jpm.xlf.tmp > jpm.xlf.dbg1 ##OR:
+ perl -lane 'print "$F[6],$F[8],$F[9]"' jpm.xlf.tmp > jpm.xlf.dbg1

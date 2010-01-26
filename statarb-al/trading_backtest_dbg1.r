@@ -19,17 +19,18 @@ offset.2003 <- 1635
 
 date.offset <- offset.2005-offset.2009
 
-load("sig.0405.RObj")
-stocks <- sig.list.04.05$tickers
-stocks <- stocks %w/o% c("JCP","ADBE","KEY","USB","ATI", "TXN", "WLP")
-stocks <- c("JPM")
+load("sig.dbg1.RObj")
+stocks <- sig.list.dbg1$tickers
+debug.name <- "JPM"
+#stocks <- c(debug.name)
 ##portfolio.stocks <- c("~S~")
 portfolio.stocks <- stocks
-signals <- rev(sig.list.04.05$sig.dates)
+signals <- rev(sig.list.dbg1$sig.dates)
 dates <- names(signals)
 
 sector.etfs <-
   c("HHH","IYR","IYT","OIH","RKH","RTH","SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")
+sector.etfs <- sector.etfs %w/o% c("IYT") ##somehow have NAs in price records
 
 load("univ1.mid.price.RObj") # loads univ1.master.price
 univ1.master.price <- univ1.master.price[-c(1621)]
@@ -37,37 +38,6 @@ univ1.master.price <- univ1.master.price[-c(1816)]
 current.univ.price <- univ1.master.price[names(univ1.master.price) %in% c(stocks,sector.etfs)]
 current.univ.price <- reverse.rows(current.univ.price[(1+date.offset):(length(dates)+date.offset),])
 
-
-ret.s <- get.stock.returns("spx_ret_mtx",M=252,offset=offset.2005,na.pct.cutoff=0.01,file=TRUE) 
-ret.e <- get.etf.returns("etf_ret_mtx",M=252,offset=offset.2005,file=TRUE) 
-
-ret.one.s <- ret.s[,"JPM",drop=F]
-ret.one.e <- ret.e[,"XLF",drop=F]
-rm("ret.s"); rm("ret.e")
-
-ret.one.s <- reverse.rows(ret.one.s)
-ret.one.e <- reverse.rows(ret.one.e)
-
-ret.subset <- merge(ret.one.e,ret.one.s,by="row.names")
-row.names(ret.subset) <- ret.subset$Row.names
-ret.subset <- ret.subset[names(ret.subset) %w/o% "Row.names"][c(-1),]
-
-price.subset <- current.univ.price[names(current.univ.price) %in% c("JPM","XLF")]
-ret.from.prices <- apply(price.subset,2,function(x){ c(NA,diff(x))/x })[c(-1),]
-lret.from.prices <- apply(price.subset,2,function(x){ diff(log(x)) })
-
-jpm.compare <- cbind(ret.subset[,"JPM"],ret.from.prices[,"JPM"],lret.from.prices[,"JPM"])
-xlf.compare <- cbind(ret.subset[,"XLF"],ret.from.prices[,"XLF"],lret.from.prices[,"XLF"])
-
-## plot(1:251,jpm.compare[,1],type='l')
-## lines(1:251,jpm.compare[,2],col=2)
-## lines(1:251,jpm.compare[,3],col=3)
- 
-## plot(1:251,xlf.compare[,1],type='l')
-## lines(1:251,xlf.compare[,2],col=2)
-## lines(1:251,xlf.compare[,3],col=3)
-
-## well, it looks like the price series are all correct
 
 positions <-
   as.data.frame(matrix(0,length(stocks),length(c(portfolio.stocks,sector.etfs))))
@@ -78,9 +48,34 @@ cash <- 100000
 lambda <- 2/length(stocks)
 lambda <- 0.01 #for single-instr debugging
 
+prealloc.signal.mtx <- function(stocks,dates){
+  x <- array(0,c(length(stocks),length(dates)))
+  colnames(x) <- dates
+  rownames(x) <- stocks
+  return(x)
+}
+
+s.betas <- prealloc.signal.mtx(stocks,dates)
+s.k <- prealloc.signal.mtx(stocks,dates)
+
 equity <- rep(0,length(dates))
 s <- array(0,c(length(stocks),length(dates)))
+colnames(s) <- dates
+rownames(s) <- stocks
+
+s.a <- array(0,c(length(stocks),length(dates)))
+colnames(s.a) <- dates
+rownames(s.a) <- stocks
+s.b <- array(0,c(length(stocks),length(dates)))
+colnames(s.b) <- dates
+rownames(s.b) <- stocks
+s.varz <- array(0,c(length(stocks),length(dates)))
+colnames(s.varz) <- dates
+rownames(s.varz) <- stocks
+
 s.action <- array(0,c(length(stocks),length(dates)))
+colnames(s.action) <- dates
+rownames(s.action) <- stocks
 s.bto <- array(0,c(length(stocks),length(dates)))
 s.sto <- array(0,c(length(stocks),length(dates)))
 s.close.short <- array(0,c(length(stocks),length(dates)))
@@ -119,10 +114,10 @@ for(i in seq(along=dates)){
 
 k <- 0
 #lambda <- lambda/100
-debug <- TRUE
-debug.name <- "JPM"
+debug <- FALSE
+#debug.name <- "AA"
 outfile <- "jpm.xlf.f.tmp"
-## outfile <- ""
+outfile <- ""
 warn <- FALSE
 for(i in seq(along=dates)){
   cat(i," ")
@@ -132,19 +127,25 @@ for(i in seq(along=dates)){
   for(j in seq(along=row.names(positions))){
     this.name <- row.names(positions)[j]
     if(!(this.name %in% stocks)) next
+#    if(dates[i]=="20030328") { browser() }
     sig <- decode.signals(signals[[i]][j,])
     params <- decode.params(signals[[i]][j,])
     k <- match(this.name,stocks)
     s.id[k] <- this.name
     s[k,i] <- params["s"]
+    s.a[k,i] <- params["a"]
+    s.b[k,i] <- params["b"]
+    s.varz[k,i] <- params["varz"]
+    s.k[k,i] <- params["k"]
     s.sto[k,i] <- sig["sto"]
     s.bto[k,i] <- sig["bto"]
     s.close.short[k,i] <- sig["close.short"]
     s.close.long[k,i] <- sig["close.long"]
     betas <- decode.betas(signals[[i]][j,])
+    s.betas[k,i] <- betas
     this.p <- positions[j,this.name]
     pair.name <- tickers.classified[this.name,]$SEC_ETF
-    if(!sig["model.valid"]){
+    if(!sig["model.valid"] || !all(!is.na(current.univ.price[i,]))){
       if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
     }else{
       tot <- lambda*equity[i] # investment amount
@@ -206,4 +207,3 @@ for(i in seq(along=dates)){
     }
   }
 }
-

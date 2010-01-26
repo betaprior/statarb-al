@@ -223,7 +223,7 @@ fit.ar1 <- function(res, method="mle"){
 ## A[9...] are betas (determined from stock names)
 get.signals <- function(list.of.fits,subtract.average=TRUE,avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
-                        , compact.output=FALSE){
+                        , compact.output=FALSE, debug=FALSE){
   m.avg <- mean(as.numeric(lapply(list.of.fits,function(x) x$ar.fit$x.mean)))
   if(!subtract.average) m.avg <- avg.mod
   res <- 
@@ -283,10 +283,10 @@ stock.etf.signals <-
       warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
 #    ret.e <- ret.e[tickers.classified["JPM",]$SEC_ETF]
     for(i in seq(along=dates.range)){
-      browser()
+#      if(i >= 444){ browser() }
       sig.list[[i]] <- 
         get.signals(fit.ar1(
-                            get.ou.series.etf(ret.s[i:(i+win),,drop=F],ret.e[i:(i+win),,drop=F]
+                            get.ou.series.etf(ret.s[i:(i+win-1),,drop=F],ret.e[i:(i+win-1),,drop=F]
                                               , classified.stocks.list)
                             , method="yw"),subtract.average=F,compact.output=compact.output)
       

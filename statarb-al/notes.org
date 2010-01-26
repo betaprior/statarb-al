@@ -474,3 +474,10 @@ To examine the signals, take the debug output, save it to a file and extract
    the fields via somn like
  perl -lane 'print "$F[7],$F[9],$F[10]"' jpm.xlf.tmp > jpm.xlf.dbg1 ##OR:
  perl -lane 'print "$F[6],$F[8],$F[9]"' jpm.xlf.tmp > jpm.xlf.dbg1
+** Simulation:
+   simulating the mean reversion in R
+   AR(1) process: use the filter function
+   'y[i] = x[i] + f[1]*y[i-1] + ... + f[p]*y[i-p]'
+   Command is something like
+   wn <- rnorm(N)  ## (white noise)
+   ar1 <- filter(wn,filter=c(.2),method="recursive")

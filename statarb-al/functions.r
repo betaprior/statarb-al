@@ -192,8 +192,8 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
   out.list <- vector('list',length(stock.names))
-  r.s <- reverse.rows(r.s); r.e <- reverse.rows(r.e)
-  browser()
+#  r.s <- reverse.rows(r.s); r.e <- reverse.rows(r.e)
+#  browser()
   for(i in seq(along=stock.names)){
     r.s.i <- r.s[stock.names[i]] #nb: don't need to do [,...,drop=F]
     r.e.i <- r.e[tickers.classified[stock.names[i],]$SEC_ETF]

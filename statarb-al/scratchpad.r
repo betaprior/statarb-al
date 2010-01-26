@@ -92,6 +92,7 @@ names(series.data)[9] <- "varz"
 series.data <- cbind(series.data,as.numeric(s.k["JPM",]))
 names(series.data)[10] <- "k"
 
+
 ## varz appears to be negative in half the cases.  not a good thing.
 ## call the fitting functions on this series to investigate
 start.row <- 1; win <- 60
@@ -166,6 +167,8 @@ unlist(ar.params.from.fit(fit.ar1.series(sim.ret.ou)))
 sim.ret.ar1 <- ar.sim(const.a,const.b,const.varz,nrow(series.data))
 sim.ret.ar1.diff <- c(sim.ret.ar1[1],diff(sim.ret.ar1))
 sim.ret.tot <- sim.ret.beta+sim.ret.ar1.diff
+series.data <- cbind(series.data,as.numeric(sim.ret.tot))
+names(series.data)[11] <- "jpm.sim.ret"
 
 jpm.pr.beta.sim <- ret.to.prices(sim.ret.beta,s.price.init)
 jpm.pr.sim <- ret.to.prices(sim.ret.tot,s.price.init)
@@ -174,6 +177,7 @@ sim.ar.series <- ar.sim(const.a,const.b,const.varz,200)
 sim.ar.fit <- fit.ar1.series(sim.ar.series)
 ar.params.from.fit(sim.ar.fit)
 
+sig.jpm.synthetic <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=num.days,compact.output=TRUE)
 
 
 

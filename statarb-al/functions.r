@@ -271,10 +271,20 @@ decode.betas <- function(y){ y[9:length(y)] }
 
 ## nb: field names in tickers classification df are hardcoded as
 ## TIC and SEC_ETF
+## input parameters: ret.s and ret.e must be dataframes
+## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60,compact.output=FALSE){
+    ## sanity checks
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
+    stopifnot(nrow(ret.s)==nrow(ret.e) && nrow(ret.s) >= num.days + win - 1)
     dates.range <- row.names(ret.s)[1:num.days]
+    if(is.unsorted(rev(dates.range)))
+      if(!is.unsorted(dates.range)){
+        ret.s <- reverse.rows(ret.s); ret.e <- reverse.rows(ret.e)
+        dates.range <- row.names(ret.s)[1:num.days]
+      }
+    stopifnot(!is.unsorted(rev(dates.range))) ## rev. dates must be chron sorted
     sig.list <- vector('list',length(dates.range))
     stocks.list <- classified.stocks.list$TIC
     ret.s <- ret.s[names(ret.s) %in% stocks.list]

@@ -177,7 +177,11 @@ sim.ar.series <- ar.sim(const.a,const.b,const.varz,200)
 sim.ar.fit <- fit.ar1.series(sim.ar.series)
 ar.params.from.fit(sim.ar.fit)
 
-sig.jpm.synthetic <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=num.days,compact.output=TRUE)
+
+sig.jpm.synthetic <- stock.etf.signals(  data.frame(JPM=series.data$jpm.sim.ret,row.names=series.data$dates)
+                                       , data.frame(XLF=series.data$XLF,row.names=series.data$dates)
+                                       , tc.subset["JPM",,drop=F]
+                                       , num.days=num.days-59,compact.output=TRUE)
 
 
 

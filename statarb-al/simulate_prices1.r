@@ -107,3 +107,4 @@ get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
 
 
 sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,N-59)
+

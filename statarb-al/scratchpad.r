@@ -172,17 +172,48 @@ names(series.data)[11] <- "jpm.sim.ret"
 
 jpm.pr.beta.sim <- ret.to.prices(sim.ret.beta,s.price.init)
 jpm.pr.sim <- ret.to.prices(sim.ret.tot,s.price.init)
+xlf.pr <- ret.to.prices(series.data$XLF,e.price.init)
 
 sim.ar.series <- ar.sim(const.a,const.b,const.varz,200)
 sim.ar.fit <- fit.ar1.series(sim.ar.series)
 ar.params.from.fit(sim.ar.fit)
 
 
-sig.jpm.synthetic <- stock.etf.signals(  data.frame(JPM=series.data$jpm.sim.ret,row.names=series.data$dates)
+sig.jpm.synthetic.list <- stock.etf.signals(  data.frame(JPM=series.data$jpm.sim.ret,row.names=series.data$dates)
                                        , data.frame(XLF=series.data$XLF,row.names=series.data$dates)
                                        , tc.subset["JPM",,drop=F]
                                        , num.days=num.days-59,compact.output=TRUE)
 
+sig.jpm.synthetic <-      
+  prealloc.mtx(length(sig.jpm.synthetic.list$sig.dates)
+               ,length(sig.jpm.synthetic.list$sig.dates[[1]])
+               ,rownames=rev(names(sig.jpm.synthetic.list$sig.dates)))
+
+for(i in rev(seq(along=sig.jpm.synthetic.list$sig.dates))){
+  sig.jpm.synthetic[i,] <- sig.jpm.synthetic.list$sig.dates[[i]]
+}
+colnames(sig.jpm.synthetic) <-
+  c("action","s","k","m","mbar","a","b","varz","beta")
+sig.jpm.synthetic <- data.frame(sig.jpm.synthetic)
+
+sig.jpm.synthetic.action <- lapply(sig.jpm.synthetic[,"action"],decode.signals)
+sig.jpm.synthetic.action <- data.frame(t(data.frame(sig.jpm.synthetic.action)))
+rownames(sig.jpm.synthetic.action) <- rownames(sig.jpm.synthetic)
+
+
+plot(as.numeric(sig.jpm.synthetic$s),type='l')
+thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
+abline(h=-thresholds["sbo"],lty=2)
+abline(h=thresholds["sso"],lty=2)
+abline(h=thresholds["sbc"],lty=2)
+abline(h=-thresholds["ssc"],lty=2)
+with(sig.jpm.synthetic.action,{
+     lines(-as.numeric(bto)*abs(thresholds["sbo"]),col=2)
+     lines(as.numeric(sto)*abs(thresholds["sso"]),col=3)
+     lines(as.numeric(close.short)*abs(thresholds["sbc"]),col=4)
+     lines(-as.numeric(close.long)*abs(thresholds["ssc"]),col=5)
+    ## abline(v=which(as.numeric(s.action)==1),lty=3)
+     })
 
 
 price.subset <- current.univ.price[names(current.univ.price) %in% c("JPM","XLF")]

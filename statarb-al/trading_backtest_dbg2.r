@@ -21,6 +21,7 @@ date.offset <- offset.2005-offset.2009
 
 load("sig.dbg1.RObj")
 stocks <- sig.list.dbg1$tickers
+stocks <- "JPM"
 debug.name <- "JPM"
 #stocks <- c(debug.name)
 ##portfolio.stocks <- c("~S~")
@@ -32,12 +33,17 @@ sector.etfs <-
   c("HHH","IYR","IYT","OIH","RKH","RTH","SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")
 sector.etfs <- sector.etfs %w/o% c("IYT") ##somehow have NAs in price records
 
+sector.etfs <- c("XLF")
+
 load("univ1.mid.price.RObj") # loads univ1.master.price
 univ1.master.price <- univ1.master.price[-c(1621)]
 univ1.master.price <- univ1.master.price[-c(1816)]
 current.univ.price <- univ1.master.price[names(univ1.master.price) %in% c(stocks,sector.etfs)]
 current.univ.price <- reverse.rows(current.univ.price[(1+date.offset):(length(dates)+date.offset),])
 
+## set up a price file with simulated prices
+current.univ.price.old <- current.univ.price
+current.univ.price <- data.frame(XLF=current.univ.price$XLF,JPM=jpm.pr.sim,row.names=rownames(current.univ.price))
 
 positions <-
   as.data.frame(matrix(0,length(stocks),length(c(portfolio.stocks,sector.etfs))))
@@ -52,13 +58,6 @@ prealloc.signal.mtx <- function(stocks,dates){
   x <- array(0.0,c(length(stocks),length(dates)))
   colnames(x) <- dates
   rownames(x) <- stocks
-  return(x)
-}
-
-prealloc.mtx <- function(rows,cols,colnames=NULL,rownames=NULL){
-  x <- array(0.0,c(rows,cols))
-  if(!is.null(colnames)){ colnames(x) <- colnames }
-  if(!is.null(rownames)){ rownames(x) <- rownames }
   return(x)
 }
 

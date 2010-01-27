@@ -20,6 +20,13 @@ int2logical <- function(x,num.bits) { as.logical(encode(x,rep(2,num.bits))) }
 ## {{{
 testObject <- function(object){ exists(as.character(substitute(object))) }
 
+prealloc.mtx <- function(rows,cols,colnames=NULL,rownames=NULL){
+  x <- array(0.0,c(rows,cols))
+  if(!is.null(colnames)){ colnames(x) <- colnames }
+  if(!is.null(rownames)){ rownames(x) <- rownames }
+  return(x)
+}
+
 sort.data.frame <- function(x, by){
     # Author: Kevin Wright
     # with some ideas from Andy Liaw

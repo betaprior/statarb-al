@@ -29,6 +29,3 @@ stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 sig.list.dbg1 <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=num.days,compact.output=TRUE)
 
 save(sig.list.dbg1,file="sig.dbg1.RObj")
-
-
-

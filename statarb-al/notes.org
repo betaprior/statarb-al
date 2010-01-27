@@ -451,7 +451,7 @@ XLY  185
    offset.2005 <- 1131
    offset.2004 <- 1383
    offset.2003 <- 1635
-
+   
 * Debugging backtesting
 ** First, need to ascertain that the returns datasets and the prices datasets are consistent
    -> did a spot check on XLF and JPM, the computed logreturns, returns, and

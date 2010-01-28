@@ -90,6 +90,7 @@ names(etf.sim) <- "ETF"
 s.price.init <- 25.385
 e.price.init <- 22.825
 ## generate the price series
+stk.prices.beta <- ret.to.prices(stk.ret.beta,s.price.init)
 stk.prices <- ret.to.prices(stk.ret.tot,s.price.init)
 etf.prices <- ret.to.prices(etf.sim,e.price.init)
 sim.prices.df <- data.frame(ETF=etf.prices,STK=stk.prices,row.names=row.names(etf.sim))
@@ -98,6 +99,11 @@ sim.prices.df <- data.frame(ETF=etf.prices,STK=stk.prices,row.names=row.names(et
 plot(xlf.pr,type='l')
 x11()
 plot(etf.prices,type='l')
+## problem: mean reversion makes stock returns series look odd
+x11()
+plot(stk.prices.beta,type='l',ylim=c(22,28))
+lines(stk.prices,col=2)
+ 
 
 get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t,stringsAsFactors=FALSE) }
 
@@ -116,6 +122,7 @@ draw.signal.lines <- function(act.mtx){
   lines(as.numeric(act.mtx$close.short)*abs(thresholds["sbc"]),col=4)
   lines(-as.numeric(act.mtx$close.long)*abs(thresholds["ssc"]),col=5)
 }
+draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
   stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE) }
 get.sim.signals.mtx <- function(sig.list){
@@ -148,3 +155,4 @@ draw.signal.lines(sim.sig.actions.1)
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
                                      , c("STK"), c("STK","ETF"), debug=TRUE
                                      , tc.df)
+draw.actions.lines(sim.trades$log$actions) 

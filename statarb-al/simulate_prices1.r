@@ -1,6 +1,7 @@
 ## simulate a large artificial price series "inspired" by JPM/XLF pair trading
-library("timeSeries")
-library("fGarch")
+require("timeSeries")
+require("fGarch")
+require("sde")
 
 load("xlf.prices.RObj")
 xlf.pr <- rev(as.numeric(xlf.prices$XLF))[1:2000]
@@ -76,9 +77,6 @@ ret.to.prices <- function(ret,p0){
 }
 
 
-s.price.init <- 25.385
-e.price.init <- 22.825
-
 
 stk.ret.beta <- etf.sim*const.beta
 stk.ret.ar1 <- ar.sim(const.a,const.b,const.varz,length(etf.sim))
@@ -88,13 +86,33 @@ stk.ret.tot <- stk.ret.beta+stk.ret.ar1.diff
 names(stk.ret.tot) <- "STK"
 names(etf.sim) <- "ETF"
 
+
+s.price.init <- 25.385
+e.price.init <- 22.825
+## generate the price series
+stk.prices <- ret.to.prices(stk.ret.tot,s.price.init)
+etf.prices <- ret.to.prices(etf.sim,e.price.init)
+sim.prices.df <- data.frame(ETF=etf.prices,STK=stk.prices,row.names=row.names(etf.sim))
+
+## plot the price series
+plot(xlf.pr,type='l')
+x11()
+plot(etf.prices,type='l')
+
 get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t) }
 
 tc.df <- get.ticker.classifier.df(c("STK"),c("ETF"))
 num.days <- N
+thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
+draw.thresholds <- function(){
+  abline(h=-thresholds["sbo"],lty=2)
+  abline(h=thresholds["sso"],lty=2)
+  abline(h=thresholds["sbc"],lty=2)
+  abline(h=-thresholds["ssc"],lty=2)
+}
 get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
-  sig.list <- stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier
-                                , num.days=num.days,compact.output=TRUE)
+  stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE) }
+get.sim.signals.mtx <- function(sig.list){
   sig.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
                           , length(sig.list$sig.dates[[1]])
                           , rownames=rev(names(sig.list$sig.dates)))
@@ -104,7 +122,18 @@ get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
   colnames(sig.mtx) <- c("action","s","k","m","mbar","a","b","varz","beta")
   data.frame(sig.mtx)
 }
-
-
+get.sim.signals.actions <- function(sig.mtx){
+  sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
+  sim.actions <- as.data.frame(do.call("rbind",sim.actions))
+  row.names(sim.actions) <- row.names(sig.mtx)
+  return(sim.actions)
+}
+  
 sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,N-59)
+sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
+sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
 
+## run the trading simulation on the generated data
+sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
+                                     , c("STK"), c("STK","ETF")
+                                     , tc.df)

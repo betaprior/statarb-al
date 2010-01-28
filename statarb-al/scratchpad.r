@@ -1,4 +1,7 @@
 ## Plotting the s-factor and the signal/transcation lines
+##  setwd("e:/projects/finance/research/statarb-al")
+##  setwd("~/projects/finance/research/statarb-al")
+## install.packages(c("fGarch","timeSeries","xts","quantmod","sde"))
 library("sde")
 
 plot(as.numeric(s),type='l')

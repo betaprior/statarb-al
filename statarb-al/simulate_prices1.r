@@ -99,7 +99,7 @@ plot(xlf.pr,type='l')
 x11()
 plot(etf.prices,type='l')
 
-get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t) }
+get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t,stringsAsFactors=FALSE) }
 
 tc.df <- get.ticker.classifier.df(c("STK"),c("ETF"))
 num.days <- N
@@ -109,6 +109,12 @@ draw.thresholds <- function(){
   abline(h=thresholds["sso"],lty=2)
   abline(h=thresholds["sbc"],lty=2)
   abline(h=-thresholds["ssc"],lty=2)
+}
+draw.signal.lines <- function(act.mtx){
+  lines(-as.numeric(act.mtx$bto)*abs(thresholds["sbo"]),col=2)
+  lines(as.numeric(act.mtx$sto)*abs(thresholds["sso"]),col=3)
+  lines(as.numeric(act.mtx$close.short)*abs(thresholds["sbc"]),col=4)
+  lines(-as.numeric(act.mtx$close.long)*abs(thresholds["ssc"]),col=5)
 }
 get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
   stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE) }
@@ -133,7 +139,12 @@ sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,N-59)
 sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
 sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
 
+## plot the signals:
+plot(sim.sig.mtx.1$s,type='l')
+draw.thresholds()
+draw.signal.lines(sim.sig.actions.1)
+
 ## run the trading simulation on the generated data
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
-                                     , c("STK"), c("STK","ETF")
+                                     , c("STK"), c("STK","ETF"), debug=TRUE
                                      , tc.df)

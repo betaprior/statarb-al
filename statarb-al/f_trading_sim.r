@@ -11,7 +11,7 @@
 run.trading.simulation <- function(  signals.struct, prices
                                    , instr.p, instr.q, pq.classifier
                                    , debug=FALSE, warn=FALSE
-                                   , silent=FALSE, outfile=""){
+                                   , silent=FALSE, outfile="", debug.name=instr.p[1]){
   if(outfile!="")
     if(file.exists(outfile)) { file.remove(outfile) }
   signals <- rev(signals.struct$sig.dates)
@@ -21,7 +21,7 @@ run.trading.simulation <- function(  signals.struct, prices
   prices <- prices[dates,] ## align the data frames
   stopifnot(all(row.names(prices)==dates))
   positions <-as.data.frame(matrix(0,length(instr.p),length(instr.q)))
-  names(positions) <- instr.p;  row.names(positions) <- instr.q
+  names(positions) <- instr.q;  row.names(positions) <- instr.p
 
   long.shr.amounts <- function(rat,tot,S,b){
     c(s.shares=round(rat*tot/(S*(rat-1))), b.shares=round(tot/(b*(rat-1)))) }
@@ -41,11 +41,11 @@ run.trading.simulation <- function(  signals.struct, prices
     equity[i] <- cash + nav
     for(j in seq(along=row.names(positions))){
       this.name <- row.names(positions)[j]
-      if(!(this.name %in% stocks)) next
+      if(!(this.name %in% instr.p)) next
 ##    if(dates[i]=="20030328") { browser() }
       sig <- decode.signals(signals[[i]][j,])
       params <- decode.params(signals[[i]][j,])
-      k <- match(this.name,stocks)
+      k <- match(this.name,instr.p)
       ## s.id[k] <- this.name
       ## s[k,i] <- params["s"]
       ## s.a[k,i] <- params["a"]
@@ -122,5 +122,5 @@ run.trading.simulation <- function(  signals.struct, prices
       }
     }
   }
-  return(list(cash=cash,nav=nav,equity=equity,log=list(action=s.action)))
+  return(list(cash=cash,nav=nav,equity=equity,log=list(actions=s.action)))
 }

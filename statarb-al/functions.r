@@ -1,3 +1,4 @@
+options(stringsAsFactors = FALSE)
 ##~ quick-and-dirty utility functions
 reverse.rows <- function(d){ d[nrow(d):1,,drop=F] }
 "%w/o%" <- function(x,y) x[!x %in% y] #--  x without y (defined in help for %in%)

@@ -1,4 +1,5 @@
 ## simulate a large artificial price series "inspired" by JPM/XLF pair trading
+require("fBasics")
 require("timeSeries")
 require("fGarch")
 require("sde")

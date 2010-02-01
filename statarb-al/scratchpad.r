@@ -235,3 +235,31 @@ xlf.compare <- cbind(ret.subset[,"XLF"],ret.from.prices[,"XLF"],lret.from.prices
 ## lines(1:251,xlf.compare[,3],col=3)
 
 ## well, it looks like the price series are all correct
+
+
+
+plot(stk.s.score,type='l')
+lines(c(rep(0,length(stk.ret.ar1)-length(sim.sig.mtx.1$s)),sim.sig.mtx.1$s),col=2)
+
+
+## are we supposed to be able to estimate the correct params for MR?
+nsim <- 200
+n <- length(stk.ret.ar1)
+sim.params <- matrix(nrow=nsim,ncol=4)
+for(i in 1:nsim)
+  sim.params[i,] <- unlist(ar.params.from.fit(fit.ar1.series(sim.ar1.series(const.b,const.a/(1-const.b),const.varz,length(etf.sim)))))
+apply(sim.params,2,mean)
+
+##using arima fit
+nsim <- 200
+n <- length(stk.ret.ar1)
+sim.params <- matrix(nrow=nsim,ncol=4)
+for(i in 1:nsim)
+  sim.params[i,] <- unlist(ar.params.from.fit(arima(sim.ar1.series(const.b,const.a/(1-const.b),const.varz,length(etf.sim)),order=c(1,0,0))))
+apply(sim.params,2,mean)
+## we get something like
+## 5.055218e-03 9.366028e-04 8.150308e-01 8.031443e-05
+## 5.110804e-03 9.318802e-04 8.171537e-01 7.972809e-05
+## vs
+## > c(const.m,const.a,const.b,const.varz)
+## [1] 0.00500 0.00090 0.82000 0.00008

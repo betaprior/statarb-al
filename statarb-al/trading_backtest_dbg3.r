@@ -115,12 +115,13 @@ sim.trades.f.all <- run.trading.simulation(  sig.f.bt, price.df.f
 ## WB : 104909.9 
 ## WFC : 99540.78 
 ## XL : 97140.68 
-
+  
 this.instr <- "PGR"
 sig.mtx.dbg <- as.data.frame(sig.mtx.f.bt[,,this.instr])
 sig.actions.dbg <- get.signals.actions(sig.mtx.dbg)
 dates.dbg <- rownames(sig.mtx.dbg)
 prices.dbg <- price.df.f[dates.dbg,c(this.instr,"XLF")]
+ret.dbg <- cbind(ret.s,ret.e)[dates.dbg,c(this.instr,"XLF")]
 
 par.save()
 par(mfrow=c(2,1))
@@ -128,8 +129,61 @@ plot(sig.mtx.dbg$s,type='l')
 draw.thresholds()
 draw.signal.lines(sig.actions.dbg)
 lines((trading.f.list[[this.instr]]$equity/100000)^2,col=6)
-plot(prices.dbg$PGR,type='l',ylim=c(20,90))
+plot(prices.dbg[[this.instr]],type='l',ylim=c(20,90))
 lines(prices.dbg$XLF,col=2)
 par.restore()
 
 plot(sig.mtx.dbg$beta,type='l')
+
+## test whether returns accurately reproduce prices
+ret.to.prices <- function(ret,p0){
+  x <- rep(0,length(ret))
+  x[1] <- p0
+  for(i in seq(along=ret)[c(-1)])
+    x[i] <- x[i-1]*(ret[i]+1)
+  x
+}
+p0.s <- prices.dbg[1,this.instr]
+p0.e <- prices.dbg[1,"XLF"]
+prices.from.ret <- data.frame( ret.to.prices(ret.dbg[[this.instr]],p0.s),ret.to.prices(ret.dbg[["XLF"]],p0.e),row.names=row.names(ret.dbg))
+names(prices.from.ret) <- c(this.instr,"XLF")
+names(prices.from.ret) <- c(this.instr,"XLF")
+
+plot(prices.dbg[[this.instr]],type='l',ylim=c(20,90))
+lines(prices.from.ret[[this.instr]],col=2)
+ 
+plot(prices.dbg[["XLF"]],type='l',ylim=c(20,30))
+lines(prices.from.ret[["XLF"]],col=2)
+## looks like cumulative errors arise in XLF, but how does that affect the trading?
+instr <- this.instr
+trading.dbg <- run.trading.simulation(  sig.f.bt, prices.from.ret
+                                                  , instr, c(instr,"XLF"), tc.xlf
+                                                  , debug=FALSE, silent=T)
+cat(instr,":",last(trading.dbg$equity),"\n")
+## > PGR : 89310.97 # better, but only slightly
+
+## now test (1,-beta) investment strategy with a holding period of n days:
+mn.test <- cbind(ret.dbg,sig.mtx.dbg$beta); names(mn.test)[3] <- "beta"
+mn.ret.1 <- rep(0,nrow(mn.test)); mn.ret.1 <- NA
+for(i in 2:nrow(mn.test))
+  mn.ret.1[i] <- sum(c(1,-mn.test[i,"beta"])*(1+mn.test[i,c(this.instr,"XLF")]))
+
+## expect zero returns on average, but that's not what we seem to be getting on real data
+## try this on synthetic data (variables set up in synthetic_trading.r)
+## first, try on a priori market neutral returns:
+ret.dbg <- data.frame(stk.ret.beta,etf.sim)
+names(ret.dbg) <- c(this.instr,"XLF") ## but this is fake data
+ret.dbg <- ret.dbg[rownames(sim.sig.mtx.1),]
+mn.test <- cbind(ret.dbg,rep(const.beta,nrow(ret.dbg))); names(mn.test)[3] <- "beta"
+mn.ret.1 <- rep(0,nrow(mn.test)); mn.ret.1 <- NA
+for(i in 2:nrow(mn.test))
+  mn.ret.1[i] <- sum(c(1,-mn.test[i,"beta"])*(1+mn.test[i,c(this.instr,"XLF")]))
+
+
+ret.dbg <- data.frame(stk.ret.beta,etf.sim)
+names(ret.dbg) <- c(this.instr,"XLF") ## but this is fake data
+ret.dbg <- ret.dbg[rownames(sim.sig.mtx.1),]
+mn.test <- cbind(ret.dbg,sim.sig.mtx.1$beta); names(mn.test)[3] <- "beta"
+mn.ret.1 <- rep(0,nrow(mn.test)); mn.ret.1 <- NA
+for(i in 2:nrow(mn.test))
+  mn.ret.1[i] <- sum(c(1,-mn.test[i,"beta"])*(1+mn.test[i,c(this.instr,"XLF")]))

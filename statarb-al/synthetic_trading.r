@@ -86,6 +86,11 @@ get.sim.signals.actions <- function(sig.mtx){
 }
 
 
+load("xlf.prices.RObj")
+xlf.pr <- rev(as.numeric(xlf.prices$XLF))[1:2000]
+xlf.lret <- removeNA(diff(log(xlf.pr)))
+gf1=garchFit(formula=~arma(0,0)+garch(1,1),xlf.lret,trace=F)
+
 N <- 1000
 etf.sim <- garchSim(spec=build.sim.spec(gf1),n=N)  ##using straight up GARCH(1,1) w/ normal innov.
 

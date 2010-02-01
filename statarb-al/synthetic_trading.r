@@ -133,5 +133,5 @@ sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
 sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
 
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
-                                     , c("STK"), c("STK","ETF"), debug=FALSE, silent=TRUE
+                                     , c("STK"), c("STK","ETF"), debug=FALSE, silent=TRUE, stop.on.wrn=TRUE
                                      , tc.df)

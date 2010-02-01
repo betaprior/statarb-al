@@ -10,7 +10,7 @@
 ## NB: q should always also include the underlying p
 run.trading.simulation <- function(  signals.struct, prices
                                    , instr.p, instr.q, pq.classifier
-                                   , debug=FALSE, warn=FALSE
+                                   , debug=FALSE, warn=FALSE, stop.on.wrn=FALSE
                                    , silent=FALSE, outfile="", debug.name=instr.p[1]){
   if(outfile!="")
     if(file.exists(outfile)) { file.remove(outfile) }
@@ -81,7 +81,7 @@ run.trading.simulation <- function(  signals.struct, prices
             cash <- cash - sum(price.s.b * num.shrs)
             s.action[k,i] <- 1
             if(debug && this.name==debug.name) cat("STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"\n")
-            if(this.p>0) if(this.name==debug.name) cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name))
+            if(this.p>0) { cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name),"\n"); if(stop.on.wrn) stop }
           }
         } #else do nothing #already short 
         if(sig["close.short"]){
@@ -103,7 +103,7 @@ run.trading.simulation <- function(  signals.struct, prices
             positions[j,pair.name] <- positions[j,pair.name] + num.shrs["b.shares"]
             cash <- cash - sum(price.s.b * num.shrs)
             s.action[k,i] <- 1
-            if(this.p<0) cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name))
+            if(this.p<0){ cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name,"\n")); if(stop.on.wrn) stop }
             if(debug && this.name==debug.name) cat("BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"\n")
           }# else: do nothing #already long
         }

@@ -1,9 +1,12 @@
 ## simulate prices + trading
+## to use in a batch run:
+## for(i in seq(1:200)){ source("synthetic_trading.r"); cat(i,":",last(sim.trades$equity),"\n")  }
 setwd("/home/leo/projects/finance/research/statarb-al/")
 require("fBasics")
 require("timeSeries")
 require("fGarch")
 source("f_trading_sim.r") ## for the trading simulation
+source("functions.r") ## for get.signals.mtx() and get.signals.actions()
 
 ## GARCH simulation functions:
 fGarch.obj.to.model <- function(fgarch.obj){
@@ -68,23 +71,6 @@ ret.to.prices <- function(ret,p0){
 get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t,stringsAsFactors=FALSE) }
 get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days,win=60){
   stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE,win=win) }
-get.sim.signals.mtx <- function(sig.list){
-  sig.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
-                          , length(sig.list$sig.dates[[1]])
-                          , rownames=rev(names(sig.list$sig.dates)))
-  stopifnot(is.unsorted(rev(names(sig.list$sig.dates)))) ##o/w next line is wrong
-  for(i in rev(seq(along=sig.list$sig.dates))){
-    sig.mtx[1+length(sig.list$sig.dates)-i,] <- sig.list$sig.dates[[i]]
-  }
-  colnames(sig.mtx) <- c("action","s","k","m","mbar","a","b","varz","beta")
-  data.frame(sig.mtx)
-}
-get.sim.signals.actions <- function(sig.mtx){
-  sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
-  sim.actions <- as.data.frame(do.call("rbind",sim.actions))
-  row.names(sim.actions) <- row.names(sig.mtx)
-  return(sim.actions)
-}
 
 
 load("xlf.prices.RObj")
@@ -129,13 +115,13 @@ thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
 
 
 est.win <- 60
-sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,num.days=N-est.win+1,win=est.win)
-sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
-sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
+sim.sig.1 <- get.signals(stk.ret.tot,etf.sim,tc.df,num.days=N-est.win+1,win=est.win)
+sim.sig.mtx.1 <- get.signals.mtx(sim.sig.1)
+sim.sig.actions.1 <- get.signals.actions(sim.sig.mtx.1)
 
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
                                      , c("STK"), c("STK","ETF"), debug=FALSE, silent=TRUE, stop.on.wrn=TRUE
                                      , tc.df)
 
-unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-const.beta*etf.sim),order=c(1,0,0))))
-unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-1.265*etf.sim),order=c(1,0,0))))
+## unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-const.beta*etf.sim),order=c(1,0,0))))
+## unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-1.265*etf.sim),order=c(1,0,0))))

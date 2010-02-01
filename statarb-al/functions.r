@@ -242,7 +242,7 @@ get.signals.mtx <- function(sig.list){
     sig.mtx[,,j] <- tmp.mtx
   }
   if(j==1)
-    as.data.frame(tmp.mtx)
+    as.data.frame(sig.mtx[,,1])
   else
     sig.mtx
 }

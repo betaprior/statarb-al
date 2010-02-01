@@ -11,13 +11,19 @@
 run.trading.simulation <- function(  signals.struct, prices
                                    , instr.p, instr.q, pq.classifier
                                    , debug=FALSE, warn=FALSE, stop.on.wrn=FALSE
-                                   , silent=FALSE, outfile="", debug.name=instr.p[1]){
+                                   , silent=FALSE, outfile="", debug.name=instr.p[1]
+                                   , dbg.transactions=FALSE
+                                   , init.cash=100000){
+  ## equity.blown.thr <- 10000
   if(outfile!="")
     if(file.exists(outfile)) { file.remove(outfile) }
+  stopifnot(!is.unsorted(rev(names(signals.struct$sig.dates)))) ##o/w next line is wrong
   signals <- rev(signals.struct$sig.dates)
   dates <- names(signals)
   stopifnot(all(dates %in% row.names(prices))) ##prices dates range
                                         # must include all signals+more
+  stopifnot(all(instr.p %in% instr.q))
+  stopifnot(all(instr.q %in% names(prices)))
   prices <- prices[dates,] ## align the data frames
   stopifnot(all(row.names(prices)==dates))
   positions <-as.data.frame(matrix(0,length(instr.p),length(instr.q)))
@@ -35,18 +41,23 @@ run.trading.simulation <- function(  signals.struct, prices
   s.action <- prealloc.signal.mtx(instr.p,dates)
   k <- 0
   lambda <- 0.01 #for single-instr debugging
+  nav <- 0; cash <- init.cash; equity <- rep(0.,length(dates))
   
   for(i in seq(along=dates)){
     if(!silent) { cat(i," ") }
     net.positions <- apply(positions,2,sum)
-    nav <- sum(prices[i,names(net.positions)]*net.positions)
+    prices.0na <- prices[i,names(net.positions)]; prices.0na[is.na(prices.0na)] <- 0
+    nav <- sum(prices.0na*net.positions)
     equity[i] <- cash + nav
     for(j in seq(along=row.names(positions))){
       this.name <- row.names(positions)[j]
+      pair.name <- pq.classifier[this.name,]$SEC_ETF
       if(!(this.name %in% instr.p)) next
+      if(any(is.na(prices[i,c(this.name,pair.name)]))) next
+      sig.idx <- which(signals.struct$tickers==this.name)
 ##    if(dates[i]=="20030328") { browser() }
-      sig <- decode.signals(signals[[i]][j,])
-      params <- decode.params(signals[[i]][j,])
+      sig <- decode.signals(signals[[i]][sig.idx,])
+      params <- decode.params(signals[[i]][sig.idx,])
       k <- match(this.name,instr.p)
       ## s.id[k] <- this.name
       ## s[k,i] <- params["s"]
@@ -58,11 +69,10 @@ run.trading.simulation <- function(  signals.struct, prices
       ## s.bto[k,i] <- sig["bto"]
       ## s.close.short[k,i] <- sig["close.short"]
       ## s.close.long[k,i] <- sig["close.long"]
-      betas <- decode.betas(signals[[i]][j,])
+      betas <- decode.betas(signals[[i]][sig.idx,])
       ## s.betas[k,i] <- betas
       this.p <- positions[j,this.name]
-      pair.name <- pq.classifier[this.name,]$SEC_ETF
-      if(!sig["model.valid"] || !all(!is.na(prices[i,]))){
+      if(!sig["model.valid"]){
         if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
       }else{
         tot <- lambda*equity[i] # investment amount
@@ -82,8 +92,9 @@ run.trading.simulation <- function(  signals.struct, prices
             positions[j,pair.name] <- positions[j,pair.name] + num.shrs["b.shares"]
             cash <- cash - sum(price.s.b * num.shrs)
             s.action[k,i] <- 1
-            if(debug && this.name==debug.name) cat("STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"\n")
-            if(this.p>0) { cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name),"\n"); if(stop.on.wrn) stop() }
+            if((debug && this.name==debug.name)||dbg.transactions)
+              cat(i,this.name,"STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"cash=",cash,"\n")
+            if(this.p>0 && warn) { cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name),"\n"); if(stop.on.wrn) stop() }
           }
         } #else do nothing #already short 
         if(sig["close.short"]){
@@ -92,7 +103,8 @@ run.trading.simulation <- function(  signals.struct, prices
             cash <- cash +
               sum(price.s.b*c(positions[j,this.name],positions[j,pair.name]))
             s.action[k,i] <- 1
-            if(debug && this.name==debug.name) cat("CLOSING SHORT: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
+            if((debug && this.name==debug.name)||dbg.transactions)
+              cat(i,this.name,"CLOSING SHORT: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"cash=",cash,"\n")
             positions[j,this.name] <- 0
             positions[j,pair.name] <- 0
             
@@ -105,8 +117,9 @@ run.trading.simulation <- function(  signals.struct, prices
             positions[j,pair.name] <- positions[j,pair.name] + num.shrs["b.shares"]
             cash <- cash - sum(price.s.b * num.shrs)
             s.action[k,i] <- 1
-            if(this.p<0){ cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name,"\n")); if(stop.on.wrn) stop() }
-            if(debug && this.name==debug.name) cat("BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"\n")
+            if(this.p<0 && warn){ cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name,"\n")); if(stop.on.wrn) stop() }
+            if((debug && this.name==debug.name)||dbg.transactions)
+              cat(i,this.name,"BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"cash=",cash,"\n")
           }# else: do nothing #already long
         }
         if(sig["close.long"]){
@@ -115,7 +128,8 @@ run.trading.simulation <- function(  signals.struct, prices
             cash <- cash +
               sum(price.s.b*c(positions[j,this.name],positions[j,pair.name]))
             s.action[k,i] <- 1
-            if(debug && this.name==debug.name) cat("CLOSING LONG: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"\n")
+            if((debug && this.name==debug.name)||dbg.transactions)
+              cat(i,this.name,"CLOSING LONG: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"cash=",cash,"\n")
             positions[j,this.name] <- 0
             positions[j,pair.name] <- 0
 

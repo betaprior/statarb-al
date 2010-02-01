@@ -72,8 +72,9 @@ get.sim.signals.mtx <- function(sig.list){
   sig.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
                           , length(sig.list$sig.dates[[1]])
                           , rownames=rev(names(sig.list$sig.dates)))
+  stopifnot(is.unsorted(rev(names(sig.list$sig.dates)))) ##o/w next line is wrong
   for(i in rev(seq(along=sig.list$sig.dates))){
-    sig.mtx[i,] <- sig.list$sig.dates[[i]]
+    sig.mtx[1+length(sig.list$sig.dates)-i,] <- sig.list$sig.dates[[i]]
   }
   colnames(sig.mtx) <- c("action","s","k","m","mbar","a","b","varz","beta")
   data.frame(sig.mtx)
@@ -102,7 +103,7 @@ const.varz <- 8e-5
 const.k <- -log(const.b)/dt
 const.m <- const.a/(1-const.b)
 const.seq <- sqrt(const.varz/(1-const.b^2))
-
+const.params <- c("m"=const.m,"a"=const.a,"b"=const.b,"varz"=const.varz)
 ## simulate stock returns
 stk.ret.beta <- etf.sim*const.beta
 stk.ret.ar1 <- sim.ar1.series(const.b,const.a/(1-const.b),const.varz,length(etf.sim))
@@ -128,10 +129,13 @@ thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
 
 
 est.win <- 60
-sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,N-est.win+1)
+sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,num.days=N-est.win+1,win=est.win)
 sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
 sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
 
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
                                      , c("STK"), c("STK","ETF"), debug=FALSE, silent=TRUE, stop.on.wrn=TRUE
                                      , tc.df)
+
+unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-const.beta*etf.sim),order=c(1,0,0))))
+unlist(ar.params.from.fit(arima(cumsum(stk.ret.tot-1.265*etf.sim),order=c(1,0,0))))

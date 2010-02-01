@@ -223,3 +223,45 @@ stock.etf.signals <-
     names(sig.list) <- dates.range
     return(list(sig.dates=sig.list,tickers=names(ret.s)))
 }
+
+
+## functions that manipulate the signals list structure
+get.signals.mtx <- function(sig.list){
+  tmp.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
+                          , ncol(sig.list$sig.dates[[1]])
+                          , rownames=rev(names(sig.list$sig.dates)))
+  sig.mtx <- array(dim=c(dim(tmp.mtx),length(sig.list$tickers))
+                   , dimnames=list(rev(names(sig.list$sig.dates))
+                       , c("action","s","k","m","mbar","a","b","varz","beta")
+                       , sig.list$tickers))
+  stopifnot(!is.unsorted(rev(names(sig.list$sig.dates)))) ##o/w next line is wrong
+  for(j in seq(along=sig.list$tickers)){
+    for(i in rev(seq(along=sig.list$sig.dates))){
+      tmp.mtx[1+length(sig.list$sig.dates)-i,] <- sig.list$sig.dates[[i]][j,]
+    }
+    sig.mtx[,,j] <- tmp.mtx
+  }
+  sig.mtx
+}
+get.signals.actions <- function(sig.mtx){
+  sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
+  sim.actions <- as.data.frame(do.call("rbind",sim.actions))
+  row.names(sim.actions) <- row.names(sig.mtx)
+  return(sim.actions)
+}
+
+
+## plotting routines
+draw.thresholds <- function(){
+  abline(h=-thresholds["sbo"],lty=2)
+  abline(h=thresholds["sso"],lty=2)
+  abline(h=thresholds["sbc"],lty=2)
+  abline(h=-thresholds["ssc"],lty=2)
+}
+draw.signal.lines <- function(act.mtx){
+  lines(-as.numeric(act.mtx$bto)*abs(thresholds["sbo"]),col=2)
+  lines(as.numeric(act.mtx$sto)*abs(thresholds["sso"]),col=3)
+  lines(as.numeric(act.mtx$close.short)*abs(thresholds["sbc"]),col=4)
+  lines(-as.numeric(act.mtx$close.long)*abs(thresholds["ssc"]),col=5)
+}
+draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }

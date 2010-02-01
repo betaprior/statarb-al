@@ -2,6 +2,7 @@
 setwd("/home/leo/projects/finance/research/statarb-al/")
 require("fBasics")
 source(search.path("my_density_plot.r")) ## my.densityPlot from fBasics with x/y limits
+source(search.path("zoom.r"))
 require("timeSeries")
 require("fGarch")
 require("sde")
@@ -302,27 +303,11 @@ draw.signal.lines <- function(act.mtx){
 draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
   stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE) }
-get.sim.signals.mtx <- function(sig.list){
-  sig.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
-                          , length(sig.list$sig.dates[[1]])
-                          , rownames=rev(names(sig.list$sig.dates)))
-  for(i in rev(seq(along=sig.list$sig.dates))){
-    sig.mtx[i,] <- sig.list$sig.dates[[i]]
-  }
-  colnames(sig.mtx) <- c("action","s","k","m","mbar","a","b","varz","beta")
-  data.frame(sig.mtx)
-}
-get.sim.signals.actions <- function(sig.mtx){
-  sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
-  sim.actions <- as.data.frame(do.call("rbind",sim.actions))
-  row.names(sim.actions) <- row.names(sig.mtx)
-  return(sim.actions)
-}
 
 est.win <- 60
-sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,N-est.win+1)
-sim.sig.mtx.1 <- get.sim.signals.mtx(sim.sig.1)
-sim.sig.actions.1 <- get.sim.signals.actions(sim.sig.mtx.1)
+sim.sig.1 <- get.signals(stk.ret.tot,etf.sim,tc.df,N-est.win+1)
+sim.sig.mtx.1 <- get.signals.mtx(sim.sig.1)
+sim.sig.actions.1 <- get.signals.actions(sim.sig.mtx.1)
 
 ## plot the signals:
 plot(sim.sig.mtx.1$s,type='l')
@@ -331,7 +316,15 @@ draw.signal.lines(sim.sig.actions.1)
 
 ## run the trading simulation on the generated data
 sim.trades <- run.trading.simulation(  sim.sig.1, sim.prices.df
-                                     , c("STK"), c("STK","ETF"), debug=TRUE
+                                     , c("STK"), c("STK","ETF"), debug=TRUE, stop.on.wrn=T
                                      , tc.df)
 
 draw.actions.lines(sim.trades$log$actions) 
+
+extent <- list(x=c(100,600),y=c(-2,2))
+plot.func <- function(lim){
+  plot(sim.sig.mtx.1$s, type='l', xlim=lim$x, ylim=lim$y)
+  draw.thresholds()
+  draw.signal.lines(sim.sig.actions.1)
+}
+zoom(plot.func,extent)

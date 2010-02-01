@@ -241,7 +241,10 @@ get.signals.mtx <- function(sig.list){
     }
     sig.mtx[,,j] <- tmp.mtx
   }
-  sig.mtx
+  if(j==1)
+    as.data.frame(tmp.mtx)
+  else
+    sig.mtx
 }
 get.signals.actions <- function(sig.mtx){
   sim.actions <- lapply(sig.mtx[,"action"],decode.signals)

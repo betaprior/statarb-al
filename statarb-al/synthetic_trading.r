@@ -66,8 +66,8 @@ ret.to.prices <- function(ret,p0){
 }
 
 get.ticker.classifier.df <- function(t,c){ data.frame(TIC=t,SEC_ETF=c,row.names=t,stringsAsFactors=FALSE) }
-get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days){
-  stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE) }
+get.sim.signals <- function(stk.series,etf.series,tkr.classifier,num.days,win=60){
+  stock.etf.signals(data.frame(stk.series), data.frame(etf.series), tkr.classifier, num.days=num.days,compact.output=TRUE,win=win) }
 get.sim.signals.mtx <- function(sig.list){
   sig.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
                           , length(sig.list$sig.dates[[1]])

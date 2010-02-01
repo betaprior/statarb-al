@@ -123,7 +123,7 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified){
 
 ## res is a list returned by get.ou.series
 ## each element of res is a list(beta.fit,ou)
-fit.ar1 <- function(res, method="mle"){
+fit.ar1 <- function(res, method="mle"){  
   lapply(res,function(x){
     list(  beta.fit=x$beta.fit
          , ar.fit=ar(x$ou, aic = F, order.max = 1, method=method)) })
@@ -194,6 +194,7 @@ decode.betas <- function(y){ y[9:length(y)] }
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60,compact.output=FALSE){
     ## sanity checks
+    stopifnot(num.days > 1 && win>10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
     stopifnot(nrow(ret.s)==nrow(ret.e) && nrow(ret.s) >= num.days + win - 1)
     dates.range <- row.names(ret.s)[1:num.days]
@@ -216,7 +217,7 @@ stock.etf.signals <-
         get.signals(fit.ar1(
                             get.ou.series.etf(ret.s[i:(i+win-1),,drop=F],ret.e[i:(i+win-1),,drop=F]
                                               , classified.stocks.list)
-                            , method="mle"),subtract.average=F,compact.output=compact.output)
+                            , method="yw"),subtract.average=F,compact.output=compact.output)
       
     }
     names(sig.list) <- dates.range

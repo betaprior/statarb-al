@@ -115,7 +115,7 @@ thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
 
 
 est.win <- 60
-sim.sig.1 <- get.signals(stk.ret.tot,etf.sim,tc.df,num.days=N-est.win+1,win=est.win)
+sim.sig.1 <- get.sim.signals(stk.ret.tot,etf.sim,tc.df,num.days=N-est.win+1,win=est.win)
 sim.sig.mtx.1 <- get.signals.mtx(sim.sig.1)
 sim.sig.actions.1 <- get.signals.actions(sim.sig.mtx.1)
 

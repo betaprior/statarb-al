@@ -53,12 +53,12 @@ build.sim.spec <- function(fgarch.fit){
             , cond.dist=fgarch.fit@fit$params$cond.dist
             , presample=cbind(residuals(fgarch.fit,standardize=T),fgarch.fit@h.t,fgarch.fit@data)) }
   
-plot.sim.results <- function(ser.list,xlim.d=c(-0.2,0.2),ylim.d=NULL,xlim.q=NULL,ylim.q=c(-0.3,0.3)){
+plot.sim.results <- function(ser.list,title.list=rep(NULL,length(ser.list)),xlim.d=c(-0.2,0.2),ylim.d=NULL,xlim.q=NULL,ylim.q=c(-0.3,0.3)){
   stopifnot(class(ser.list)=="list")
   par.save()
   par(mfcol=c(length(ser.list),2))
-  lapply(ser.list,function(x)  my.densityPlot(x,xlim=xlim.d,ylim=ylim.d))
-  lapply(ser.list,function(x){ qqnorm(x,xlim=xlim.q,ylim=ylim.q); qqline(x) })
+  mapply(function(x,y)  my.densityPlot(x,xlim=xlim.d,ylim=ylim.d,main=y),ser.list,title.list)
+  mapply(function(x,y){ qqnorm(x,xlim=xlim.q,ylim=ylim.q); qqline(x) }, ser.list)
   par.restore()
 }
 
@@ -106,7 +106,7 @@ gf0.sim <- arima.sim(list(order=c(2,0,0)
                 , n=N,sd=sqrt(xlf.arima.fit$sigma2))
 gf0.t.sim <- arima.sim(list(order=c(2,0,0)
                 , ar=xlf.arima.fit$coef[c("ar1","ar2")])
-                , n=N, rand.gen = function(n,...) rnorm(n,mean=a,sd=sqrt(xlf.arima.fit$sigma2)))
+                , n=N, rand.gen = function(n,...) sqrt(xlf.arima.fit$sigma2)*rt(n,df=5))
 gf1.sim <- garchSim(spec=build.sim.spec(gf1),n=N)
 gf1.t.sim <- garchSim(spec=build.sim.spec(gf1.t),n=N)
 gf2.sim <- garchSim(spec=build.sim.spec(gf2),n=N)
@@ -120,7 +120,20 @@ plot.sim.results(list(as.timeSeries(xlf.lret)
                       , as.timeSeries(gf1.sim)
                       , as.timeSeries(gf1.t.sim)
                       , as.timeSeries(gf2.sim)
-                      , as.timeSeries(gf2.t.sim)))
+                      , as.timeSeries(gf2.t.sim))
+                 , list("XLF returns","GARCH(1,1)","GARCH(1,1)/t","AR(2)/GARCH(1,1)","AR(2)/GARCH(1,1)/t")
+                 , ylim.q=c(-0.15,0.15))
+x11()
+plot.sim.results(list(as.timeSeries(xlf.lret)
+                      , as.timeSeries(gf1.sim)
+                      , as.timeSeries(gf1.t.sim)
+                      , as.timeSeries(gf0.sim)
+                      , as.timeSeries(gf0.t.sim))
+                 , list("XLF returns","GARCH(1,1)","GARCH(1,1)/t","AR(2)","AR(2)/t")
+                 , ylim.q=c(-0.15,0.15))
+
+## typical output saved in XLF series fits.png
+
 ## typical output saved in XLF series fits.png
 
 sim.moments <- function(model,nsim=50,N=1000,t=FALSE){
@@ -128,10 +141,10 @@ sim.moments <- function(model,nsim=50,N=1000,t=FALSE){
     as.matrix(arima.sim(list(order=c(2,0,0)
                              , ar=model$coef[c("ar1","ar2")]), n=N,...)) }
   if(class(model)=="Arima"){
-    if(t)
+    if(!t) ## innovations with variance from the model
       sim.function <- function() sim.function.arima(sd=sqrt(model$sigma2))
-    else
-      sim.function <- function() sim.function.arima(rand.gen = function(n,...) rnorm(n,mean=a,sd=sqrt(model$sigma2)))
+    else ## innovations drawn from t-distn (5 dof)
+      sim.function <- function() sim.function.arima(rand.gen = function(n,...) sqrt(model$sigma2)*rt(n,df=5))
   } else {
     sim.function <- function() garchSim(spec=build.sim.spec(model),n=N)
   }
@@ -146,12 +159,12 @@ apply(xlf.lret,2,function(x){ c("mean"=mean(x),"var"=var(x),"kurtosis"=kurtosis(
 sim.moments(xlf.arima.fit,N=length(xlf.lret),t=F)
 sim.moments(xlf.arima.fit,N=length(xlf.lret),t=T)
 ## mean, var kurtosis: average of 50 simulations / variance of 50 simulations:
-##              [,1]         [,2]        [,3]
-## [1,] 4.752595e-02 1.905359e-04 -0.02188857
-## [2,] 1.397460e-07 4.531894e-11  0.01263717
-## >              [,1]         [,2]       [,3]
-## [1,] 2.963036e-05 1.906039e-04 0.01948538
-## [2,] 9.722425e-08 3.528374e-11 0.01583488
+## >              [,1]         [,2]        [,3]
+## [1,] 1.696719e-05 1.876146e-04 -0.00924498
+## [2,] 9.108626e-08 3.336855e-11  0.01315169
+## >               [,1]         [,2]     [,3]
+## [1,] -1.150175e-04 3.119938e-04 3.659564
+## [2,]  1.308076e-07 2.894083e-10 2.510051
 sim.moments(gf1,N=length(xlf.lret))
 sim.moments(gf1.t,N=length(xlf.lret))
 sim.moments(gf2,N=length(xlf.lret))
@@ -174,6 +187,8 @@ sim.moments(gf2.t,N=length(xlf.lret))
 ## while the BL test suggests that there is serial correlation
 ## in the series, parsimonious ARMA models don't seem to
 ## capture that correlation (can't get large BL p-value for the residuals)
+## Fat tails can be described by AR(2) with t-innovations.
+## Question: how can we see that AR(2)/t is less satisfactory than GARCH(1,1)/norm or GARCH(1,1)/t
 ## Results of fitting ARMA(0,0)+GARCH(1,1) are mostly the same as fitting
 ## ARMA(2,0)+GARCH(1,1)
 ## both models result in fat tails (excess kurtosis about 2.6), underestimating their heaviness
@@ -188,7 +203,7 @@ sim.moments(gf2.t,N=length(xlf.lret))
 ## > gf1.t@fit$ics
 ##       AIC       BIC       SIC      HQIC 
 ## -6.124537 -6.110295 -6.124550 -6.119302 
-## Is this enough to go with the weird large kurtosis?  It's unclear tome.
+## Is this enough to go with the weird large kurtosis?  It's unclear to me.
 
 Box.test(gf1@residuals,10,type='Ljung')
 Box.test(gf1.t@residuals,10,type='Ljung')

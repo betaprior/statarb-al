@@ -140,13 +140,14 @@ fit.ar1 <- function(res, method="mle"){
 ## A[9...] are betas (determined from stock names)
 get.signals <- function(list.of.fits,subtract.average=TRUE,avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
-                        , compact.output=FALSE, debug=FALSE){
+                        , compact.output=FALSE, debug=FALSE,flipsign=FALSE){
+  if(!flipsign){ sign <- 1 }else{ sign <- -1 }
   m.avg <- mean(as.numeric(lapply(list.of.fits,function(x) x$ar.fit$x.mean)))
   if(!subtract.average) m.avg <- avg.mod
   res <- 
   lapply(list.of.fits,function(xx){
     x <- xx$ar.fit
-    mr.params <- c(  s=(x$x.mean-m.avg)*(-sqrt((1-x$ar^2)/x$var.pred))
+    mr.params <- c(  s=(x$x.mean-m.avg)*(-sqrt((1-x$ar^2)/x$var.pred))*sign
                    , k=-log(x$ar)*252
                    , m=x$x.mean
                    , mbar=m.avg
@@ -192,7 +193,7 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## input parameters: ret.s and ret.e must be dataframes
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
-  function(ret.s,ret.e,classified.stocks.list,num.days,win=60,compact.output=FALSE){
+  function(ret.s,ret.e,classified.stocks.list,num.days,win=60,compact.output=FALSE,flipsign=FALSE){
     ## sanity checks
     stopifnot(num.days > 1 && win>10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
@@ -217,7 +218,7 @@ stock.etf.signals <-
         get.signals(fit.ar1(
                             get.ou.series.etf(ret.s[i:(i+win-1),,drop=F],ret.e[i:(i+win-1),,drop=F]
                                               , classified.stocks.list)
-                            , method="yw"),subtract.average=F,compact.output=compact.output)
+                            , method="yw"),subtract.average=F,compact.output=compact.output,flipsign=flipsign)
       
     }
     names(sig.list) <- dates.range

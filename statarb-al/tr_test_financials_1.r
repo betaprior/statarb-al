@@ -5,7 +5,7 @@ source("tr_test_financials_1_batch.r")
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
 
-load("sig.financials2.RObj")
+load("sig.financials1.RObj")
 sig.mtx.f <- get.signals.mtx(sig.f)
 ##sig.mtx usage: > head(sig.mtx.f[,,"JPM"])
 ##sig.actions.f <- get.signals.actions(sig.mtx.f[,,"JPM"])
@@ -53,7 +53,7 @@ sim.trades.f.all <- run.trading.simulation(  sig.f.bt, price.df.f
                                            , debug=FALSE, silent=FALSE
                                            , pos.allocation="beta.neutral")
 ## fin.portfolio.equity1 <- as.timeSeries(data.frame(dates.dbg,sim.trades.f.all$equity))
-dates.dbg <- rownames(sig.mtx.dbg)
+dates.dbg <- rownames(sig.mtx.f.bt)
 
 
 ## running this on all financials loses 16% in 600 days!

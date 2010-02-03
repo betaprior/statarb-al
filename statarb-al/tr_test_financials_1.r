@@ -5,17 +5,28 @@ source("tr_test_financials_1_batch.r")
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
 
-load("sig.financials1.RObj")
+load("sig.financials2.RObj")
 sig.mtx.f <- get.signals.mtx(sig.f)
 ##sig.mtx usage: > head(sig.mtx.f[,,"JPM"])
 ##sig.actions.f <- get.signals.actions(sig.mtx.f[,,"JPM"])
 ##sig.mtx.dbg <- as.data.frame(sig.mtx.f[,,this.instr])
 ## (w/o casting to data frame can't subset by column names)
 
+instr.p.all <- intersect(sig.f$tickers, tc.xlf$TIC) ## make sure all tickers are classified
+instr.q.all <- names(ret.e)
+load("univ1.mid.price.RObj") # loads univ1.master.price
+## current issue: duplcate names in the price dataframe
+dups <- names(univ1.master.price)[duplicated(names(univ1.master.price))]
+## find duplicated names in price file:
+# c(instr.p.all,instr.q.all)[which(c(instr.p.all,instr.q.all) %in% dups)]
+## don't deal with this for the time being
+price.df.f <- univ1.master.price[,c(instr.p.all,"XLF")]
+
 
 num.days.bt <- 600
 sig.f.bt <- list(sig.dates=sig.f$sig.dates[1:num.days.bt],tickers=sig.f$tickers)
 sig.mtx.f.bt <- get.signals.mtx(sig.f.bt)
+
 instr <- "PGR"
 sim.trades.f <- run.trading.simulation(  sig.f.bt, price.df.f
                                        , instr, c(instr,"XLF"), tc.xlf
@@ -37,10 +48,13 @@ for(i in seq(along=instr.p.all))
   fin.pnl[i] <- last(trading.f.list[[i]]$equity)
 
 ##Now we try to trade all of them in the same simulation
-source("f_trading_sim.r") ## for the trading simulation
 sim.trades.f.all <- run.trading.simulation(  sig.f.bt, price.df.f
                                            , instr.p.all, c(instr.p.all,"XLF"), tc.xlf
-                                           , debug=FALSE, silent=FALSE)
+                                           , debug=FALSE, silent=FALSE
+                                           , pos.allocation="beta.neutral")
+## fin.portfolio.equity1 <- as.timeSeries(data.frame(dates.dbg,sim.trades.f.all$equity))
+dates.dbg <- rownames(sig.mtx.dbg)
+
 
 ## running this on all financials loses 16% in 600 days!
 ## ACAS : 98101.96 

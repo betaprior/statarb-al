@@ -13,13 +13,15 @@ run.trading.simulation <- function(  signals.struct, prices
                                    , debug=FALSE, warn=FALSE, stop.on.wrn=FALSE
                                    , silent=FALSE, outfile="", debug.name=instr.p[1]
                                    , dbg.transactions=FALSE
-                                   , init.cash=100000){
+                                   , init.cash=100000
+                                   , pos.allocation="beta.neutral"){
   ## equity.blown.thr <- 10000
   if(outfile!="")
     if(file.exists(outfile)) { file.remove(outfile) }
   stopifnot(!is.unsorted(rev(names(signals.struct$sig.dates)))) ##o/w next line is wrong
   signals <- rev(signals.struct$sig.dates)
   dates <- names(signals)
+  stopifnot(all(instr.p %in% signals.struct$tickers))
   stopifnot(all(dates %in% row.names(prices))) ##prices dates range
                                         # must include all signals+more
   stopifnot(all(instr.p %in% instr.q))
@@ -29,10 +31,15 @@ run.trading.simulation <- function(  signals.struct, prices
   positions <-as.data.frame(matrix(0,length(instr.p),length(instr.q)))
   names(positions) <- instr.q;  row.names(positions) <- instr.p
 
-  long.shr.amounts <- function(rat,tot,S,b){
-    rat.thr <- 0.01
-    if(abs(rat-1)<rat.thr){ if((rat-1)>0){ rat <- 1+rat.thr }else{rat <- 1-rat.thr} }
-    c(s.shares=round(rat*tot/(S*(rat-1))), b.shares=round(tot/(b*(rat-1)))) }
+  long.shr.amounts <- function(rat,tot,S,b){ #S is price of stock, b is price of pair
+    if(pos.allocation=="beta.neutral"){       #tot is amount invested, rat = 1/beta
+      rat.thr <- 0.1                         #(i.e. long/short ratio)
+      if(abs(rat-1)<rat.thr){ if((rat-1)>0){ rat <- 1+rat.thr }else{rat <- 1-rat.thr} }
+      c(s.shares=round(rat*tot/(S*(rat-1))), b.shares=round(tot/(b*(rat-1))))
+    }else{ #"dollar neutral": long $tot S, short $tot b
+      c(s.shares=round(tot/S),b.shares=round(tot/b))
+    } }
+
   prealloc.signal.mtx <- function(stocks,dates){
     x <- array(0.0,c(length(stocks),length(dates)))
     colnames(x) <- dates; rownames(x) <- stocks

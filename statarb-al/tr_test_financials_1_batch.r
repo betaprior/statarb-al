@@ -134,12 +134,3 @@ est.win <- 60
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
 
-instr.p.all <- sig.f$tickers
-instr.q.all <- names(ret.e)
-load("univ1.mid.price.RObj") # loads univ1.master.price
-## current issue: duplcate names in the price dataframe
-dups <- names(univ1.master.price)[duplicated(names(univ1.master.price))]
-c(instr.p.all,instr.q.all)[which(c(instr.p.all,instr.q.all) %in% dups)]
-## don't deal with this for the time being
-price.df.f <- univ1.master.price[,c(instr.p.all,"XLF")]
-

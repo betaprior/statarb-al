@@ -121,10 +121,13 @@ offset[["2006"]] <- which(as.logical(match(dates.vector,20060103)))
 offset[["2005"]] <- which(as.logical(match(dates.vector,20050103)))
 offset[["2004"]] <- which(as.logical(match(dates.vector,20040102)))
 offset[["2003"]] <- which(as.logical(match(dates.vector,20030102)))
-this.offset <- offset[["2009"]]
-num.days <- 252*7+30
-ret.s <- get.stock.returns("spx_ret_mtx",M=8*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
-ret.e <- get.etf.returns("etf_ret_mtx",M=8*252,offset=this.offset,file=TRUE)
+offset.arg <- as.character(getCmdArgs("-offsetYear"))
+if(is.na(offset.arg)){ offset.arg <- "2009" }else{ cat("using",offset.arg,"offset\n") }
+this.offset <- offset[[offset.arg]]
+yrs.bk <- as.numeric(offset.arg)-2002 ## want this to be 7 for 2009
+num.days <- 252*yrs.bk+30
+ret.s <- get.stock.returns("spx_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
+ret.e <- get.etf.returns("etf_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,file=TRUE)
 stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 
 ## limit the ticker DB to the entries that we have in the price matrix

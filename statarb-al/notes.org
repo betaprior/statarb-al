@@ -331,6 +331,14 @@ XLY  185
    
    Correlation matrix: get rid of the tickers that have too many NAs
    proc_corr.r
+   
+   Issues with NAs: filtering out the spx_ret_mtx to the point where we have
+   no NAs brings us down from 682 to 412 names.  Most NAs seem to come from
+   things like ticker change due to mergers, etc -- so a better solution is,
+   perhaps, to use the PERMNO (not TICKER).  Raising "no NA" threshold from 0
+   to something small (a few percent) doesn't result in a substantial
+   increase in ticker symbols (10% cutoff gets us 440, 30 extra names), so
+   for simplicity it might be worth keeping it at zero.
 
 * Signal generation
 ** Current format: list with 
@@ -354,7 +362,10 @@ XLY  185
   betas <- decode.betas(signals[[i]][j,])
 #+END_SRC scheme
 
-
+** batch-mode signal generation:
+   see tr_test_spx1_batch.r
+   Can call from the command line using
+   RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
 * Backtesting
   Trading simulation: 
   select stocks to trade against ETFs/synthetic ETFs
@@ -481,3 +492,13 @@ To examine the signals, take the debug output, save it to a file and extract
    Command is something like
    wn <- rnorm(N)  ## (white noise)
    ar1 <- filter(wn,filter=c(.2),method="recursive")
+** saved signals:
+   sig.financials2.RObj  
+   Tickers (not all have classification, so intersect the below list with classified$TIC):
+   "ACAS" "AFL"  "AIG"  "ALL"  "AOC"  "AXP"  "BAC"  "BEN"  "BK"   "C"   
+   "CB"   "CINF" "CIT"  "CMA"  "CME"  "COF"  "FII"  "GS"   "HCBK" "HIG" 
+   "JPM"  "LM"   "LNC"  "LUK"  "MBI"  "MCO"  "MER"  "MET"  "MMC"  "NTRS"
+   "PFG"  "PGR"  "PRU"  "SLM"  "STT"  "TMK"  "TROW" "UNM"  "USB"  "WB"  
+   "WFC"  "XL"  
+   Dates: 20030326 - 10071231
+   

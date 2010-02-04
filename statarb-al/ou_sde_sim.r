@@ -53,6 +53,9 @@ ou.sim.euler<-function(dt,n=1000,ou.params,x0=ou.params["m"]){
 
 ## convert from X[t]=a+b*X[t-1]+z[t-1] with z~N(0,varz) to OU simulation parameters
 ar2ou.params <- function(a,b,varz,dt) c("k"=-log(b)/dt,"m"=a/(1-b),"sigma"=sqrt(varz*2*(-log(b)/dt)/(1-b^2)))
+ar.list2ou.params <- function(ar.params,dt){
+  a <- unname(ar.params["a"]); b <- unname(ar.params["b"]); varz <- unname(ar.params["varz"])
+  c("k"=-log(b)/dt,"m"=a/(1-b),"sigma"=sqrt(varz*2*(-log(b)/dt)/(1-b^2))) }
 
 ou2ar.params <- function(ou.params,dt){
     k <- unname(ou.params["k"]); m <- unname(ou.params["m"]); s <- unname(ou.params["sigma"])

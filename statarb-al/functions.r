@@ -213,7 +213,7 @@ stock.etf.signals <-
       warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
 #    ret.e <- ret.e[tickers.classified["JPM",]$SEC_ETF]
     for(i in seq(along=dates.range)){
-#      if(i >= 444){ browser() }
+#      if(i >= 124){ browser() }
       sig.list[[i]] <- 
         get.signals(fit.ar1(
                             get.ou.series.etf(ret.s[i:(i+win-1),,drop=F],ret.e[i:(i+win-1),,drop=F]

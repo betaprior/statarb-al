@@ -124,7 +124,9 @@ offset[["2003"]] <- which(as.logical(match(dates.vector,20030102)))
 offset.arg <- as.character(getCmdArgs("-offsetYear"))
 if(is.na(offset.arg)){ offset.arg <- "2009" }else{ cat("using",offset.arg,"offset\n") }
 this.offset <- offset[[offset.arg]]
-yrs.bk <- as.numeric(offset.arg)-2002 ## want this to be 7 for 2009
+yrs.bk <- as.numeric(getCmdArgs("-yearsBack"))
+if(is.na(yrs.bk)){ yrs.bk <- as.numeric(offset.arg)-2002 ## want this to be 7 for 2009
+                   }else{ cat("going",yrs.bk,"years back\n") }
 num.days <- 252*yrs.bk+30
 ret.s <- get.stock.returns("spx_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
 ret.e <- get.etf.returns("etf_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,file=TRUE)

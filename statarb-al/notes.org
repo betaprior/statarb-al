@@ -366,6 +366,7 @@ XLY  185
    see tr_test_spx1_batch.r
    Can call from the command line using
    RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
+   use -offsetYear 2005 -yearsBack 3 switch to generate selectively
 * Backtesting
   Trading simulation: 
   select stocks to trade against ETFs/synthetic ETFs

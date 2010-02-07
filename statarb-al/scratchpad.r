@@ -263,3 +263,19 @@ apply(sim.params,2,mean)
 ## vs
 ## > c(const.m,const.a,const.b,const.varz)
 ## [1] 0.00500 0.00090 0.82000 0.00008
+
+## we want to know what the deal with with log(x$ar) giving NaNs
+foo <- sig.mtx.f[,3,]
+foo.nan <- is.nan(foo)
+which(colSums(foo.nan)!=0,arr.ind=T)
+## FARM 
+##  385
+foo.farm <- sig.mtx.f[,,"FARM"]
+
+## study if we have any abnormally long NA runs other than the initial "instrument doesn't exist" scenario
+sig.mtx.na <- apply(sig.mtx.f,c(1,3),function(x) any(is.na(x)))
+sig.mtx.na.rle <- apply(sig.mtx.na,2,function(z)rev(sort(rle(unname(z))$lengths[rle(unname(z))$values])))
+sig.mtx.na.len <- lapply(sig.mtx.na.rle,length)
+head(rev(sort(unlist(sig.mtx.na.len))))
+
+rev(sort(rle(sig.mtx.na[,"FDX"])$lengths[rle(sig.mtx.na[,"FDX"])$values][-1]))

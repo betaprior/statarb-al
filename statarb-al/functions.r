@@ -105,6 +105,7 @@ get.ou.series <- function(r.s,r.e){
 ## }
 
 ## nb: hardcoded SEC_ETF field name in tickers.classified df
+## this also does error checking (NA results if any NA present)
 get.ou.series.etf <- function(r.s,r.e,tickers.classified){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
@@ -114,9 +115,15 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified){
   for(i in seq(along=stock.names)){
     r.s.i <- r.s[stock.names[i]] #nb: don't need to do [,...,drop=F]
     r.e.i <- r.e[tickers.classified[stock.names[i],]$SEC_ETF]
-    beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
+    if(!any(is.na(r.s.i)) & !any(is.na(r.e.i))){
+      beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
+      ou <- cumsum(rev(beta.fit$residuals))
+    }else{
+      beta.fit <- lm(a~b,data=data.frame(a=0,b=0)) #dummy fit object
+      ou <- NA
+    }
     out.list[[i]] <-
-      list(beta.fit=beta.fit,ou=cumsum(rev(beta.fit$residuals))) }
+      list(beta.fit=beta.fit,ou=ou) }
   names(out.list) <- stock.names
   return(out.list)
 }
@@ -125,8 +132,11 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified){
 ## each element of res is a list(beta.fit,ou)
 fit.ar1 <- function(res, method="mle"){  
   lapply(res,function(x){
+    if(!is.na(x$ou)[1]){
+      ar.fit <- ar(x$ou, aic = F, order.max = 1, method=method)
+    }else{ ar.fit <- NA }
     list(  beta.fit=x$beta.fit
-         , ar.fit=ar(x$ou, aic = F, order.max = 1, method=method)) })
+         , ar.fit=ar.fit) })
 }
 
 
@@ -142,24 +152,29 @@ get.signals <- function(list.of.fits,subtract.average=TRUE,avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
                         , compact.output=FALSE, debug=FALSE,flipsign=FALSE){
   if(!flipsign){ sign <- 1 }else{ sign <- -1 }
-  m.avg <- mean(as.numeric(lapply(list.of.fits,function(x) x$ar.fit$x.mean)))
+  m.avg <- mean(as.numeric(lapply(list.of.fits,function(x) tryCatch(x$ar.fit$x.mean,error=function(e) NA))),na.rm=T)
   if(!subtract.average) m.avg <- avg.mod
   res <- 
   lapply(list.of.fits,function(xx){
     x <- xx$ar.fit
-    mr.params <- c(  s=(x$x.mean-m.avg)*(-sqrt((1-x$ar^2)/x$var.pred))*sign
-                   , k=-log(x$ar)*252
-                   , m=x$x.mean
-                   , mbar=m.avg
-                   , a=x$x.mean*(1-x$ar)
-                   , b=x$ar
-                   , varz=x$var.pred)
+    if(!all(is.na(x))){
+      mr.params <- c(  s=(x$x.mean-m.avg)*(-sqrt((1-x$ar^2)/x$var.pred))*sign
+                     , k=-log(x$ar)*252
+                     , m=x$x.mean
+                     , mbar=m.avg
+                     , a=x$x.mean*(1-x$ar)
+                     , b=x$ar
+                     , varz=x$var.pred)
+      signal <- c(  model.valid=(mr.params[["k"]] > thresholds[["kmin"]]) #will be NA if k is NaN
+                  , bto=(mr.params[["s"]] < (-thresholds[["sbo"]]))
+                  , sto=(mr.params[["s"]] > (+thresholds[["sso"]]))
+                  , close.short=(mr.params[["s"]] < (+thresholds[["sbc"]]))
+                  , close.long=(mr.params[["s"]] > (-thresholds[["ssc"]])))
+    }else{
+      mr.params <- rep(NA,7)
+      signal <- rep(FALSE,5)
+    }
     names(mr.params) <- c("s","k","m","mbar","a","b","varz")
-    signal <- c(  model.valid=(mr.params[["k"]] > thresholds[["kmin"]])
-                , bto=(mr.params[["s"]] < (-thresholds[["sbo"]]))
-                , sto=(mr.params[["s"]] > (+thresholds[["sso"]]))
-                , close.short=(mr.params[["s"]] < (+thresholds[["sbc"]]))
-                , close.long=(mr.params[["s"]] > (-thresholds[["ssc"]])))
     if(!compact.output){
       out <- list(  mr.params=mr.params
                   , signals=signal
@@ -214,11 +229,12 @@ stock.etf.signals <-
 #    ret.e <- ret.e[tickers.classified["JPM",]$SEC_ETF]
     for(i in seq(along=dates.range)){
 #      if(i >= 124){ browser() }
+      win.idx <- i:(i+win-1)
       sig.list[[i]] <- 
         get.signals(fit.ar1(
-                            get.ou.series.etf(ret.s[i:(i+win-1),,drop=F],ret.e[i:(i+win-1),,drop=F]
+                            get.ou.series.etf(ret.s[win.idx,,drop=F],ret.e[win.idx,,drop=F]
                                               , classified.stocks.list)
-                            , method="yw"),subtract.average=F,compact.output=compact.output,flipsign=flipsign)
+                            , method="yw"),subtract.average=T,compact.output=compact.output,flipsign=flipsign)
       
     }
     names(sig.list) <- dates.range

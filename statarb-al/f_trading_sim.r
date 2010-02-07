@@ -31,15 +31,15 @@ run.trading.simulation <- function(  signals.struct, prices
   positions <-as.data.frame(matrix(0,length(instr.p),length(instr.q)))
   names(positions) <- instr.q;  row.names(positions) <- instr.p
 
-  long.shr.amounts <- function(rat,tot,S,b){ #S is price of stock, b is price of pair
-    if(pos.allocation=="beta.neutral"){       #tot is amount invested, rat = 1/beta
-      rat.thr <- 0.1                         #(i.e. long/short ratio)
-      if(abs(rat-1)<rat.thr){ if((rat-1)>0){ rat <- 1+rat.thr }else{rat <- 1-rat.thr} }
-      c(s.shares=round(rat*tot/(S*(rat-1))), b.shares=round(tot/(b*(rat-1))))
+  ## output: number of shares: e.g. (100,-100) for beta=1, tot=S=b=1
+  long.shr.amounts <- function(beta,tot,S,b){ #S is price of stock, b is price of pair
+    if(pos.allocation=="beta.neutral"){       #tot is the amount inv. in  stk (leverage factor * equity/num. stocks)
+      c(s.shares=round(tot/S), b.shares=-round(beta*tot/b))
     }else{ #"dollar neutral": long $tot S, short $tot b
-      c(s.shares=round(tot/S),b.shares=round(tot/b))
+      c(s.shares=round(tot/S),b.shares=-round(tot/b))
     } }
 
+  
   prealloc.signal.mtx <- function(stocks,dates){
     x <- array(0.0,c(length(stocks),length(dates)))
     colnames(x) <- dates; rownames(x) <- stocks
@@ -47,11 +47,11 @@ run.trading.simulation <- function(  signals.struct, prices
 
   s.action <- prealloc.signal.mtx(instr.p,dates)
   k <- 0
-  lambda <- 0.01 #for single-instr debugging
+  lambda <- 2/max(100,length(instr.p))
   nav <- 0; cash <- init.cash; equity <- rep(0.,length(dates))
   
   for(i in seq(along=dates)){
-    if(!silent) { cat(i," ") }
+    if(!silent) { if(i %% 50 == 0) cat(i," ") }
     net.positions <- apply(positions,2,sum)
     prices.0na <- prices[i,names(net.positions)]; prices.0na[is.na(prices.0na)] <- 0
     nav <- sum(prices.0na*net.positions)
@@ -79,16 +79,14 @@ run.trading.simulation <- function(  signals.struct, prices
       betas <- decode.betas(signals[[i]][sig.idx,])
       ## s.betas[k,i] <- betas
       this.p <- positions[j,this.name]
-      if(!sig["model.valid"]){
-        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
+      if(!sig["model.valid"] || is.na(sig["model.valid"])){ ## NA || TRUE -> TRUE, NA && TRUE -> NA, NA && FALSE -> FALSE
+        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
       }else{
         tot <- lambda*equity[i] # investment amount
-        rat <- 1/betas
         price.s.b <- c(prices[i,this.name], prices[i,pair.name])
-        num.shrs <- long.shr.amounts(rat,tot, price.s.b[1],
-                                     price.s.b[2])*c(1,-1)
-        if(betas >=1 && num.shrs[1] <=0){ num.shrs <- -num.shrs }
-        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"ratio ",rat," prices: ",price.s.b," num shares: ",num.shrs,"\n",file=outfile,append=TRUE)
+        num.shrs <- long.shr.amounts(betas,tot, price.s.b[1],
+                                     price.s.b[2])
+        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"\n",file=outfile,append=TRUE)
         if(sig["sto"]){
           if(!(this.p<0)&& (-num.shrs["s.shares"])<0){ #flat or long (but shouldn't be long here)
             ##	sell stock, buy factors #opening short (if flat before, as we should
@@ -145,5 +143,5 @@ run.trading.simulation <- function(  signals.struct, prices
       }
     }
   }
-  return(list(cash=cash,nav=nav,equity=equity,log=list(actions=s.action)))
+  return(list(dates=dates,cash=cash,nav=nav,equity=equity,log=list(actions=s.action)))
 }

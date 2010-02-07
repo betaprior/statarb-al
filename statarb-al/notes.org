@@ -503,3 +503,14 @@ To examine the signals, take the debug output, save it to a file and extract
    "WFC"  "XL"  
    Dates: 20030326 - 10071231
    
+* Converting trading to C++
+** Variables passed:
+   instr.p, instr.q, dates: as Rcpp::CharacterVector
+   pq.classifier as: Rcpp::CharacterVector
+   prices, positions as: Rcpp::NumericVector
+   sig.mtx as: Rcpp::NumericVector
+   sig.actions as: Rcpp::NumericVector
+   
+   function call:
+   backtest_loop(instr.p, instr.q, dates, pq.factor.list, prices,
+   positions, sig.mtx, sig.actions, params)

@@ -1,44 +1,52 @@
 ## test pair trading on financial stocks vs xlf
-source("tr_test_financials_1_batch.r")
+source("tr_test_spx1_batch.r")
 
 ##signals$sig.dates list will be reverse-chronological and might contain mor dates 
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
 
-load("sig.financials1.RObj")
+load("sig.spx1.RObj")
 sig.mtx.f <- get.signals.mtx(sig.f)
 ##sig.mtx usage: > head(sig.mtx.f[,,"JPM"])
 ##sig.actions.f <- get.signals.actions(sig.mtx.f[,,"JPM"])
 ##sig.mtx.dbg <- as.data.frame(sig.mtx.f[,,this.instr])
 ## (w/o casting to data frame can't subset by column names)
 
-instr.p.all <- intersect(sig.f$tickers, tc.xlf$TIC) ## make sure all tickers are classified
+instr.p.all <- intersect(sig.f$tickers, tc.spx$TIC) ## make sure all tickers are classified
 instr.q.all <- names(ret.e)
 load("univ1.mid.price.RObj") # loads univ1.master.price
 ## current issue: duplcate names in the price dataframe
 dups <- names(univ1.master.price)[duplicated(names(univ1.master.price))]
 ## find duplicated names in price file:
-# c(instr.p.all,instr.q.all)[which(c(instr.p.all,instr.q.all) %in% dups)]
-## don't deal with this for the time being
-price.df.f <- univ1.master.price[,c(instr.p.all,"XLF")]
+which(names(univ1.master.price)=="HHH")
+## [1]  201 1621
+## > head(univ1.master.price[,c(201,1621)])
+##             HHH HHH.1
+## 20081231 31.900    NA
+univ1.master.price <- univ1.master.price[,-which(names(univ1.master.price)=="HHH")[2]]
+price.df.f <- univ1.master.price[,names(univ1.master.price) %w/o% (dups %w/o% "HHH")]
+instr.p.all <- instr.p.all[-which(instr.p.all %in% (instr.p.all %w/o% names(price.df.f)))]
+## gets rid of JCI, PXD
 
-
-num.days.bt <- 600
-sig.f.bt <- list(sig.dates=sig.f$sig.dates[1:num.days.bt],tickers=sig.f$tickers)
-sig.mtx.f.bt <- get.signals.mtx(sig.f.bt)
-
-instr <- "PGR"
-sim.trades.f <- run.trading.simulation(  sig.f.bt, price.df.f
-                                       , instr, c(instr,"XLF"), tc.xlf
+instr <- "FDX"
+sim.trades.f <- run.trading.simulation(  sig.f, price.df.f
+                                       , instr, c(instr,tc.spx[instr,]$SEC_ETF), tc.spx
                                        , debug=FALSE, silent=FALSE)
 ##pgr.equity <- sim.trades.f$equity
+
+##Now we try to trade all of them in the same simulation
+sim.trades.f.all <- run.trading.simulation(  sig.f, price.df.f
+                                           , instr.p.all, c(instr.p.all,instr.q.all), tc.spx
+                                           , debug=FALSE, silent=FALSE
+                                           , pos.allocation="beta.neutral")
+
 
 if(testObject(trading.f.list)) rm(trading.f.list)
 trading.f.list <- list()
 for(i in seq(along=instr.p.all)){
   instr <- instr.p.all[i]
   trading.f.list[[instr]] <- run.trading.simulation(  sig.f.bt, price.df.f
-                                                    , instr, c(instr,"XLF"), tc.xlf
+                                                    , instr, c(instr,"XLF"), tc.spx
                                                     , debug=FALSE, silent=T)
   cat(instr,":",last(trading.f.list[[instr]]$equity),"\n")
 }
@@ -47,11 +55,6 @@ fin.pnl <- numeric(0)
 for(i in seq(along=instr.p.all))
   fin.pnl[i] <- last(trading.f.list[[i]]$equity)
 
-##Now we try to trade all of them in the same simulation
-sim.trades.f.all <- run.trading.simulation(  sig.f.bt, price.df.f
-                                           , instr.p.all, c(instr.p.all,"XLF"), tc.xlf
-                                           , debug=FALSE, silent=FALSE
-                                           , pos.allocation="beta.neutral")
 ## fin.portfolio.equity1 <- as.timeSeries(data.frame(dates.dbg,sim.trades.f.all$equity))
 dates.dbg <- rownames(sig.mtx.f.bt)
 
@@ -127,7 +130,7 @@ lines(prices.from.ret[["XLF"]],col=2)
 ## looks like cumulative errors arise in XLF, but how does that affect the trading?
 instr <- this.instr
 trading.dbg <- run.trading.simulation(  sig.f.bt, prices.from.ret
-                                                  , instr, c(instr,"XLF"), tc.xlf
+                                                  , instr, c(instr,"XLF"), tc.spx
                                                   , debug=FALSE, silent=T)
 cat(instr,":",last(trading.dbg$equity),"\n")
 ## > PGR : 89310.97 # better, but only slightly

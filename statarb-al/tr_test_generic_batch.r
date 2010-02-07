@@ -6,15 +6,33 @@ source("tr_signals_processing_fns.r")  ## for (at least) the following:
        ## position.signal, interval.lengths, action.times, get.signal.returns
        ## ret.to.prices, mn.returns (actual returns of b-neutral portf.), mn.returns.periods
 
+## --- batch mode argument processing
+save.sig.file <- as.logical(getCmdArgs("-saveSigFile"))
+if(is.na(save.sig.file)) save.sig.file <- FALSE
+ret.mtx.filename <- as.character(getCmdArgs("-retMtxFilename"))
+if(is.na(ret.mtx.filename))
+  if(testObject(ret.mtx.file) && file.exists(ret.mtx.file)){
+    ret.mtx.filename <- ret.mtx.file
+  } else { stop("ret.mtx.file variable is undefined or return matrix file does not exists") }
+save.sig.filename <- as.character(getCmdArgs("-filename"))
+if(is.na(save.sig.filename)) save.sig.filename <- "sig.file.RObj"
+profiler.on <- as.logical(getCmdArgs("-Rprof"))
+if(is.na(profiler.on)) { profiler.on <- FALSE }
+profiler.filename <- paste(save.sig.filename,".Rprof",sep="")
+## --- further arguments processed after offset definitions
+## (-yearsBack and -offsetYear
+etf.ret.mtx.filename <- "etf_ret_mtx"
+tic.classified.filename <- "ticker_to_sec_etf.csv"
 
+## -----
 tickers.classified <-
-  sort.data.frame(get.classified.tickers("ticker_to_sec_etf.csv"), by=~TIC)
+  sort.data.frame(get.classified.tickers(tic.classified.filename), by=~TIC)
 row.names(tickers.classified) <- tickers.classified$TIC
 
 
 
-dates.vector <- get.dates.vec("spx_ret_mtx")
-dates.vector.etf <- get.dates.vec("etf_ret_mtx")
+dates.vector <- get.dates.vec(ret.mtx.filename)
+dates.vector.etf <- get.dates.vec(etf.ret.mtx.filename)
 stopifnot(all(dates.vector==dates.vector.etf))
 dates.vector <- rev(dates.vector)
 
@@ -35,28 +53,25 @@ yrs.bk <- as.numeric(getCmdArgs("-yearsBack"))
 if(is.na(yrs.bk)){ yrs.bk <- as.numeric(offset.arg)-2002 ## want this to be 7 for 2009
                    }else{ cat("going",yrs.bk,"years back\n") }
 num.days <- 252*yrs.bk+30
-ret.s <- get.stock.returns("spx_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
-ret.e <- get.etf.returns("etf_ret_mtx",M=(yrs.bk+1)*252,offset=this.offset,file=TRUE)
+ret.s <- get.stock.returns(ret.mtx.filename,M=(yrs.bk+1)*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
+ret.e <- get.etf.returns(etf.ret.mtx.filename,M=(yrs.bk+1)*252,offset=this.offset,file=TRUE)
 stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 
 ## limit the ticker DB to the entries that we have in the price matrix
-tc.spx <- subset(tickers.classified,TIC %in% names(ret.s))
+tc.subset <- subset(tickers.classified,TIC %in% names(ret.s))
 
 #### signal generation -----------------------
-## for batch mode:
-save.sig.file <- as.logical(getCmdArgs("-saveSigFile"))
-if(is.na(save.sig.file)) save.sig.file <- FALSE
-save.sig.filename <- as.character(getCmdArgs("-filename"))
-if(is.na(save.sig.filename)) save.sig.filename <- "sig.file.RObj"
-
+if(profiler.on){ cat("Profiler output:",profiler.filename,"\n"); Rprof(profiler.filename) }
 N <- nrow(ret.s)
 est.win <- 60
 if(save.sig.file){
-  sig.f <- stock.etf.signals(ret.s,ret.e,tc.spx,num.days=N-est.win+1,compact.output=T,flipsign=F)
+  sig.f <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=N-est.win+1,compact.output=T,flipsign=F)
   save(sig.f,file=save.sig.filename)
 }else{
   cat("note: not generating signals by default\n")
 }
+if(profiler.on){ Rprof(NULL) }
+
 ##signals$sig.dates list will be reverse-chronological and might contain mor dates 
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)

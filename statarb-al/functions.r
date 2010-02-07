@@ -165,7 +165,7 @@ get.signals <- function(list.of.fits,subtract.average=TRUE,avg.mod=0
                      , a=x$x.mean*(1-x$ar)
                      , b=x$ar
                      , varz=x$var.pred)
-      signal <- c(  model.valid=(mr.params[["k"]] > thresholds[["kmin"]])
+      signal <- c(  model.valid=(mr.params[["k"]] > thresholds[["kmin"]]) #will be NA if k is NaN
                   , bto=(mr.params[["s"]] < (-thresholds[["sbo"]]))
                   , sto=(mr.params[["s"]] > (+thresholds[["sso"]]))
                   , close.short=(mr.params[["s"]] < (+thresholds[["sbc"]]))
@@ -234,7 +234,7 @@ stock.etf.signals <-
         get.signals(fit.ar1(
                             get.ou.series.etf(ret.s[win.idx,,drop=F],ret.e[win.idx,,drop=F]
                                               , classified.stocks.list)
-                            , method="yw"),subtract.average=F,compact.output=compact.output,flipsign=flipsign)
+                            , method="yw"),subtract.average=T,compact.output=compact.output,flipsign=flipsign)
       
     }
     names(sig.list) <- dates.range

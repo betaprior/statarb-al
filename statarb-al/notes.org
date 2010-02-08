@@ -502,7 +502,7 @@ To examine the signals, take the debug output, save it to a file and extract
    "PFG"  "PGR"  "PRU"  "SLM"  "STT"  "TMK"  "TROW" "UNM"  "USB"  "WB"  
    "WFC"  "XL"  
    Dates: 20030326 - 10071231
-   
+   sig.spx2NI.RObj
 * Simulation for the "universe" stocks:
 time ./sigGen.sh univ1_ret_mtx sig.univ1.RObj
 # Warning messages:
@@ -549,3 +549,9 @@ due to neg. AR coeff)
    function call:
    backtest_loop(instr.p, tickers.instrp.idx, instr.q, prices.instrpq.idx, dates, pq.factor.list, prices,
    positions, sig.mtx, sig.actions, params)
+* Trading simulation results:
+ load("univ.trading.sim.cpp.res.RObj")
+ load("univ.trading.sim.cpp.res.sub.RObj")
+ x11(); plot(sim.trades.f.all.cpp$equity,type='l')
+ x11(); plot(sim.trades.f.all.cpp.subtr$equity,type='l')
+Also see "univ.trading.sim.bugged.cpp.RObj" for the broken simulation output

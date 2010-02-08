@@ -7,6 +7,9 @@ source("tr_signals_processing_fns.r")  ## for (at least) the following:
        ## position.signal, interval.lengths, action.times, get.signal.returns
        ## ret.to.prices, mn.returns (actual returns of b-neutral portf.), mn.returns.periods
 
+## if running interactively, set the default returns matrix here
+ret.mtx.file <- "univ1_ret_mtx"
+
 ## --- batch mode argument processing
 ## arguments: -saveSigFile [FALSE] -retMtxFilename [ret.mtx.file] -filename [sig.file.RObj'
 ##            -Rprof [FALSE] -offsetYear [2009] -yearsBack [7 for 2009, 8 for 2008, etc]

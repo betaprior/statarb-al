@@ -64,6 +64,16 @@ tail(sig.mtx.dbg[dates.window,"beta",drop=F])
 ## matches perfectly
 resid.int <- cumsum(ret.fit$residuals) ##integral of residuals, according to
                                         #model an AR(1) process
+### Now try to get the fit using lm.fit call
+lm.obs.vec <- ret.window[,"JPM"]
+lm.design.mtx <- cbind(rep(1,length(lm.obs.vec)),ret.window[,"XLF"])
+ret.fit.flm <- lm.fit(lm.design.mtx,lm.obs.vec)
+ret.fit.flm$coefficients
+ret.fit$coef
+head(ret.fit.flm$residuals)
+head(ret.fit$residuals)
+## looks like they match very well
+
 ret.fit <- arima(resid.int,order=c(1,0,0))
 ret.fit <- fit.ar1.series(resid.int,method="yw")
 fit.ar.params <- unlist(ar.params.from.fit(ret.fit))

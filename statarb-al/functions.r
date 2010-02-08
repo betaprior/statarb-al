@@ -82,6 +82,8 @@ fit.stock <- function(r.s,r.e,enforce.df=TRUE,get.fit=FALSE,refit.with.pos.betas
   if(get.fit) fit else fit$residuals
 }
 
+
+
 get.ou.series <- function(r.s,r.e){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   lapply(r.s,function(x){
@@ -106,7 +108,7 @@ get.ou.series <- function(r.s,r.e){
 
 ## nb: hardcoded SEC_ETF field name in tickers.classified df
 ## this also does error checking (NA results if any NA present)
-get.ou.series.etf <- function(r.s,r.e,tickers.classified){
+get.ou.series.etf <- function(r.s,r.e,tickers.classified,lm.fit.here=TRUE){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
   out.list <- vector('list',length(stock.names))
@@ -116,14 +118,20 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified){
     r.s.i <- r.s[stock.names[i]] #nb: don't need to do [,...,drop=F]
     r.e.i <- r.e[tickers.classified[stock.names[i],]$SEC_ETF]
     if(!any(is.na(r.s.i)) & !any(is.na(r.e.i))){
-      beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
-      ou <- cumsum(rev(beta.fit$residuals))
+      if(lm.fit.here) {
+        design.mtx <- cbind(rep(1,length(r.s.i)),r.e.i)
+        beta.fit <- lm.fit(as.matrix(design.mtx), unlist(r.s.i))
+      } else {
+        beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
+      }
+        ou <- cumsum(rev(beta.fit$residuals))
     }else{
       beta.fit <- lm(a~b,data=data.frame(a=0,b=0)) #dummy fit object
       ou <- NA
     }
     out.list[[i]] <-
-      list(beta.fit=beta.fit,ou=ou) }
+      list(beta.fit=list(coefficients=beta.fit$coefficients),ou=ou) }
+#      list(beta.fit=beta.fit,ou=ou) }
   names(out.list) <- stock.names
   return(out.list)
 }
@@ -136,7 +144,8 @@ fit.ar1 <- function(res, method="mle"){
       ar.fit <- ar(x$ou, aic = F, order.max = 1, method=method)
     }else{ ar.fit <- NA }
     list(  beta.fit=x$beta.fit
-         , ar.fit=ar.fit) })
+         , ar.fit=list(x.mean=ar.fit$x.mean,ar=ar.fit$ar,var.pred=ar.fit$var.pred)) })
+#         , ar.fit=ar.fit) })
 }
 
 
@@ -180,7 +189,8 @@ get.signals <- function(list.of.fits,subtract.average=TRUE,avg.mod=0
                   , signals=signal
                   , b.portfolio=xx$beta.fit$coefficients)
        }else{
-      betas <- xx$beta.fit$coefficients[!(names(xx$beta.fit$coefficients) %in% c("(Intercept)"))]
+#      betas <- xx$beta.fit$coefficients[!(names(xx$beta.fit$coefficients) %in% c("(Intercept)"))]
+      betas <- xx$beta.fit$coefficients[-1]
       out <- unname(c(logical2int(signal),mr.params,betas))
      }
     return(out)
@@ -208,7 +218,8 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## input parameters: ret.s and ret.e must be dataframes
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
-  function(ret.s,ret.e,classified.stocks.list,num.days,win=60,compact.output=FALSE,flipsign=FALSE){
+  function(ret.s,ret.e,classified.stocks.list,num.days,win=60
+           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE){
     ## sanity checks
     stopifnot(num.days > 1 && win>10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
@@ -234,7 +245,8 @@ stock.etf.signals <-
         get.signals(fit.ar1(
                             get.ou.series.etf(ret.s[win.idx,,drop=F],ret.e[win.idx,,drop=F]
                                               , classified.stocks.list)
-                            , method="yw"),subtract.average=T,compact.output=compact.output,flipsign=flipsign)
+                            , method="yw")
+                    ,subtract.average=subtract.average,compact.output=compact.output,flipsign=flipsign)
       
     }
     names(sig.list) <- dates.range

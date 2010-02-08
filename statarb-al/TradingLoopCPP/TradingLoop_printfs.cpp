@@ -104,10 +104,6 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     Rcpp::NumericVector sig_mtx(r_sig_mtx);
     Rcpp::NumericVector sig_actions(r_sig_actions);
     RcppParams params(r_params);
-    double init_cash = params.getDoubleValue("init.cash");
-    string position_allocation(params.getStringValue("pos.allocation"));
-    bool opt_dollar_neutral = false;
-    if (position_allocation=="dollar.neutral"){ opt_dollar_neutral = true; }
     bool opt_silent = params.getBoolValue("silent");
     bool debug = params.getBoolValue("debug");
     string debug_name(params.getStringValue("debug.name")); 
@@ -138,20 +134,57 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     for (int i = 0; i < instr_pq.size(); ++i)
       pq_name_to_price_col.insert(std::pair<string,int>(string(instr_pq(i)),prices_instrpq_idx(i)-1));
 
+    
+
+    bool print_dimensions = false;
+    if(print_dimensions){
+      Rprintf("instr_p has length %d\n",instr_p.size());
+      Rprintf("instr_pq has length %d\n",instr_pq.size());
+      Rprintf("dates has length %d\n",dates.size());
+      Rprintf("pq_factor_list has length %d\n",pq_factor_list.size());
+      get_dims(pq_factor_list, dims_buffer);
+      Rprintf("got dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(prices, dims_buffer);
+      Rprintf("prices has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(positions, dims_buffer);
+      Rprintf("positions has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(sig_mtx, dims_buffer);
+      Rprintf("sig_mtx has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(sig_actions, dims_buffer);
+      Rprintf("sig_actions has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+
+      int i,j;
+      for(i=0;i<1;i++){
+	cout << "date: " << string(dates(i)) << endl;
+	for(j=0;j<3;j++){
+	  int tkr_idx = p_name_to_tkr_idx[string(instr_p(j))];
+	  cout << string(instr_p(j)) << ":" << tkr_idx << " ";
+	  cout << i << "," << j << ":" << get_kth_sigArr_entry(sig_mtx,i,j,SA_S_IDX,SIG_COL_OFFSET) << endl;
+	}
+	cout << endl;
+      }
+      cout << endl;
+    }
+    //    map<string,int>::iterator it;
+    // showing contents:
+    //    std::cout << "pq_name_to_price_col contains:\n";
+    // for ( it=pq_name_to_price_col.begin() ; it != pq_name_to_price_col.end(); it++ )
+    //   std::cout << (*it).first << " => " << (*it).second << endl;
     int num_pq = instr_pq.size();
     vector<int> net_positions(num_pq, 0);
     vector<double> day_prices(num_pq, 0);
     double instr_price;
     double nav = 0;
     double lambda = (double)2/max(100,instr_p.size());
-    double cash = init_cash;
+    double cash = 100000;
     vector<double> equity(dates.size(), 0);
     /* -----------  main trading loop ------------------ */
-    for(i=0; i < dates.size(); i++){
+       for(i=0; i < dates.size(); i++){
     //        for(i=0; i < 55; i++){
+      //      cout << endl << "date: " << dates(i) << endl;
+      //      cout << endl << i << ":" << endl;
       
-      //      if(!opt_silent){ if(i % 50 == 0) cout << i << " "; }
-      if(!opt_silent){ if(i % 50 == 0) Rprintf("%d ",i); }
+      if(!opt_silent){ if(i % 50 == 0) cout << i << " "; }
       col_sums(positions,net_positions);
       
       nav = 0;
@@ -163,10 +196,11 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
       
       equity[i] = cash + nav;
 
-      //  for(j=0; j < 3; j++){
       for(j=0; j < instr_p.size(); j++){
 	if (debug)
 	  if(j!=debug_j) { continue; }else { /*cout << endl;*/ }
+	// cout << j << "-";
+      //  for(j=0; j < 3; j++){
 	int instr_price_idx = pq_name_to_price_col[string(pq_factor_list(j,0))];
 	int pair_price_idx = pq_name_to_price_col[string(pq_factor_list(j,1))];
 	double pair_price = prices(i, pair_price_idx);
@@ -180,6 +214,10 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
 	  continue;
 	int actions_code = sig_actions(i,j);
 	// NB: to check for NA must do the check before converting to int
+
+  	// cout << "this instr: " << instr_p(j);
+  	// cout << "actions string: " << int_to_binary(sig_actions(i,j)) << endl;
+  	// cout << "s-score: " << get_kth_sigArr_entry(sig_mtx,i,j,SA_S_IDX,SIG_COL_OFFSET) << endl;
 
 	string actions_code_str(int_to_binary(sig_actions(i,j)));
 	bool sig_model_valid = (bool)(actions_code_str[0] - '0');
@@ -199,14 +237,12 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
 	     << " sto: "  << sig_sto << " sig_close_short: "  << sig_close_short << " sig_close_long: " << sig_close_long << endl;
 	}
 	if(!sig_model_valid){ continue; }
+  //       if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
+  //     }else{
 	
 	double tot = lambda * equity[i];
-	int num_shr_p, num_shr_q;	
-	num_shr_p = cint(tot / this_price); 
-	if (!opt_dollar_neutral)
-	  num_shr_q = -cint(tot*beta / pair_price);
-	else
-	  num_shr_q = -cint(tot / pair_price);
+	int num_shr_p = cint(tot / this_price); 
+	int num_shr_q = -cint(tot*beta / pair_price);
 
 	
 	if(debug && j==debug_j){
@@ -215,40 +251,57 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
 	  cout  << "tot is " << tot << " beta is " << beta  << " this_price is " 
 		<< this_price << " pair_pr " << pair_price << endl; }
 
-	if(sig_sto && (current_pos >= 0)){ //flat or long
-	  //           	sell stock, buy factors #opening short (if flat before, as we should be)
-	  //            num.shrs has the correct signs for long, this is short though
-	  num_shr_p = -num_shr_p;
-	  num_shr_q = -num_shr_q;
-	  positions(j, instr_price_idx) += num_shr_p;
-	  positions(j, pair_price_idx) += num_shr_q;
-	  cash -= this_price*num_shr_p + pair_price*num_shr_q;
-	  if(debug && j==debug_j){ cout << i << ": sTO on " << instr_p(j) << endl; }
+	if(sig_sto){
+	  if(current_pos >= 0){ //flat or long
+  //           ##	sell stock, buy factors #opening short (if flat before, as we should
+  //           ##be)
+  //           ## num.shrs has the correct signs for long, this is short though
+	    num_shr_p = -num_shr_p;
+	    num_shr_q = -num_shr_q;
+	    positions(j, instr_price_idx) += num_shr_p;
+	    positions(j, pair_price_idx) += num_shr_q;
+	    cash -= this_price*num_shr_p + pair_price*num_shr_q;
+  //           if((debug && this.name==debug.name)||dbg.transactions)
+  //             cat(i,this.name,"STO: 'acquiring'",num.shrs,"paying ",sum(price.s.b * num.shrs),"cash=",cash,"\n")
+  //           if(this.p>0 && warn) { cat(paste("\nSTO tripped while long, on day",i,"for stock",this.name),"\n"); if(stop.on.wrn) stop() }
+	    if(debug && j==debug_j){ cout << i << ": sTO on " << instr_p(j) << endl; }
+		    
+          }
 	} //#else do nothing #already short 
-	if(sig_close_short && (current_pos < 0)){
-	  //           ## buy stock, sell factors #closing short
-	  cash += this_price*positions(j, instr_price_idx) + pair_price*positions(j, pair_price_idx);
-	  if(debug && j==debug_j){ cout << i << ": CS on " << instr_p(j) << endl; }
-	  
-	  positions(j, instr_price_idx) = 0;
-	  positions(j, pair_price_idx) = 0;
-	}//#else: do nothing
-	if(sig_bto && (current_pos <= 0)){ // flat or (anomalously) short
-	  //           ##        buy stock, sell factors #opening long
-	  positions(j, instr_price_idx) += num_shr_p;
-	  positions(j, pair_price_idx) += num_shr_q;
-	  cash -= this_price*num_shr_p + pair_price*num_shr_q;
-	  
-	  if(debug && j==debug_j){ cout << i << ": BTO on " << instr_p(j) << endl; }
-	}//# else: do nothing #already long
-	if(sig_close_long && (current_pos > 0)){
-	  //           ##          sell stock, buy factors #closing long
-	  if(debug && j==debug_j){ cout << i << ": CL on " << instr_p(j) << endl; }
-	  
-	  cash += this_price*positions(j, instr_price_idx) + pair_price*positions(j, pair_price_idx);
-	  positions(j, instr_price_idx) = 0;
-	  positions(j, pair_price_idx) = 0;
-          } 
+	if(sig_close_short){
+	  if(current_pos < 0){
+	    //           ## buy stock, sell factors #closing short
+	    cash += this_price*positions(j, instr_price_idx) + pair_price*positions(j, pair_price_idx);
+	    //           if((debug && this.name==debug.name)||dbg.transactions)
+	    //             cat(i,this.name,"CLOSING SHORT: paying ",-sum(price.s.b*c(positions[j,this.name],positions[j,pair.name])),"cash=",cash,"\n")
+	    if(debug && j==debug_j){ cout << i << ": CS on " << instr_p(j) << endl; }
+
+	    positions(j, instr_price_idx) = 0;
+	    positions(j, pair_price_idx) = 0;
+          }
+        }//#else: do nothing
+	if(sig_bto){
+	  if(current_pos <= 0){ // flat or (anomalously) short
+	    //           ##        buy stock, sell factors #opening long
+	    positions(j, instr_price_idx) += num_shr_p;
+	    positions(j, pair_price_idx) += num_shr_q;
+	    cash -= this_price*num_shr_p + pair_price*num_shr_q;
+	    //           if(this.p<0 && warn){ cat(paste("\nBTO tripped while short, on day",i,"for stock",this.name,"\n")); if(stop.on.wrn) stop() }
+	    //           if((debug && this.name==debug.name)||dbg.transactions)
+	    //             cat(i,this.name,"BTO: 'acquiring'",num.shrs," paying ",sum(price.s.b * num.shrs),"cash=",cash,"\n")
+	    if(debug && j==debug_j){ cout << i << ": BTO on " << instr_p(j) << endl; }
+          }//# else: do nothing #already long
+	}
+	if(sig_close_long){
+	  if(current_pos > 0){
+	    //           ##          sell stock, buy factors #closing long
+	    if(debug && j==debug_j){ cout << i << ": CL on " << instr_p(j) << endl; }
+
+	    cash += this_price*positions(j, instr_price_idx) + pair_price*positions(j, pair_price_idx);
+	    positions(j, instr_price_idx) = 0;
+	    positions(j, pair_price_idx) = 0;
+          } }
+	/*		*/
    }
  }
 

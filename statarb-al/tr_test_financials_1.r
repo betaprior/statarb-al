@@ -27,7 +27,7 @@ num.days.bt <- 600
 sig.f.bt <- list(sig.dates=sig.f$sig.dates[1:num.days.bt],tickers=sig.f$tickers)
 sig.mtx.f.bt <- get.signals.mtx(sig.f.bt)
 
-instr <- "PGR"
+instr <- "JPM"
 sim.trades.f <- run.trading.simulation(  sig.f.bt, price.df.f
                                        , instr, c(instr,"XLF"), tc.xlf
                                        , debug=FALSE, silent=FALSE)
@@ -52,6 +52,13 @@ sim.trades.f.all <- run.trading.simulation(  sig.f.bt, price.df.f
                                            , instr.p.all, c(instr.p.all,"XLF"), tc.xlf
                                            , debug=FALSE, silent=FALSE
                                            , pos.allocation="beta.neutral")
+
+##Now we try to trade all of them in the same simulation
+sim.trades.f.all.cpp <- run.trading.simulation.cpp(  sig.f.bt, price.df.f
+                                                   , instr.p.all, c(instr.p.all,"XLF"), tc.xlf
+                                                   , debug=FALSE, silent=FALSE
+                                                   , pos.allocation="beta.neutral")
+
 ## fin.portfolio.equity1 <- as.timeSeries(data.frame(dates.dbg,sim.trades.f.all$equity))
 dates.dbg <- rownames(sig.mtx.f.bt)
 

@@ -66,27 +66,16 @@ run.trading.simulation <- function(  signals.struct, prices
       sig <- decode.signals(signals[[i]][sig.idx,])
       params <- decode.params(signals[[i]][sig.idx,])
       k <- match(this.name,instr.p)
-      ## s.id[k] <- this.name
-      ## s[k,i] <- params["s"]
-      ## s.a[k,i] <- params["a"]
-      ## s.b[k,i] <- params["b"]
-      ## s.varz[k,i] <- params["varz"]
-      ## s.k[k,i] <- params["k"]
-      ## s.sto[k,i] <- sig["sto"]
-      ## s.bto[k,i] <- sig["bto"]
-      ## s.close.short[k,i] <- sig["close.short"]
-      ## s.close.long[k,i] <- sig["close.long"]
       betas <- decode.betas(signals[[i]][sig.idx,])
-      ## s.betas[k,i] <- betas
       this.p <- positions[j,this.name]
       if(!sig["model.valid"] || is.na(sig["model.valid"])){ ## NA || TRUE -> TRUE, NA && TRUE -> NA, NA && FALSE -> FALSE
-        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
+        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"eq[i]:",equity[i],"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"INVALID\n",file=outfile,append=TRUE)
       }else{
         tot <- lambda*equity[i] # investment amount
         price.s.b <- c(prices[i,this.name], prices[i,pair.name])
         num.shrs <- long.shr.amounts(betas,tot, price.s.b[1],
                                      price.s.b[2])
-        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"inv.targ:",tot,"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"\n",file=outfile,append=TRUE)
+        if(debug && this.name==debug.name) cat(i,"pos:",this.p,"eq[i]:",equity[i],"beta ",betas," prices: ",price.s.b," num shares: ",num.shrs,"\n",file=outfile,append=TRUE)
         if(sig["sto"]){
           if(!(this.p<0)&& (-num.shrs["s.shares"])<0){ #flat or long (but shouldn't be long here)
             ##	sell stock, buy factors #opening short (if flat before, as we should
@@ -145,3 +134,6 @@ run.trading.simulation <- function(  signals.struct, prices
   }
   return(list(dates=dates,cash=cash,nav=nav,equity=equity,log=list(actions=s.action)))
 }
+
+
+

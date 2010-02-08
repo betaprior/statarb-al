@@ -540,7 +540,12 @@ due to neg. AR coeff)
    prices, positions as: Rcpp::NumericVector
    sig.mtx as: Rcpp::NumericVector
    sig.actions as: Rcpp::NumericVector
+
+   additional variables needed to create instr.p/tickers and instr.pq/names(prices) correspondence.
+   NB: for the purposes of the trading loop instr.q and instr.pq are used interchangeably, both 
+   mean union of P and Q
+   prices.instrpq.idx, tickers.instrp.idx as: Rcpp::NumericVector
    
    function call:
-   backtest_loop(instr.p, instr.q, dates, pq.factor.list, prices,
+   backtest_loop(instr.p, tickers.instrp.idx, instr.q, prices.instrpq.idx, dates, pq.factor.list, prices,
    positions, sig.mtx, sig.actions, params)

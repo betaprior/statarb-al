@@ -5,7 +5,7 @@ source("tr_test_spx1_batch.r")
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
 
-load("sig.spx1.RObj")
+load("sig.spx2NI.RObj")
 sig.mtx.f <- get.signals.mtx(sig.f)
 ##sig.mtx usage: > head(sig.mtx.f[,,"JPM"])
 ##sig.actions.f <- get.signals.actions(sig.mtx.f[,,"JPM"])
@@ -39,6 +39,11 @@ sim.trades.f.all <- run.trading.simulation(  sig.f, price.df.f
                                            , instr.p.all, c(instr.p.all,instr.q.all), tc.spx
                                            , debug=FALSE, silent=FALSE
                                            , pos.allocation="beta.neutral")
+
+sim.trades.f.all.cpp <- run.trading.simulation.cpp(  sig.f, price.df.f
+                                                   , instr.p.all, c(instr.p.all,instr.q.all), tc.spx
+                                                   , debug=FALSE, silent=FALSE
+                                                   , pos.allocation="beta.neutral")
 
 
 if(testObject(trading.f.list)) rm(trading.f.list)

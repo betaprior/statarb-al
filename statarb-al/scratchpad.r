@@ -279,3 +279,61 @@ sig.mtx.na.len <- lapply(sig.mtx.na.rle,length)
 head(rev(sort(unlist(sig.mtx.na.len))))
 
 rev(sort(rle(sig.mtx.na[,"FDX"])$lengths[rle(sig.mtx.na[,"FDX"])$values][-1]))
+
+
+instr.p.gs <- "OPLK"
+sim.trades.f.gs.cpp <- run.trading.simulation.cpp(  sig.f, price.df.f
+                                           , instr.p.gs, c(instr.p.gs,instr.q.all), tc.subset
+                                           , debug=FALSE, silent=FALSE
+                                           , pos.allocation="beta.neutral")
+
+
+
+sim.trades.f.gs <- run.trading.simulation(  sig.f, price.df.f
+                                           , instr.p.gs, c(instr.p.gs,instr.q.all), tc.subset
+                                           , debug=FALSE, silent=FALSE
+                                           , pos.allocation="beta.neutral")
+last(sim.trades.f.gs$equity)
+last(sim.trades.f.gs.cpp$equity)
+
+instr.sample <- sample(instr.p.all,50)
+last.eq.sample <- numeric()
+last.eq.sample.cpp <- numeric()
+for(i in seq(along=instr.sample)){
+  instr.p.samp <- instr.sample[i]
+  cat("\n",instr.p.samp,"  ")
+  cat("C++:")
+  sim.trades.f.samp.cpp <- run.trading.simulation.cpp(  sig.f, price.df.f
+                                           , instr.p.samp, c(instr.p.samp,instr.q.all), tc.subset
+                                           , debug=FALSE, silent=F
+                                           , pos.allocation="beta.neutral")
+  cat("\nold way:")
+  sim.trades.f.samp <- run.trading.simulation(  sig.f, price.df.f
+                                           , instr.p.samp, c(instr.p.samp,instr.q.all), tc.subset
+                                           , debug=FALSE, silent=F
+                                           , pos.allocation="beta.neutral")
+  last.eq.sample[i] <- last(sim.trades.f.samp$equity)
+  last.eq.sample.cpp[i] <- last(sim.trades.f.samp.cpp$equity)
+}
+
+eq.cpp.diff <- abs(last.eq.sample-last.eq.sample.cpp)
+diff.df <- data.frame(last.eq.sample,last.eq.sample.cpp,eq.cpp.diff)
+diff.df.srt <- sort.data.frame(diff.df,by= ~-eq.cpp.diff)
+instr.sample[as.numeric(head(rownames(diff.df.srt)))]
+#[1] "OPLK" "EK"   "STEI" "EXTR" "CPST" "ASF" 
+
+sig.mtx.f <- get.signals.mtx(sig.f)
+sig.mtx.oplk <- sig.mtx.f[,,"OPLK"]
+
+
+signals <- rev(sig.f$sig.dates)
+  dates <- names(signals)
+
+tickers <- sig.f$tickers
+  sig.arr.len <- dim(signals[[1]])[2]
+  num.stks <- length(tickers)
+  sig.mtx.2d <- matrix(get.signals.mtx(sig.f),nrow=length(dates),ncol=num.stks*sig.arr.len,byrow=F)
+  sig.actions <- matrix(as.integer(sig.mtx.2d[,seq(1,num.stks*sig.arr.len,by=sig.arr.len)]),nrow=length(dates),ncol=num.stks,byrow=F)
+  sig.beta <- matrix(as.integer(sig.mtx.2d[,seq(3,num.stks*sig.arr.len,by=sig.arr.len)]),nrow=length(dates),ncol=num.stks,byrow=F)
+
+

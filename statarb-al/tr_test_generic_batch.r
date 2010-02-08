@@ -8,6 +8,9 @@ source("tr_signals_processing_fns.r")  ## for (at least) the following:
        ## ret.to.prices, mn.returns (actual returns of b-neutral portf.), mn.returns.periods
 
 ## --- batch mode argument processing
+## arguments: -saveSigFile [FALSE] -retMtxFilename [ret.mtx.file] -filename [sig.file.RObj'
+##            -Rprof [FALSE] -offsetYear [2009] -yearsBack [7 for 2009, 8 for 2008, etc]
+##            -subtractAvg [TRUE for more than 20 instr]
 save.sig.file <- as.logical(getCmdArgs("-saveSigFile"))
 if(is.na(save.sig.file)) save.sig.file <- FALSE
 ret.mtx.filename <- as.character(getCmdArgs("-retMtxFilename"))
@@ -61,12 +64,16 @@ stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 ## limit the ticker DB to the entries that we have in the price matrix
 tc.subset <- subset(tickers.classified,TIC %in% names(ret.s))
 
+subtract.average <- as.logical(getCmdArgs("-subtractAvg"))
+if(is.na(subtract.average)){ 
+  if(length(names(ret.s)) > 20){ subtract.average = TRUE } else { subtract.average = FALSE }  }
+
 #### signal generation -----------------------
 if(profiler.on){ cat("Profiler output:",profiler.filename,"\n"); Rprof(profiler.filename) }
 N <- nrow(ret.s)
 est.win <- 60
 if(save.sig.file){
-  sig.f <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=N-est.win+1,compact.output=T,flipsign=F)
+  sig.f <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=N-est.win+1,compact.output=T,subtract.average=subtract.average)
   save(sig.f,file=save.sig.filename)
 }else{
   cat("note: not generating signals by default\n")

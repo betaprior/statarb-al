@@ -107,7 +107,7 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     double init_cash = params.getDoubleValue("init.cash");
     string position_allocation(params.getStringValue("pos.allocation"));
     bool opt_dollar_neutral = false;
-    if (position_allocation=="dollar.neutral"){ opt_dollar_neutral = true; }
+    if (position_allocation=="dollar.neutral"){ opt_dollar_neutral = true; cout << "using dollar neutral alloc." << endl; }
     bool opt_silent = params.getBoolValue("silent");
     bool debug = params.getBoolValue("debug");
     string debug_name(params.getStringValue("debug.name")); 
@@ -125,16 +125,21 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     vector<int> dims_buffer(2,0); //hold dimensions by get_dims
     get_dims(sig_mtx, dims_buffer);
     const int sig_mtx_2dcols = dims_buffer[1];
-    static const int SIG_COL_OFFSET = sig_mtx_2dcols / instr_p.size();
+    get_dims(sig_actions, dims_buffer);
+    const int num_tkrs = dims_buffer[1];
+    static const int SIG_COL_OFFSET = sig_mtx_2dcols / num_tkrs;
     enum sig_arr_idx { SA_S_IDX = 1, SA_K_IDX = 2, SA_BETA_IDX = 8 };
 
 
     int i,j;
     map<string,int> p_name_to_tkr_idx;
+    map<int,int> p_idx_to_tkr_idx;
     map<string,int> pq_name_to_price_col;
     // populate maps.  NB: must subtract 1 from indices to convert from R's 1-indexed arrays to C++
-    for (int i = 0; i < instr_p.size(); ++i)
+    for (int i = 0; i < instr_p.size(); ++i){
       p_name_to_tkr_idx.insert(std::pair<string,int>(string(instr_p(i)),tickers_instrp_idx(i)-1));
+      p_idx_to_tkr_idx.insert(std::pair<int,int>(i,tickers_instrp_idx(i)-1));
+    }
     for (int i = 0; i < instr_pq.size(); ++i)
       pq_name_to_price_col.insert(std::pair<string,int>(string(instr_pq(i)),prices_instrpq_idx(i)-1));
 
@@ -148,7 +153,7 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     vector<double> equity(dates.size(), 0);
     /* -----------  main trading loop ------------------ */
     for(i=0; i < dates.size(); i++){
-    //        for(i=0; i < 55; i++){
+           // for(i=0; i < 55; i++){
       
       //      if(!opt_silent){ if(i % 50 == 0) cout << i << " "; }
       if(!opt_silent){ if(i % 50 == 0) Rprintf("%d ",i); }
@@ -173,24 +178,25 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
 	double this_price = prices(i, instr_price_idx);
 	if((isnan(this_price) || isnan(pair_price)) || (this_price*pair_price <= 0))
 	  continue;
-	int tkr_idx = p_name_to_tkr_idx[string(instr_p(j))];
+	int tkr_idx = p_idx_to_tkr_idx[j];
 	int current_pos = positions(j,instr_price_idx);
 
-	if(R_IsNA(sig_actions(i,j)))
+	if(R_IsNA(sig_actions(i,tkr_idx)))
 	  continue;
-	int actions_code = sig_actions(i,j);
+	int actions_code = sig_actions(i,tkr_idx);
 	// NB: to check for NA must do the check before converting to int
 
-	string actions_code_str(int_to_binary(sig_actions(i,j)));
+	string actions_code_str(int_to_binary(sig_actions(i,tkr_idx)));
 	bool sig_model_valid = (bool)(actions_code_str[0] - '0');
 	bool sig_bto = (bool)(actions_code_str[1] - '0');
 	bool sig_sto = (bool)(actions_code_str[2] - '0');
 	bool sig_close_short = (bool)(actions_code_str[3] - '0');
 	bool sig_close_long = (bool)(actions_code_str[4] - '0');
 
-	double s_score = get_kth_sigArr_entry(sig_mtx,i,j,SA_S_IDX,SIG_COL_OFFSET);
-	double k_value = get_kth_sigArr_entry(sig_mtx,i,j,SA_K_IDX,SIG_COL_OFFSET);
-        double beta    = get_kth_sigArr_entry(sig_mtx,i,j,SA_BETA_IDX,SIG_COL_OFFSET);
+	double s_score = get_kth_sigArr_entry(sig_mtx,i,tkr_idx,SA_S_IDX,SIG_COL_OFFSET);
+	double k_value = get_kth_sigArr_entry(sig_mtx,i,tkr_idx,SA_K_IDX,SIG_COL_OFFSET);
+        double beta    = get_kth_sigArr_entry(sig_mtx,i,tkr_idx,SA_BETA_IDX,SIG_COL_OFFSET);
+
 	/*	*/
 	bool print_signals = false;
 	if(debug && j==debug_j && print_signals){

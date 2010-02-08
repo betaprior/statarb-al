@@ -144,8 +144,8 @@ fit.ar1 <- function(res, method="mle"){
       ar.fit <- ar(x$ou, aic = F, order.max = 1, method=method)
     }else{ ar.fit <- NA }
     list(  beta.fit=x$beta.fit
-         , ar.fit=list(x.mean=ar.fit$x.mean,ar=ar.fit$ar,var.pred=ar.fit$var.pred)) })
-#         , ar.fit=ar.fit) })
+         ## , ar.fit=list(x.mean=ar.fit$x.mean,ar=ar.fit$ar,var.pred=ar.fit$var.pred)) })
+        , ar.fit=ar.fit) })
 }
 
 

@@ -108,7 +108,7 @@ get.ou.series <- function(r.s,r.e){
 
 ## nb: hardcoded SEC_ETF field name in tickers.classified df
 ## this also does error checking (NA results if any NA present)
-get.ou.series.etf <- function(r.s,r.e,tickers.classified,lm.fit.here=TRUE){
+get.ou.series.etf <- function(r.s,r.e,tickers.classified){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
   out.list <- vector('list',length(stock.names))
@@ -118,12 +118,8 @@ get.ou.series.etf <- function(r.s,r.e,tickers.classified,lm.fit.here=TRUE){
     r.s.i <- r.s[stock.names[i]] #nb: don't need to do [,...,drop=F]
     r.e.i <- r.e[tickers.classified[stock.names[i],]$SEC_ETF]
     if(!any(is.na(r.s.i)) & !any(is.na(r.e.i))){
-      if(lm.fit.here) {
         design.mtx <- cbind(rep(1,length(r.s.i)),r.e.i)
         beta.fit <- lm.fit(as.matrix(design.mtx), unlist(r.s.i))
-      } else {
-        beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
-      }
         ou <- cumsum(rev(beta.fit$residuals))
     }else{
       beta.fit <- lm(a~b,data=data.frame(a=0,b=0)) #dummy fit object
@@ -149,7 +145,7 @@ fit.ar1 <- function(res, method="mle"){
 }
 
 
-get.fits <- function(r.s,r.e,tickers.classified,lm.fit.here=TRUE,num.factors=1,method="mle"){
+get.fits <- function(r.s,r.e,tickers.classified,num.factors=1,method="mle"){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
   beta.matrix <- matrix(0., num.factors+1, length(stock.names), dimnames=list(NULL, stock.names))
@@ -159,12 +155,8 @@ get.fits <- function(r.s,r.e,tickers.classified,lm.fit.here=TRUE,num.factors=1,m
     r.s.i <- r.s[stock.names[i]] #nb: don't need to do [,...,drop=F]
     r.e.i <- r.e[ as.character(tickers.classified[stock.names[i],][-1]) ]
     if(!any(is.na(r.s.i)) & !any(is.na(r.e.i))){
-      if(lm.fit.here) {
-        design.mtx <- cbind(rep(1,length(r.s.i)),r.e.i)
-        beta.fit <- lm.fit(as.matrix(design.mtx), unlist(r.s.i))
-      } else {
-        beta.fit <- fit.stock(r.s.i,r.e.i,enforce.df=FALSE,get.fit=TRUE)
-      }
+      design.mtx <- cbind(rep(1,length(r.s.i)),r.e.i)
+      beta.fit <- lm.fit(as.matrix(design.mtx), unlist(r.s.i))
       ou <- cumsum(rev(beta.fit$residuals))
       ar.fit <- ar(ou, aic = F, order.max = 1, method=method)
       beta.matrix[,i] <- beta.fit$coefficients
@@ -190,7 +182,7 @@ get.signals <- function(fit.mtxs,subtract.average=TRUE,avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)
                         , compact.output=FALSE, debug=FALSE,flipsign=FALSE){
   if(!flipsign){ sign <- 1 }else{ sign <- -1 }
-  param.names <- c("s","k","m","mbar","a","b","varz")
+  param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
   exclude.alpha <- 1 ##must be either 1 or 0!
   num.betas <- (nrow(fit.mtxs$beta.matrix)-exclude.alpha)
   sig.mtx <- matrix(0,1+length(param.names)+num.betas,ncol(fit.mtxs$beta.matrix))
@@ -218,7 +210,7 @@ get.signals <- function(fit.mtxs,subtract.average=TRUE,avg.mod=0
                   , (x[2] > (-thresholds[["ssc"]])))
                 )} )
   sig.mtx[1,] <- sig.code
-  sig.mtx[(1+length(param.names)):nrow(sig.mtx),] <- fit.mtxs$beta.matrix[-1,] ##assumes throwing away alpha
+  sig.mtx[(2+length(param.names)):nrow(sig.mtx),] <- fit.mtxs$beta.matrix[-1,] ##assumes throwing away alpha
   return(sig.mtx)
 }
 decode.signals <- function(y){

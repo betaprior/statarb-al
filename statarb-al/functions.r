@@ -144,7 +144,6 @@ fit.ar1 <- function(res, method="mle"){
         , ar.fit=ar.fit) })
 }
 
-
 get.fits <- function(r.s,r.e,tickers.classified,num.factors=1,method="mle"){
   stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
   stock.names <- names(r.s)
@@ -169,6 +168,65 @@ get.fits <- function(r.s,r.e,tickers.classified,num.factors=1,method="mle"){
   return(list(beta.matrix=beta.matrix,ar.matrix=ar.matrix))
 }
 
+gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
+  dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me 
+  for(i in seq(along=dates.range)){     # pass-by-reference semantics, what do you expect?
+#    win.idx <- i:(i+win-1)
+    j <- length(dates.range)-i+1
+    p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
+
+    if(!any(is.na(p1q.matrix))){
+      ##      design.mtx <- p1q.matrix[,2:ncol(p1q.natrix)]
+      beta.fit <- lm.fit(p1q.matrix[,2:ncol(p1q.matrix)], p1q.matrix[,1])
+      ou <- cumsum(rev(beta.fit$residuals))
+      ar.fit <- ar(ou, aic = F, order.max = 1, method=ar.method)
+      beta.fit.mtx[j, ,tkr.idx] <<- beta.fit$coefficients
+      ar.fit.mtx[j, ,tkr.idx] <<- c(ar.fit$x.mean,ar.fit$ar,ar.fit$var.pred)
+    }else{
+      browser()
+      beta.fit.mtx[j, ,tkr.idx] <<- rep(NA,ncol(p1q.matrix)-1)
+      ar.fit.mtx[j, ,tkr.idx] <<- rep(NA,3)
+    }
+  }
+}
+
+## beta, ar fit matrices have dimensions 1:dates,2:fit.params,3:instruments
+gen.signals <- function(beta.fit.mtx, ar.fit.mtx, subtract.average, avg.mod=0
+                        , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)){
+  param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
+  exclude.alpha <- 1 ##must be either 1 or 0!
+  num.betas <- dim(beta.fit.mtx)[2]-exclude.alpha
+  num.sig.fields <- 1+length(param.names)+num.betas
+  sig.mtx.loc <- matrix(0,num.sig.fields,dim(beta.fit.mtx)[3]) #dim[3] is num.tkrs
+  for(i in 1:dim(beta.fit.mtx)[1]){ #iterate over dates
+    m.avg <- mean(ar.fit.mtx[i,1, ,drop=F],na.rm=T)
+    if(!subtract.average) m.avg <- avg.mod
+    sig.mtx.loc <- 
+      apply(ar.fit.mtx[i, , ,drop=F],3,function(x){
+        x.mean <- x[1]; ar <- x[2]; var.pred <- x[3]
+        c(  0                                              #space for signal code
+          , (x.mean-m.avg)*(-sqrt((1-ar^2)/var.pred))      #s
+          , -log(ar)*252                                   #k
+          , x.mean                                         #m
+          , m.avg                                          #mbar
+          , x.mean*(1-ar)                                  #a
+          , ar                                             #b
+          , var.pred                                       #varz
+          , rep(0,num.betas) )                             #space for betas
+      } )
+    sig.code <- apply(sig.mtx.loc,2,function(x){ ##ATTN: critically depends on k being 3rd idx, s being 2nd
+      logical2int(
+                  c(  (x[3] > thresholds[["kmin"]]) #will be NA if k is NaN
+                    , (x[2] < (-thresholds[["sbo"]]))
+                    , (x[2] > (+thresholds[["sso"]]))
+                    , (x[2] < (+thresholds[["sbc"]]))
+                    , (x[2] > (-thresholds[["ssc"]])))
+                  )} )
+    sig.mtx.loc[1,] <- sig.code
+    sig.mtx.loc[(2+length(param.names)):num.sig.fields, ] <- beta.fit.mtx[i,-1, ,drop=F] ##assumes throwing away alpha
+    sig.mtx[i,,] <<-  array(sig.mtx.loc,dim=c(1,dim(sig.mtx.loc)))
+  }
+}
 
 ## list.of.fits (for M stocks on a particular day) is a list returned by fit.ar1
 ## each element of res is a list(beta.fit,ar.fit)
@@ -185,10 +243,10 @@ get.signals <- function(fit.mtxs,subtract.average=TRUE,avg.mod=0
   param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
   exclude.alpha <- 1 ##must be either 1 or 0!
   num.betas <- (nrow(fit.mtxs$beta.matrix)-exclude.alpha)
-  sig.mtx <- matrix(0,1+length(param.names)+num.betas,ncol(fit.mtxs$beta.matrix))
+  sig.mtx.loc <- matrix(0,1+length(param.names)+num.betas,ncol(fit.mtxs$beta.matrix))
   m.avg <- mean(fit.mtxs$ar.matrix[1,],na.rm=T)
   if(!subtract.average) m.avg <- avg.mod
-  sig.mtx <- 
+  sig.mtx.loc <- 
   apply(fit.mtxs$ar.matrix,2,function(x){
     x.mean <- x[1]; ar <- x[2]; var.pred <- x[3]
     c(  0                                              #space for signal code
@@ -201,7 +259,7 @@ get.signals <- function(fit.mtxs,subtract.average=TRUE,avg.mod=0
       , var.pred                                       #varz
       , rep(0,num.betas) )                             #space for betas
   } )
-  sig.code <- apply(sig.mtx,2,function(x){ ##ATTN: critically depends on k being 3rd idx, s being 2nd
+  sig.code <- apply(sig.mtx.loc,2,function(x){ ##ATTN: critically depends on k being 3rd idx, s being 2nd
     logical2int(
                 c(  (x[3] > thresholds[["kmin"]]) #will be NA if k is NaN
                   , (x[2] < (-thresholds[["sbo"]]))
@@ -209,9 +267,9 @@ get.signals <- function(fit.mtxs,subtract.average=TRUE,avg.mod=0
                   , (x[2] < (+thresholds[["sbc"]]))
                   , (x[2] > (-thresholds[["ssc"]])))
                 )} )
-  sig.mtx[1,] <- sig.code
-  sig.mtx[(2+length(param.names)):nrow(sig.mtx),] <- fit.mtxs$beta.matrix[-1,] ##assumes throwing away alpha
-  return(sig.mtx)
+  sig.mtx.loc[1,] <- sig.code
+  sig.mtx.loc[(2+length(param.names)):nrow(sig.mtx.loc),] <- fit.mtxs$beta.matrix[-1,] ##assumes throwing away alpha
+  return(sig.mtx.loc)
 }
 decode.signals <- function(y){
   x <- int2logical(y[1],5)
@@ -231,7 +289,7 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60
-           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE){
+           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE, ar.method="yw"){
     ## sanity checks
     stopifnot(num.days > 1 && win>10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
@@ -246,30 +304,36 @@ stock.etf.signals <-
     sig.list <- vector('list',length(dates.range))
     stocks.list <- classified.stocks.list$TIC
     ret.s <- ret.s[names(ret.s) %in% stocks.list]
+    stock.names <- names(ret.s)
     omitted.stocks <- stocks.list %w/o% names(ret.s)
     if(length(omitted.stocks)>0)
       warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
 #    ret.e <- ret.e[tickers.classified["JPM",]$SEC_ETF]
 
-    sig.param.names <- c("action","s","k","m","mbar","a","b","varz","beta")
-    sig.mtx <- array(dim=c(length(dates.range),length(sig.param.names),length(names(ret.s)))
+    factor.names <- c("beta")
+    num.beta.fit.coefs <- length(factor.names)+1
+    num.ar.fit.coefs <- 3
+    sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
+    beta.fit.mtx <<- array(dim=c(length(dates.range),num.beta.fit.coefs,length(stock.names))
+                          , dimnames=list(rev(dates.range),NULL,stock.names))
+    ar.fit.mtx <<- array(dim=c(length(dates.range),num.ar.fit.coefs,length(stock.names))
+                        , dimnames=list(rev(dates.range),NULL,stock.names))
+    sig.mtx <<- array(dim=c(length(dates.range),length(sig.param.names),length(stock.names))
                      , dimnames=list(
                            rev(dates.range)
                          , sig.param.names
-                         , names(ret.s)))
-    for(i in seq(along=dates.range)){
-#      if(i >= 124){ browser() }
-      win.idx <- i:(i+win-1)
-      sig.mtx[length(dates.range)-i+1,,] <- ##automatically reverse
-        get.signals(get.fits(ret.s[win.idx,,drop=F],ret.e[win.idx,,drop=F]
-                                              , classified.stocks.list, method="yw")
-                    ,subtract.average=subtract.average,compact.output=compact.output,flipsign=flipsign)
-      
+                         , stock.names))
+    for(i in seq(along=stock.names)){
+      gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
+                          , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
+                          , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
+                  , classified.stocks.list=classified.stocks.list, tkr.idx=i, win=win, ar.method=ar.method)
     }
-    ## names(sig.list) <- dates.range
+    ## this populates beta.fit.mtx and ar.fit.mtx
+    gen.signals(beta.fit.mtx, ar.fit.mtx, subtract.average=subtract.average)
+    ## this populates sig.mtx
     return(sig.mtx)
   }
-  
 
 ## functions that manipulate the signals list structure
 get.signals.mtx <- function(sig.list){

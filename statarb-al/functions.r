@@ -169,15 +169,14 @@ get.fits <- function(r.s,r.e,tickers.classified,num.factors=1,method="mle"){
   return(list(beta.matrix=beta.matrix,ar.matrix=ar.matrix))
 }
 
-gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
-  dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me
+gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, tkr.idx, win, ar.method){
   p1q.col.num <- ncol(p1q.matrix.alldates)
-  combo.fit.2d <- matrix(0,length(dates.range),5)
-  ## beta.fit.2d <- matrix(0,length(dates.range),2)
-  ## ar.fit.2d <- matrix(0,length(dates.range),3)
-  for(i in seq(along=dates.range)){     # pass-by-reference semantics, what do you expect?
+  combo.fit.2d <- matrix(0,num.dates,5)
+  ## beta.fit.2d <- matrix(0,num.dates,2)
+  ## ar.fit.2d <- matrix(0,num.dates,3)
+  for(i in 1:num.dates)){     # pass-by-reference semantics, what do you expect?
 #    win.idx <- i:(i+win-1)
-    j <- length(dates.range)-i+1
+    j <- num.dates-i+1
     p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
 
     if(!any(is.na(p1q.matrix))){
@@ -216,11 +215,11 @@ gen.fits.pq.par1 <- function(p1q.matrix.alldates, classified.stocks.list, tkr.id
   ar.fit.mtx[ , ,tkr.idx] <<- fit.mtxs[ ,p1q.col.num:ncol(fit.mtxs)]
 }
 
-gen.fits.pq1 <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
-  dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me 
-  for(i in seq(along=dates.range)){     # pass-by-reference semantics, what do you expect?
+gen.fits.pq1 <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, tkr.idx, win, ar.method){
+                                    ## yes, i'm using globals. If you don't give me 
+  for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
 #    win.idx <- i:(i+win-1)
-    j <- length(dates.range)-i+1
+    j <- num.dates-i+1
     p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
 
     if(!any(is.na(p1q.matrix))){
@@ -381,13 +380,13 @@ stock.etf.signals <-
         gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
                             , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
-                    , classified.stocks.list=classified.stocks.list, tkr.idx=i, win=win, ar.method=ar.method)
+                    , classified.stocks.list=classified.stocks.list
+                    , num.dates=length(dates.range)
+                    , tkr.idx=i, win=win, ar.method=ar.method)
       }
-    comb.time <- system.time({
-                             beta.fit.mtx <<- combined.fit.mtx[ ,1:2, ]
-                             ar.fit.mtx <<- combined.fit.mtx[ ,3:5, ]
-                             })[3]
-    cat("system time on combining bullshit: ",comb.time,"\n")
+    beta.fit.mtx <<- combined.fit.mtx[ ,1:num.beta.fit.coefs, ]
+    ar.fit.mtx <<- combined.fit.mtx[ ,(num.beta.fit.coefs+1):(num.beta.fit.coefs+num.ar.fit.coefs), ]
+
     ## this populates beta.fit.mtx and ar.fit.mtx
     gen.signals(subtract.average=subtract.average)
     ## this populates sig.mtx

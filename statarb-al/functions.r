@@ -170,6 +170,53 @@ get.fits <- function(r.s,r.e,tickers.classified,num.factors=1,method="mle"){
 }
 
 gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
+  dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me
+  p1q.col.num <- ncol(p1q.matrix.alldates)
+  combo.fit.2d <- matrix(0,length(dates.range),5)
+  ## beta.fit.2d <- matrix(0,length(dates.range),2)
+  ## ar.fit.2d <- matrix(0,length(dates.range),3)
+  for(i in seq(along=dates.range)){     # pass-by-reference semantics, what do you expect?
+#    win.idx <- i:(i+win-1)
+    j <- length(dates.range)-i+1
+    p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
+
+    if(!any(is.na(p1q.matrix))){
+      ##      design.mtx <- p1q.matrix[,2:ncol(p1q.natrix)]
+      beta.fit <- lm.fit(p1q.matrix[,2:ncol(p1q.matrix)], p1q.matrix[,1])
+      ou <- cumsum(rev(beta.fit$residuals))
+      ar.fit <- ar(ou, aic = F, order.max = 1, method=ar.method)
+      combo.fit.2d[j, ] <- c(beta.fit$coefficients, ar.fit$x.mean,ar.fit$ar,ar.fit$var.pred)
+    }else{
+      combo.fit.2d[j, ] <- rep(NA,5)
+    }
+  }
+  return(combo.fit.2d)
+}
+
+gen.fits.pq.par1 <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
+  dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me
+  p1q.col.num <- ncol(p1q.matrix.alldates)
+
+  fit.mtxs <-
+    foreach(j = rev(seq(along=dates.range)), .combine = "rbind" ) %dopar% {     # pass-by-reference semantics, what do you expect?
+    ## j <- length(dates.range)-i+1
+    p1q.matrix <- p1q.matrix.alldates[j:(j+win-1), ,drop=F]
+
+    if(!any(is.na(p1q.matrix))){
+      ##      design.mtx <- p1q.matrix[,2:ncol(p1q.natrix)]
+      beta.fit <- lm.fit(p1q.matrix[,2:ncol(p1q.matrix)], p1q.matrix[,1])
+      ou <- cumsum(rev(beta.fit$residuals))
+      ar.fit <- ar(ou, aic = F, order.max = 1, method=ar.method)
+      c(beta.fit$coefficients, ar.fit$x.mean,ar.fit$ar,ar.fit$var.pred)
+    }else{
+      rep(NA,2+ncol(p1q.matrix))
+    }
+  }
+  beta.fit.mtx[ , ,tkr.idx] <<- fit.mtxs[ ,1:(p1q.col.num-1)]
+  ar.fit.mtx[ , ,tkr.idx] <<- fit.mtxs[ ,p1q.col.num:ncol(fit.mtxs)]
+}
+
+gen.fits.pq1 <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, win, ar.method){
   dates.range <- rownames(beta.fit.mtx) ## yes, i'm using globals. If you don't give me 
   for(i in seq(along=dates.range)){     # pass-by-reference semantics, what do you expect?
 #    win.idx <- i:(i+win-1)
@@ -190,8 +237,8 @@ gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, wi
   }
 }
 
-## beta, ar fit matrices have dimensions 1:dates,2:fit.params,3:instruments
-gen.signals <- function(beta.fit.mtx, ar.fit.mtx, subtract.average, avg.mod=0
+## beta, ar fit matrices have dimensions 1:dates,2:fit.params,3:instrument
+gen.signals <- function(subtract.average, avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)){
   param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
   exclude.alpha <- 1 ##must be either 1 or 0!
@@ -287,6 +334,7 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## TIC and SEC_ETF
 ## input parameters: ret.s and ret.e must be dataframes
 ## reverse-chron. sorted with dates as row.names
+require("abind")
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60
            , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE, ar.method="yw"){
@@ -318,19 +366,28 @@ stock.etf.signals <-
                           , dimnames=list(rev(dates.range),NULL,stock.names))
     ar.fit.mtx <<- array(dim=c(length(dates.range),num.ar.fit.coefs,length(stock.names))
                         , dimnames=list(rev(dates.range),NULL,stock.names))
+    combined.fit.mtx <<- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,length(stock.names))
+                               , dimnames=list(rev(dates.range),NULL,stock.names))
     sig.mtx <<- array(dim=c(length(dates.range),length(sig.param.names),length(stock.names))
-                     , dimnames=list(
-                           rev(dates.range)
-                         , sig.param.names
-                         , stock.names))
-    for(i in seq(along=stock.names)){
-      gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
-                          , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
-                          , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
-                  , classified.stocks.list=classified.stocks.list, tkr.idx=i, win=win, ar.method=ar.method)
-    }
+                      , dimnames=list(
+                          rev(dates.range)
+                          , sig.param.names
+                          , stock.names))
+    sig.mtx.loc <<- matrix(0,length(sig.param.names),dim(beta.fit.mtx)[3]) #dim[3] is num.tkrs
+    ##prealloc buffer for gen.signals()
+    cfun <- function(...) abind(...,along=3)
+    combined.fit.mtx <<-
+      foreach(i = seq(along=stock.names), .combine = "cfun", .packages = "abind") %dopar% {
+        gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
+                            , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
+                            , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
+                    , classified.stocks.list=classified.stocks.list, tkr.idx=i, win=win, ar.method=ar.method)
+      }
+    beta.fit.mtx <<- combined.fit.mtx[ ,1:2, ]
+    ar.fit.mtx <<- combined.fit.mtx[ ,3:5, ]
+
     ## this populates beta.fit.mtx and ar.fit.mtx
-    gen.signals(beta.fit.mtx, ar.fit.mtx, subtract.average=subtract.average)
+    gen.signals(subtract.average=subtract.average)
     ## this populates sig.mtx
     return(sig.mtx)
   }

@@ -555,3 +555,9 @@ due to neg. AR coeff)
  x11(); plot(sim.trades.f.all.cpp$equity,type='l')
  x11(); plot(sim.trades.f.all.cpp.subtr$equity,type='l')
 Also see "univ.trading.sim.bugged.cpp.RObj" for the broken simulation output
+* Parallelizing the computation:
+Running for N=300 on univ1 dataset
+using doMC in the gen.pq:
+real    7m8.989s
+user    15m40.420s
+sys     5m31.950s

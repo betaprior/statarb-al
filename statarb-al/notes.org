@@ -566,6 +566,11 @@ Now code which passes everything through global matrices:
 real    7m59.014s
 user    7m58.760s
 sys     0m0.280s
+The whole global assignment issue doesn't save you much, it turns out --
+timings with pass-by-value semantics: (currently in the temp branch)
+real    7m56.796s
+user    7m56.580s
+sys     0m0.200s
 using %dopar% in the gen.pq: doesn't get you much
 real    7m8.989s
 user    15m40.420s

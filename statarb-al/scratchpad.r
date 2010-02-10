@@ -337,3 +337,18 @@ tickers <- sig.f$tickers
   sig.beta <- matrix(as.integer(sig.mtx.2d[,seq(3,num.stks*sig.arr.len,by=sig.arr.len)]),nrow=length(dates),ncol=num.stks,byrow=F)
 
 
+## ascertain that new code agrees with old results
+load("sig.univ1.EXPT_PROF2.RObj")
+sig.mtx.new <- sig.f
+load("sig.univ1.subtrav.RObj")
+sig.mtx.f <- get.signals.mtx(sig.f)
+all(dimnames(sig.mtx.new)[[3]]==sig.f$tickers)
+# [1] TRUE
+all(tail(sig.mtx.new[,,1])==tail(sig.mtx.f[,,1]))
+all(head(sig.mtx.new[,,1])==head(sig.mtx.f[,,1]))
+all(tail(sig.mtx.new[,,dim(sig.mtx.new)[3]])==tail(sig.mtx.f[,,dim(sig.mtx.new)[3]]))
+all(head(sig.mtx.new[,,dim(sig.mtx.new)[3]])==head(sig.mtx.f[,,dim(sig.mtx.new)[3]]))
+all(tail(sig.mtx.new[,,222])==tail(sig.mtx.f[,,222]))
+all(head(sig.mtx.new[,,222])==head(sig.mtx.f[,,222]))
+# all looks true
+

@@ -557,7 +557,20 @@ due to neg. AR coeff)
 Also see "univ.trading.sim.bugged.cpp.RObj" for the broken simulation output
 * Parallelizing the computation:
 Running for N=300 on univ1 dataset
-using doMC in the gen.pq:
+code with lists: master branch sha
+real    14m23.385s
+user    14m23.120s
+sys     0m0.240s
+using %dopar% in the gen.pq: (no parallelism was right around 8 minutes)
 real    7m8.989s
 user    15m40.420s
 sys     5m31.950s
+using %dopar% on the "over stocks" loop
+Code with call-by-value matrix passing / return 
+real    2m32.712s
+user    11m59.090s
+sys     0m2.060s
+Code with global assignments:
+real    2m33.042s
+user    10m22.130s
+sys     0m2.080s

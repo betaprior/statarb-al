@@ -183,7 +183,6 @@ gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, tkr.idx, wi
       beta.fit.mtx[j, ,tkr.idx] <<- beta.fit$coefficients
       ar.fit.mtx[j, ,tkr.idx] <<- c(ar.fit$x.mean,ar.fit$ar,ar.fit$var.pred)
     }else{
-      browser()
       beta.fit.mtx[j, ,tkr.idx] <<- rep(NA,ncol(p1q.matrix)-1)
       ar.fit.mtx[j, ,tkr.idx] <<- rep(NA,3)
     }
@@ -224,7 +223,7 @@ gen.signals <- function(beta.fit.mtx, ar.fit.mtx, subtract.average, avg.mod=0
                   )} )
     sig.mtx.loc[1,] <- sig.code
     sig.mtx.loc[(2+length(param.names)):num.sig.fields, ] <- beta.fit.mtx[i,-1, ,drop=F] ##assumes throwing away alpha
-    sig.mtx[i,,] <<-  array(sig.mtx.loc,dim=c(1,dim(sig.mtx.loc)))
+    sig.mtx[i,,] <<-  sig.mtx.loc
   }
 }
 

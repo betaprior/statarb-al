@@ -245,9 +245,11 @@ gen.signals <- function(beta.fit.mtx,ar.fit.mtx,subtract.average, avg.mod=0
   num.sig.fields <- 1+length(param.names)+num.betas
   sig.mtx.loc <- matrix(0,num.sig.fields,dim(beta.fit.mtx)[3]) #dim[3] is num.tkrs
 
-  sig.mtx <- array(dim=c(dim(beta.fit.mtx)[1],num.sig.fields,dim(beta.fit.mtx)[3]))
+  ## sig.mtx <- array(dim=c(dim(beta.fit.mtx)[1],num.sig.fields,dim(beta.fit.mtx)[3]))
 
-  for(i in 1:dim(beta.fit.mtx)[1]){ #iterate over dates
+  cfun <- function(...) abind(...,along=0)
+  ## sig.mtx <-
+  foreach(i = 1:dim(beta.fit.mtx)[1], combine = "cfun") %dopar%{
     m.avg <- mean(ar.fit.mtx[i,1, ,drop=F],na.rm=T)
     if(!subtract.average) m.avg <- avg.mod
     sig.mtx.loc <- 
@@ -273,9 +275,9 @@ gen.signals <- function(beta.fit.mtx,ar.fit.mtx,subtract.average, avg.mod=0
                   )} )
     sig.mtx.loc[1,] <- sig.code
     sig.mtx.loc[(2+length(param.names)):num.sig.fields, ] <- beta.fit.mtx[i,-1, ,drop=F] ##assumes throwing away alpha
-    sig.mtx[i,,] <-  sig.mtx.loc
+    sig.mtx.loc
   }
-  return(sig.mtx)
+  ## return(sig.mtx)
 }
 
 ## list.of.fits (for M stocks on a particular day) is a list returned by fit.ar1

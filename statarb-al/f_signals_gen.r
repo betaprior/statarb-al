@@ -1,9 +1,9 @@
 require("abind")
 
-gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, tkr.idx, win, ar.method){
+gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, win, ar.method){
   p1q.col.num <- ncol(p1q.matrix.alldates)
   num.ar.params <- 3                    # infer # of beta coeffs from mtx col num
-  combo.fit.2d <- matrix(0, num.dates, (ncol(p1q.matrix) - 1 + num.ar.params) )
+  combo.fit.2d <- matrix(0, num.dates, (p1q.col.num - 1 + num.ar.params) )
   for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
     j <- num.dates-i+1
     p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
@@ -130,7 +130,7 @@ stock.etf.signals <-
                             , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
                     , classified.stocks.list=classified.stocks.list
                     , num.dates=length(dates.range)
-                    , tkr.idx=i, win=win, ar.method=ar.method)
+                    , win=win, ar.method=ar.method)
       }
     beta.fit.mtx <- combined.fit.mtx[ ,1:num.beta.fit.coefs, ]
     ar.fit.mtx <- combined.fit.mtx[ ,(num.beta.fit.coefs+1):(num.beta.fit.coefs+num.ar.fit.coefs), ]

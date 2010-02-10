@@ -571,11 +571,16 @@ real    7m8.989s
 user    15m40.420s
 sys     5m31.950s
 using %dopar% on the "over stocks" loop
-Code with call-by-value matrix passing / return 
-real    2m32.712s
-user    11m59.090s
-sys     0m2.060s
 Code with global assignments:
 real    2m33.042s
 user    10m22.130s
 sys     0m2.080s
+Code with call-by-value matrix passing / return 
+real    2m32.712s
+user    11m59.090s
+sys     0m2.060s
+Finally, parallelize the last bit (computing S from beta, ar):
+real    2m31.911s
+user    13m54.930s
+sys     0m3.790s
+doesn't look like we save much if at all

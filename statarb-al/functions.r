@@ -174,7 +174,7 @@ gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, 
   combo.fit.2d <- matrix(0,num.dates,5)
   ## beta.fit.2d <- matrix(0,num.dates,2)
   ## ar.fit.2d <- matrix(0,num.dates,3)
-  for(i in 1:num.dates)){     # pass-by-reference semantics, what do you expect?
+  for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
 #    win.idx <- i:(i+win-1)
     j <- num.dates-i+1
     p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
@@ -217,7 +217,7 @@ gen.fits.pq.par1 <- function(p1q.matrix.alldates, classified.stocks.list, tkr.id
 
 gen.fits.pq1 <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, tkr.idx, win, ar.method){
                                     ## yes, i'm using globals. If you don't give me 
-  for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
+for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
 #    win.idx <- i:(i+win-1)
     j <- num.dates-i+1
     p1q.matrix <- p1q.matrix.alldates[i:(i+win-1), ,drop=F]
@@ -237,13 +237,16 @@ gen.fits.pq1 <- function(p1q.matrix.alldates, classified.stocks.list, num.dates,
 }
 
 ## beta, ar fit matrices have dimensions 1:dates,2:fit.params,3:instrument
-gen.signals <- function(subtract.average, avg.mod=0
+gen.signals <- function(beta.fit.mtx,ar.fit.mtx,subtract.average, avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)){
   param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
   exclude.alpha <- 1 ##must be either 1 or 0!
   num.betas <- dim(beta.fit.mtx)[2]-exclude.alpha
   num.sig.fields <- 1+length(param.names)+num.betas
   sig.mtx.loc <- matrix(0,num.sig.fields,dim(beta.fit.mtx)[3]) #dim[3] is num.tkrs
+
+  sig.mtx <- array(dim=c(dim(beta.fit.mtx)[1],num.sig.fields,dim(beta.fit.mtx)[3]))
+
   for(i in 1:dim(beta.fit.mtx)[1]){ #iterate over dates
     m.avg <- mean(ar.fit.mtx[i,1, ,drop=F],na.rm=T)
     if(!subtract.average) m.avg <- avg.mod
@@ -270,8 +273,9 @@ gen.signals <- function(subtract.average, avg.mod=0
                   )} )
     sig.mtx.loc[1,] <- sig.code
     sig.mtx.loc[(2+length(param.names)):num.sig.fields, ] <- beta.fit.mtx[i,-1, ,drop=F] ##assumes throwing away alpha
-    sig.mtx[i,,] <<-  sig.mtx.loc
+    sig.mtx[i,,] <-  sig.mtx.loc
   }
+  return(sig.mtx)
 }
 
 ## list.of.fits (for M stocks on a particular day) is a list returned by fit.ar1
@@ -361,21 +365,16 @@ stock.etf.signals <-
     num.beta.fit.coefs <- length(factor.names)+1
     num.ar.fit.coefs <- 3
     sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
-    beta.fit.mtx <<- array(dim=c(length(dates.range),num.beta.fit.coefs,length(stock.names))
+    beta.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs,length(stock.names))
                           , dimnames=list(rev(dates.range),NULL,stock.names))
-    ar.fit.mtx <<- array(dim=c(length(dates.range),num.ar.fit.coefs,length(stock.names))
+    ar.fit.mtx <- array(dim=c(length(dates.range),num.ar.fit.coefs,length(stock.names))
                         , dimnames=list(rev(dates.range),NULL,stock.names))
-    combined.fit.mtx <<- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,length(stock.names))
+    combined.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,length(stock.names))
                                , dimnames=list(rev(dates.range),NULL,stock.names))
-    sig.mtx <<- array(dim=c(length(dates.range),length(sig.param.names),length(stock.names))
-                      , dimnames=list(
-                          rev(dates.range)
-                          , sig.param.names
-                          , stock.names))
-    sig.mtx.loc <<- matrix(0,length(sig.param.names),dim(beta.fit.mtx)[3]) #dim[3] is num.tkrs
+
     ##prealloc buffer for gen.signals()
     cfun <- function(...) abind(...,along=3)
-    combined.fit.mtx <<-
+    combined.fit.mtx <-
       foreach(i = seq(along=stock.names), .combine = "cfun", .packages = "abind") %dopar% {
         gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
@@ -384,11 +383,12 @@ stock.etf.signals <-
                     , num.dates=length(dates.range)
                     , tkr.idx=i, win=win, ar.method=ar.method)
       }
-    beta.fit.mtx <<- combined.fit.mtx[ ,1:num.beta.fit.coefs, ]
-    ar.fit.mtx <<- combined.fit.mtx[ ,(num.beta.fit.coefs+1):(num.beta.fit.coefs+num.ar.fit.coefs), ]
+    beta.fit.mtx <- combined.fit.mtx[ ,1:num.beta.fit.coefs, ]
+    ar.fit.mtx <- combined.fit.mtx[ ,(num.beta.fit.coefs+1):(num.beta.fit.coefs+num.ar.fit.coefs), ]
 
     ## this populates beta.fit.mtx and ar.fit.mtx
-    gen.signals(subtract.average=subtract.average)
+    sig.mtx <- gen.signals(beta.fit.mtx, ar.fit.mtx, subtract.average=subtract.average)
+    dimnames(sig.mtx) <- list(rev(dates.range), sig.param.names, stock.names)
     ## this populates sig.mtx
     return(sig.mtx)
   }

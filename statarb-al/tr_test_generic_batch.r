@@ -1,6 +1,10 @@
 ## test pair trading on financial stocks vs xlf
 setwd("/home/leo/projects/finance/research/statarb-al/")
-source("functions.r")
+require("Revobase")
+require("foreach")
+require("doMC")
+registerDoMC()
+source("functions.r")  ##this also sources f_signals_gen.r
 source("f_trading_sim.r") ## for the trading simulation
 source("f_trading_sim_cpp.r") ## for the trading simulation
 source("tr_signals_processing_fns.r")  ## for (at least) the following:
@@ -73,6 +77,10 @@ if(is.na(subtract.average)){
 
 #### signal generation -----------------------
 if(profiler.on){ cat("Profiler output:",profiler.filename,"\n"); Rprof(profiler.filename) }
+
+cat("getMKLthreads returns ",getMKLthreads(),"\n")
+cat("getDoParWorkers returns ",getDoParWorkers(),"\n")
+
 N <- nrow(ret.s)
 est.win <- 60
 if(save.sig.file){

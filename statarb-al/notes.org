@@ -581,6 +581,8 @@ real    2m33.042s
 user    10m22.130s
 sys     0m2.080s
 Code with call-by-value matrix passing / return 
+commit 99555b8d6de944ab0352ff981d5647b8cd859edc (nb: "magic numbers" in
+gen.fit.pq here)
 real    2m32.712s
 user    11m59.090s
 sys     0m2.060s
@@ -589,3 +591,9 @@ real    2m31.911s
 user    13m54.930s
 sys     0m3.790s
 doesn't look like we save much if at all
+------
+Running on the whole set:
+leo@matroskin statarb-al $ time ./sigGen.sh univ1_ret_mtx sig.univ1.PAR1.RObj
+real    40m2.157s
+user    123m7.840s
+sys     9m13.050s

@@ -40,7 +40,7 @@ gen.signals <- function(beta.fit.mtx,ar.fit.mtx,subtract.average, avg.mod=0
 
   cfun <- function(...) abind(...,rev.along=3)
   ## sig.mtx <-
-  foreach(i = 1:(dim(beta.fit.mtx)[1]), .combine = "cfun") %dopar%{
+  foreach(i = 1:(dim(beta.fit.mtx)[1]), .combine = "cfun", .multicombine = TRUE) %dopar%{
     m.avg <- mean(ar.fit.mtx[i,1, ,drop=F],na.rm=T)
     if(!subtract.average) m.avg <- avg.mod
     sig.mtx.loc <- 
@@ -124,7 +124,7 @@ stock.etf.signals <-
     ## -- parallel loop to generate the signals: ------------------
     cfun <- function(...) abind(...,along=3)
     combined.fit.mtx <-
-      foreach(i = seq(along=stock.names), .combine = "cfun") %dopar% {
+      foreach(i = seq(along=stock.names), .combine = "cfun", .multicombine = TRUE) %dopar% {
         gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
                             , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))

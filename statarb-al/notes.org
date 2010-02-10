@@ -556,12 +556,17 @@ due to neg. AR coeff)
  x11(); plot(sim.trades.f.all.cpp.subtr$equity,type='l')
 Also see "univ.trading.sim.bugged.cpp.RObj" for the broken simulation output
 * Parallelizing the computation:
+First, some benchmarks:
 Running for N=300 on univ1 dataset
-code with lists: master branch sha
+code with lists: master branch sha 207b620407b4d35366900e1847ec5f82bbf5bd8d
 real    14m23.385s
 user    14m23.120s
 sys     0m0.240s
-using %dopar% in the gen.pq: (no parallelism was right around 8 minutes)
+Now code which passes everything through global matrices:
+real    7m59.014s
+user    7m58.760s
+sys     0m0.280s
+using %dopar% in the gen.pq: doesn't get you much
 real    7m8.989s
 user    15m40.420s
 sys     5m31.950s

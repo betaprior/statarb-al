@@ -383,9 +383,11 @@ stock.etf.signals <-
                             , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
                     , classified.stocks.list=classified.stocks.list, tkr.idx=i, win=win, ar.method=ar.method)
       }
-    beta.fit.mtx <<- combined.fit.mtx[ ,1:2, ]
-    ar.fit.mtx <<- combined.fit.mtx[ ,3:5, ]
-
+    comb.time <- system.time({
+                             beta.fit.mtx <<- combined.fit.mtx[ ,1:2, ]
+                             ar.fit.mtx <<- combined.fit.mtx[ ,3:5, ]
+                             })[3]
+    cat("system time on combining bullshit: ",comb.time,"\n")
     ## this populates beta.fit.mtx and ar.fit.mtx
     gen.signals(subtract.average=subtract.average)
     ## this populates sig.mtx

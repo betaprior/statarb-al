@@ -592,8 +592,52 @@ user    13m54.930s
 sys     0m3.790s
 doesn't look like we save much if at all
 ------
-Running on the whole set:
+The problem with the foreach/dopar timings in the above parallelization was
+the lack of .multicombine=TRUE statement, leading to much overhead.  This
+explains the following result:
+Running on the whole set (both loops parallelized):
 leo@matroskin statarb-al $ time ./sigGen.sh univ1_ret_mtx sig.univ1.PAR1.RObj
 real    40m2.157s
 user    123m7.840s
 sys     9m13.050s
+Now check out the non-parallelized signal gen. version and test it and what
+the heck?...:
+leo@matroskin statarb-al $ time ./sigGen.sh univ1_ret_mtx sig.univ1.PAR0.RObj
+real    20m10.507s
+user    93m26.610s
+sys     2m4.170s
+Answer: lots of communication overhead when doing sequential combines in the
+s-signal loop (which simply does lots of trivial algebra).  cf e.g. this
+Stack Overflow post for what is probably a similar scenario:
+
+So now, the timings with .multicombine in place.  It looks like parallelizing
+the second loop gives a (small) advantage:
+One foreach/dopar:
+leo@matroskin statarb-al $ time ./sigGen.sh univ1_ret_mtx sig.univ1.PAR0m.RObj
+real    16m39.910s
+user    91m32.640s
+sys     0m3.080s
+Two foreach/dopars:
+leo@matroskin statarb-al $ time ./sigGen.sh univ1_ret_mtx sig.univ1.PAR1m.RObj
+real    14m24.365s
+user    106m27.390s
+sys     0m8.910s
+ 
+
+Checking that the signals produce the same trading simulation results:
+first, re-run the trading on signals from old list-based code:
+save(sim.trades.f.all.cpp.subtr,file="tr_sim_univ1_subtr_list.RObj")
+Now do the signals without the 2nd %dopar%:
+save(sim.trades.f.all.cpp.subtr,file="tr_sim_univ1_subtr_par0.RObj")
+Now do the signals with the 2nd %dopar%:
+save(sim.trades.f.all.cpp.subtr,file="tr_sim_univ1_subtr_par1.RObj")
+
+load them all up and compare:
+load("tr_sim_univ1_subtr_list.RObj")
+sim.list.eq <- sim.trades.f.all.cpp.subtr$equity
+load("tr_sim_univ1_subtr_par1.RObj")
+sim.par1.eq <- sim.trades.f.all.cpp.subtr$equity
+load("tr_sim_univ1_subtr_par0.RObj")
+sim.par0.eq <- sim.trades.f.all.cpp.subtr$equity
+all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
+## TRUE

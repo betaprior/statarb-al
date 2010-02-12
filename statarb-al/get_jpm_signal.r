@@ -136,11 +136,46 @@ ret.s.fin <- ret.s[,"JPM",drop=F]
 N <- nrow(ret.s.fin)
 est.win <- 60
 system.time(
-sig.f.new <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
+sig.f.new2 <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
             )
-sig.mtx.jpm.new <- get.signals.mtx(sig.f.new)
+sig.mtx.jpm.new2 <- get.signals.mtx(sig.f.new)
 save(sig.f,file="sig.jpm1.old.RObj")
 
 ##signals$sig.dates list will be reverse-chronological and might contain mor dates 
 ##than what we want for a trading simulation.  The dates for backtesting are determined
 ##by signals$sig.dates (prices data frame is subset accordingly)
+
+## check new signal generation routines
+source("functions.r")
+sig.jpm.newest <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
+
+
+system.time(
+sig.jpm.newest <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
+            )
+sig.mtx.jpm.old <- get.signals.mtx(sig.jpm.old)
+
+source("functions_expt.r")
+system.time(
+sig2.mtx.new <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
+            )
+
+sig2.mtx.new <- stock.etf.signals(ret.s.fin,ret.e,tc.xlf,num.days=N-est.win+1,compact.output=T,subtract.average=F)
+
+
+foo <- cbind(  as.matrix(ret.s[stock.names[i]])
+      , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
+      , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ]) )
+
+apply(ar.fit.mtx[i, , ,drop=F],3,function(x){
+        x.mean <- x[1]; ar <- x[2]; var.pred <- x[3]
+        c(  0                                              #space for signal code
+          , (x.mean-m.avg)*(-sqrt((1-ar^2)/var.pred))      #s
+          , -log(ar)*252                                   #k
+          , x.mean                                         #m
+          , m.avg                                          #mbar
+          , x.mean*(1-ar)                                  #a
+          , ar                                             #b
+          , var.pred                                       #varz
+          , rep(0,num.betas) )                             #space for betas
+      } )

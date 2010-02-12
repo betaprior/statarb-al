@@ -555,8 +555,8 @@ due to neg. AR coeff)
  x11(); plot(sim.trades.f.all.cpp$equity,type='l')
  x11(); plot(sim.trades.f.all.cpp.subtr$equity,type='l')
 Also see "univ.trading.sim.bugged.cpp.RObj" for the broken simulation output
-* Parallelizing the computation:
-First, some benchmarks:
+* Parallelizing the computation/timing experiments:
+** Timing experiments
 Running for N=300 on univ1 dataset
 code with lists: master branch sha 207b620407b4d35366900e1847ec5f82bbf5bd8d
 real    14m23.385s
@@ -623,7 +623,7 @@ real    14m24.365s
 user    106m27.390s
 sys     0m8.910s
  
-
+** Checking consistency of the signals:
 Checking that the signals produce the same trading simulation results:
 first, re-run the trading on signals from old list-based code:
 save(sim.trades.f.all.cpp.subtr,file="tr_sim_univ1_subtr_list.RObj")
@@ -641,3 +641,18 @@ load("tr_sim_univ1_subtr_par0.RObj")
 sim.par0.eq <- sim.trades.f.all.cpp.subtr$equity
 all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
 ## TRUE
+
+* Eigenportfolio / PCA approach:
+  From the paper:
+  order the eigenvalues of the correlation matrix and the corresponding
+  eigenvectors
+  The amount invested in each stock is v_i/sigma_i, where sigma_i^2 is the
+  sample variance of ith stock (in the recent M-day window)
+  Using that weighting it is possible to compute the returns of every
+  eigenportfolio.  
+  The eigenportfolio returns are then used in the fitting procedure.
+  Thus, the tasks are:
+  - for every stock, compute the weights of the top m eigenportfolios and the
+    returns associated with each eigenportfolio
+  - use these returns to fit m betas
+    

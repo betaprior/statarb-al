@@ -143,3 +143,91 @@ draw.signal.lines <- function(act.mtx){
   lines(-as.numeric(act.mtx$close.long)*abs(thresholds["ssc"]),col=5)
 }
 draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
+
+
+stock.pca.signals <-
+  function(ret.s,classified.stocks.list,num.days,win=60,win.pca=252,num.eigs=15
+           , subtract.average=TRUE, ar.method="yw"){
+    ## -- sanity checks and data cleanup: -------------------------
+    stopifnot(num.days > 1 && win>10)
+    stopifnot(nrow(ret.s) >= num.days + win - 1)
+    dates.range <- row.names(ret.s)[1:num.days]
+    if(is.unsorted(rev(dates.range)))
+      if(!is.unsorted(dates.range)){
+        ret.s <- reverse.rows(ret.s); ret.e <- reverse.rows(ret.e)
+        dates.range <- row.names(ret.s)[1:num.days]
+      }
+    stopifnot(!is.unsorted(rev(dates.range))) ## rev. dates must be chron sorted
+    stocks.list <- classified.stocks.list$TIC
+    stock.names <- names(ret.s)[names(ret.s) %in% stocks.list]
+    ret.s <- as.matrix(ret.s[stock.names],names=stock.names)
+    omitted.stocks <- stocks.list %w/o% stock.names
+    if(length(omitted.stocks)>0)
+      warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
+    ## browser()
+    ## -- preallocations for fit coeff matrices: ------------------
+    num.factors <- num.eigs ##number of eigenportfolios
+    factor.names <- c("beta1","beta2")
+    num.beta.fit.coefs <- length(factor.names)+1
+    num.ar.fit.coefs <- 3
+    num.stocks <- length(stock.names)
+    sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
+    beta.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs,num.stocks)
+                          , dimnames=list(rev(dates.range),NULL,stock.names))
+    ar.fit.mtx <- array(dim=c(length(dates.range),num.ar.fit.coefs,num.stocks)
+                        , dimnames=list(rev(dates.range),NULL,stock.names))
+    combined.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,num.stocks)
+                               , dimnames=list(rev(dates.range),NULL,stock.names))
+    eigenportf.weights.mtx <- array(dim=c(length(dates.range),num.stocks*num.factors,num.stocks)
+                                    , dimnames=list(rev(dates.range),NULL,stock.names))
+    eigenportf.returns.mtx <- array(dim=c(length(dates.range),num.factors,num.stocks)
+                                    , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## rows are m inline-combined weights vectors followed by m returns
+    eigenportf.combined.mtx <- array(dim=c(length(dates.range),num.factors+num.stocks*num.factors,num.stocks)
+                                    , dimnames=list(rev(dates.range),NULL,stock.names))
+
+    cfun <- function(...) abind(...,along=3)
+   ## eigenportf.combined.mtx <- 
+    foreach(i = seq(along=stock.names), .combine = "cfun") %dopar% {
+      cat(i,"-")
+      run.pca.analysis(ret.s, num.dates=length(dates.range)
+                       , num.eigs=num.factors, win.pca=win.pca)
+    }
+  }
+
+run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca){
+  accum.mtx <- matrix(nrow=num.dates,ncol=dim(ret.s)[2]*(num.eigs+1) + 2*num.eigs)
+  rho <- matrix(0.0,dim(ret.s)[2],dim(ret.s)[2])
+  ## cat("|")
+  for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
+    j <- num.dates-i+1
+    ret.mtx <- ret.s[i:(i+win.pca-1), ,drop=F]
+    vars <- apply(ret.mtx,2,function(x){ var(x,use="complete.obs") })
+    means <- apply(ret.mtx,2,function(x){ mean(x,na.rm=TRUE) })
+    Y <- t(apply(ret.mtx,1,function(x){(x-means)/sqrt(vars)})) ##ret.mtx.std
+    rho <- ( t(Y) %*% Y )/(win.pca-1)
+    ## cat(".")
+    eigs <- eigen(rho, symmetric=TRUE)
+    ## cat(".")
+    eigenportfolio.amounts <- eigs$vectors[,1:num.eigs]/sqrt(vars[1:num.eigs])
+    ## scaled by lambda:
+   eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),dim(rho)[1],num.eigs,byrow=T) 
+
+    ##eigenportfolio.amounts <- eigenportfolio.amounts/matrix(colSums(eigenportfolio.amounts),dim(rho)[1],num.eigs,byrow=T) ## normalize columns
+    ## note that normalization should also take care of the sign
+    if(all(eigs$vectors[,1] < 0)) {
+      eigenportfolio.amounts <- -(eigenportfolio.amounts)
+    } else if(all(eigs$vectors[,1] >= 0)) {
+    } else {
+      warning("Non-uniform signs of leading eigenvector")
+      if(sum(as.numeric(eigs$vectors[,1] < 0)) > (dim(rho)[1])/2) {
+        eigenportfolio.amounts <- -(eigenportfolio.amounts)
+      } }
+  ##  all signs of the leading e-vector have to be +ve
+    eigenportfolio.returns <- sapply(1:num.eigs,function(x)sum(ret.mtx[i,]*eigenportfolio.amounts[,x]))
+    accum.mtx[j,] <- c(as.numeric(eigenportfolio.amounts),sqrt(vars),eigenportfolio.returns,eigs$values[1:num.eigs])
+        ## cat("|")
+
+  }
+  return(accum.mtx)
+}

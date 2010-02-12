@@ -81,3 +81,5 @@ fit.m <- fit.ar.params["a"]/(1-fit.ar.params["b"])
 fit.sigeq <- sqrt(fit.ar.params["varz"]/(1-fit.ar.params["b"]^2))
 ## this is the s-signal:
 -unname(fit.m/fit.sigeq)
+
+test.2.fit <- fit.ar1.series(rbind(resid.int,resid.int),method="yw")

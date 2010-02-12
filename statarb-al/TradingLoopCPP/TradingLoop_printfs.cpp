@@ -136,7 +136,7 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
 
     
 
-    bool print_dimensions = false;
+    bool print_dimensions = true;
     if(print_dimensions){
       Rprintf("instr_p has length %d\n",instr_p.size());
       Rprintf("instr_pq has length %d\n",instr_pq.size());
@@ -145,6 +145,11 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
       get_dims(pq_factor_list, dims_buffer);
       Rprintf("got dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
       get_dims(prices, dims_buffer);
+      //      Rcpp::RObject::AttributeProxy dim_att(prices, "dim");
+      //vector<int> pric_dims((string)dim_att);
+      //      const vector<int> pric_dims((std::vector <int>)prices.attr("dim"));
+      //cout << "prices: directly getting dims: " 
+      //	   << pric_dims << endl;
       Rprintf("prices has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
       get_dims(positions, dims_buffer);
       Rprintf("positions has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
@@ -178,8 +183,11 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx,
     double lambda = (double)2/max(100,instr_p.size());
     double cash = 100000;
     vector<double> equity(dates.size(), 0);
+    bool DO_NOT_RUN_LOOP = true; //since this file is mostly for debugging
+                                 // passing objects
     /* -----------  main trading loop ------------------ */
        for(i=0; i < dates.size(); i++){
+	 if(DO_NOT_RUN_LOOP) { break; }
     //        for(i=0; i < 55; i++){
       //      cout << endl << "date: " << dates(i) << endl;
       //      cout << endl << i << ":" << endl;

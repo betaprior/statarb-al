@@ -2,7 +2,8 @@
 ## input: signals object, prices df
 ###source("TradingLoopCPP/TradingLoopCPP.r")
 
-dyn.load("TradingLoopCPP/TradingLoop.so")
+##dyn.load("TradingLoopCPP/TradingLoop.so")
+dyn.load("TradingLoopCPP/TradingLoop_printfs.so")
 
 ## the signals object here is assumed to be a list of dates
 ## positions matrix is a matrix of instruments / pairs
@@ -63,7 +64,8 @@ run.trading.simulation.cpp <- function(  signals.struct, prices
   sig.arr.len <- dim(signals[[1]])[2]
   num.stks <- length(tickers)
   sig.mtx.2d <- matrix(get.signals.mtx(signals.struct),nrow=length(dates),ncol=num.stks*sig.arr.len,byrow=F)
-  sig.actions <- matrix(as.integer(sig.mtx.2d[,seq(1,num.stks*sig.arr.len,by=sig.arr.len)]),nrow=length(dates.dbg),ncol=num.stks,byrow=F)
+  sig.actions <- matrix(as.integer(sig.mtx.2d[,seq(1,num.stks*sig.arr.len,by=sig.arr.len)]),nrow=length(dates),ncol=num.stks,byrow=F)
+
   ## sig.actions[1,1] <- NA
   ## sig.mtx.2d[1,2] <- NA
   .Call("backtest_loop",instr.p, tickers.instrp.idx, instr.q, prices.instrpq.idx

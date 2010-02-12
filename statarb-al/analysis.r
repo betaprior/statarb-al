@@ -129,3 +129,5 @@ ret.s.big.spx <- get.stock.returns("spx_ret_mtx",M=9*252,offset=offset.2009,na.p
 test.ask <- get.stock.returns("univ1_ask_mtx",M=9*252,offset=offset.2009,file=TRUE)
 test.bid <- get.stock.returns("univ1_bid_mtx",M=9*252,offset=offset.2009,file=TRUE)
 
+##-------------------------------------------------------------
+## Eigenportfolio stuff

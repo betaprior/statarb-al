@@ -12,7 +12,16 @@ source("tr_signals_processing_fns.r")  ## for (at least) the following:
        ## ret.to.prices, mn.returns (actual returns of b-neutral portf.), mn.returns.periods
 
 ## if running interactively, set the default returns matrix here
-ret.mtx.file <- "univ1_ret_mtx"
+if(!testObject(ret.mtx.file)){
+  ret.mtx.file <- "univ1_ret_mtx"
+  cat("Using default return matrix file",ret.mtx.file,"\n")
+} else {
+    cat("Using existing return matrix file",ret.mtx.file,"\n")
+  }
+
+## specify the etf list here
+etf.list <- c("HHH","IYR","IYT","OIH","RKH","RTH"
+                                ,"SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY","SPY","QQQQ")
 
 ## --- batch mode argument processing
 ## arguments: -saveSigFile [FALSE] -retMtxFilename [ret.mtx.file] -filename [sig.file.RObj'
@@ -65,7 +74,9 @@ if(is.na(yrs.bk)){ yrs.bk <- as.numeric(offset.arg)-2002 ## want this to be 7 fo
                    }else{ cat("going",yrs.bk,"years back\n") }
 num.days <- 252*yrs.bk+30
 ret.s <- get.stock.returns(ret.mtx.filename,M=(yrs.bk+1)*252,offset=this.offset,na.pct.cutoff=0.0,file=TRUE)
-ret.e <- get.etf.returns(etf.ret.mtx.filename,M=(yrs.bk+1)*252,offset=this.offset,file=TRUE)
+ret.e <-
+  get.etf.returns(etf.ret.mtx.filename,M=(yrs.bk+1)*252,offset=this.offset,file=TRUE,tickers=etf.list)
+stopifnot(all(names(ret.e)==etf.list))
 stopifnot(all(row.names(ret.e)==row.names(ret.s)))
 
 ## limit the ticker DB to the entries that we have in the price matrix

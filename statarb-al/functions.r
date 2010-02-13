@@ -147,7 +147,7 @@ draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 
 stock.pca.signals <-
   function(ret.s,classified.stocks.list,num.days,win=60,win.pca=252,num.eigs=15
-           , subtract.average=TRUE, ar.method="yw",starting.piece=1){
+           , subtract.average=TRUE, ar.method="yw"){
     ## -- sanity checks and data cleanup: -------------------------
     stopifnot(num.days > 1 && win>10)
     stopifnot(nrow(ret.s) >= num.days + win - 1)
@@ -185,32 +185,28 @@ stock.pca.signals <-
     ## rows are m inline-combined weights vectors followed by m returns
     stopifnot(num.stocks==dim(ret.s)[2]) ## since using dim(ret.s)[2] as proxy
                                          ## for no. stocks in the eigenvector generating function
-    date.piece.length <- 48
+    date.piece.length <- 442
     date.cuts.idxs <-as.numeric(cut(1:length(dates.range),seq(0,length(dates.range)+date.piece.length+1,by=date.piece.length),include.lowest=T))
-    eig.mtx <- array(dim=c(date.piece.length,num.stocks*(num.factors+1)+2*num.factors,num.stocks)
-                                    , dimnames=list(NULL,NULL,stock.names))
+    ## eig.mtx <- array(dim=c(date.piece.length,num.stocks*(num.factors+1)+2*num.factors,num.stocks)
+                                    ## , dimnames=list(NULL,NULL,stock.names))
     system("date")
-    for(ii in rev(unique(date.cuts.idxs))){
-      if(ii > starting.piece){ next }
+    eig.mtx <- foreach(ii = rev(unique(date.cuts.idxs)), .combine = "rbind",
+                       .multicombine = TRUE) %dopar% {
       dates.chunk.idxs <- which(as.numeric(date.cuts.idxs)==ii,arr.ind=T)
       dates.est <- c(dates.chunk.idxs,seq(last(dates.chunk.idxs),length=win.pca))
       ## browser()
-      cfun <- function(...) abind(...,along=3)
-   ## eigenportf.combined.mtx <- 
-      eig.mtx <- foreach(i = seq(along=stock.names), .combine = "cfun") %dopar% {
-        cat(i,"-")
-        if(i==num.stocks){ system("date") }
-        run.pca.analysis(ret.s[dates.est, ], num.dates=length(dates.chunk.idxs)
-                         , num.eigs=num.factors, win.pca=win.pca)
+      cat(ii,"-")
+      run.pca.analysis(ret.s[dates.est, ], num.dates=length(dates.chunk.idxs)
+                       , num.eigs=num.factors, win.pca=win.pca)
         
-      }
-      dimnames(eig.mtx)[[1]] <- rev(dates.range[dates.chunk.idxs])
-      system("date")
-      save(eig.mtx,file=paste("pca_spx_ig_mtx",ii,".RObj",sep=""))
-      cat("Wrote file:",paste("pca_spx_ig_mtx",ii,".RObj",sep=""),"\n")
-      gc()
     }
+    rownames(eig.mtx) <- rev(dates.range)
+    system("date")
+    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx.RObj",sep=""))
+    ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
+      ## gc()
   }
+  
 
 run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7){
   num.stocks <- dim(ret.s)[2]
@@ -242,7 +238,7 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7)
         eigenportfolio.amounts <- -(eigenportfolio.amounts)
       } }
   ##  all signs of the leading e-vector have to be +ve
-    eigenportfolio.returns <- sapply(1:num.eigs,function(x)sum(ret.mtx[i,]*eigenportfolio.amounts[,x]))
+    eigenportfolio.returns <- sapply(1:num.eigs,function(x)sum(ret.s[i,]*eigenportfolio.amounts[,x]))
     accum.mtx[j,] <- c(as.numeric(eigenportfolio.amounts),sqrt(vars),eigenportfolio.returns,eigs$values[1:num.eigs])
         ## cat("|")
 

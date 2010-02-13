@@ -642,6 +642,11 @@ sim.par0.eq <- sim.trades.f.all.cpp.subtr$equity
 all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
 ## TRUE
 
+** NB: efficiency of the combining function matters:
+   An example: matrix dimensions 48 6558  408
+   combining along the 3rd dimension (400 48x6558 matrixes), so about 2.5
+   megs each -- took exactly 15 min via abind(...,along=3) w/o the
+   multicombine flag -- 23% of the total compute time!
 * Eigenportfolio / PCA approach:
   From the paper:
   order the eigenvalues of the correlation matrix and the corresponding
@@ -655,4 +660,24 @@ all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
   - for every stock, compute the weights of the top m eigenportfolios and the
     returns associated with each eigenportfolio
   - use these returns to fit m betas
-    
+
+  Additional issues: how do we interpret the effective portfolio returns?..
+  Since the "position allocations" within each portfolio aren't normalized,
+  we can't treat them as % returns.  
+  
+  In some notes, Avellaneda scales eigenreturns by sqrt(lambda) (cf slide 7
+  of Lecture2Risk2010.pdf); this seems to give eigenreturns on a more uniform
+  scale, si I will follow this approach.
+
+  Currently, store the PCA results in a 3d matrix of 
+  (dates (chron) x eig. stuff x stocks)
+  eig. stuff is a N(m+1)+2m array, where N is num. stk, m is
+  num. eigenvectors to keep
+  | { v_i/sigma_i } x m | sigma_i | F_k | lambda_k |
+  |      N x m          |    N    |  m  |    m     |
+
+  - seems to be a lot of overhead in doign an abind() of these frames.  Might
+    want to ask R-help about the best way of storing large datasets.
+
+  In order to make sure I understand what is goign on with eigenportfolios,
+  reproduce Figs. 3, 4, 5.

@@ -202,7 +202,7 @@ stock.pca.signals <-
     }
     rownames(eig.mtx) <- rev(dates.range)
     system("date")
-    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx.RObj",sep=""))
+    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx_nl.RObj",sep=""))
     ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
       ## gc()
   }
@@ -225,7 +225,8 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7)
     ## cat(".")
     eigenportfolio.amounts <- eigs$vectors[,1:num.eigs]/sqrt(vars[1:num.eigs])
     ## scaled by lambda:
-    eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),num.stocks,num.eigs,byrow=T) 
+#    eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),num.stocks,num.eigs,byrow=T) 
+
 
     ##eigenportfolio.amounts <- eigenportfolio.amounts/matrix(colSums(eigenportfolio.amounts),dim(rho)[1],num.eigs,byrow=T) ## normalize columns
     ## note that normalization should also take care of the sign

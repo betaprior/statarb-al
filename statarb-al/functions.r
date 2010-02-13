@@ -172,32 +172,46 @@ stock.pca.signals <-
     num.ar.fit.coefs <- 3
     num.stocks <- length(stock.names)
     sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
-    beta.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs,num.stocks)
-                          , dimnames=list(rev(dates.range),NULL,stock.names))
-    ar.fit.mtx <- array(dim=c(length(dates.range),num.ar.fit.coefs,num.stocks)
-                        , dimnames=list(rev(dates.range),NULL,stock.names))
-    combined.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,num.stocks)
-                               , dimnames=list(rev(dates.range),NULL,stock.names))
-    eigenportf.weights.mtx <- array(dim=c(length(dates.range),num.stocks*num.factors,num.stocks)
-                                    , dimnames=list(rev(dates.range),NULL,stock.names))
-    eigenportf.returns.mtx <- array(dim=c(length(dates.range),num.factors,num.stocks)
-                                    , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## beta.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs,num.stocks)
+    ##                       , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## ar.fit.mtx <- array(dim=c(length(dates.range),num.ar.fit.coefs,num.stocks)
+    ##                     , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## combined.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,num.stocks)
+    ##                            , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## eigenportf.weights.mtx <- array(dim=c(length(dates.range),num.stocks*num.factors,num.stocks)
+    ##                                 , dimnames=list(rev(dates.range),NULL,stock.names))
+    ## eigenportf.returns.mtx <- array(dim=c(length(dates.range),num.factors,num.stocks)
+    ##                                 , dimnames=list(rev(dates.range),NULL,stock.names))
     ## rows are m inline-combined weights vectors followed by m returns
-    eigenportf.combined.mtx <- array(dim=c(length(dates.range),num.factors+num.stocks*num.factors,num.stocks)
-                                    , dimnames=list(rev(dates.range),NULL,stock.names))
-
-    cfun <- function(...) abind(...,along=3)
-   ## eigenportf.combined.mtx <- 
-    foreach(i = seq(along=stock.names), .combine = "cfun") %dopar% {
-      cat(i,"-")
-      run.pca.analysis(ret.s, num.dates=length(dates.range)
+    stopifnot(num.stocks==dim(ret.s)[2]) ## since using dim(ret.s)[2] as proxy
+                                         ## for no. stocks in the eigenvector generating function
+    date.piece.length <- 442
+    date.cuts.idxs <-as.numeric(cut(1:length(dates.range),seq(0,length(dates.range)+date.piece.length+1,by=date.piece.length),include.lowest=T))
+    ## eig.mtx <- array(dim=c(date.piece.length,num.stocks*(num.factors+1)+2*num.factors,num.stocks)
+                                    ## , dimnames=list(NULL,NULL,stock.names))
+    system("date")
+    eig.mtx <- foreach(ii = rev(unique(date.cuts.idxs)), .combine = "rbind",
+                       .multicombine = TRUE) %dopar% {
+      dates.chunk.idxs <- which(as.numeric(date.cuts.idxs)==ii,arr.ind=T)
+      dates.est <- c(dates.chunk.idxs,seq(last(dates.chunk.idxs),length=win.pca))
+      ## browser()
+      cat(ii,"-")
+      run.pca.analysis(ret.s[dates.est, ], num.dates=length(dates.chunk.idxs)
                        , num.eigs=num.factors, win.pca=win.pca)
+        
     }
+    rownames(eig.mtx) <- rev(dates.range)
+    system("date")
+    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx_nl.RObj",sep=""))
+    ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
+      ## gc()
   }
+  
 
-run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca){
-  accum.mtx <- matrix(nrow=num.dates,ncol=dim(ret.s)[2]*(num.eigs+1) + 2*num.eigs)
-  rho <- matrix(0.0,dim(ret.s)[2],dim(ret.s)[2])
+run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7){
+  num.stocks <- dim(ret.s)[2]
+  accum.mtx <- matrix(nrow=num.dates,ncol=num.stocks*(num.eigs+1) + 2*num.eigs)
+  rho <- matrix(0.0,num.stocks,num.stocks)
   ## cat("|")
   for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
     j <- num.dates-i+1
@@ -205,13 +219,14 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca){
     vars <- apply(ret.mtx,2,function(x){ var(x,use="complete.obs") })
     means <- apply(ret.mtx,2,function(x){ mean(x,na.rm=TRUE) })
     Y <- t(apply(ret.mtx,1,function(x){(x-means)/sqrt(vars)})) ##ret.mtx.std
-    rho <- ( t(Y) %*% Y )/(win.pca-1)
+    rho <- ( t(Y) %*% Y )/(win.pca-1) + corr.reg*diag(num.stocks) ##corr.reg ~1e-7 for numerical stability
     ## cat(".")
     eigs <- eigen(rho, symmetric=TRUE)
     ## cat(".")
     eigenportfolio.amounts <- eigs$vectors[,1:num.eigs]/sqrt(vars[1:num.eigs])
     ## scaled by lambda:
-   eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),dim(rho)[1],num.eigs,byrow=T) 
+#    eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),num.stocks,num.eigs,byrow=T) 
+
 
     ##eigenportfolio.amounts <- eigenportfolio.amounts/matrix(colSums(eigenportfolio.amounts),dim(rho)[1],num.eigs,byrow=T) ## normalize columns
     ## note that normalization should also take care of the sign
@@ -220,11 +235,11 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca){
     } else if(all(eigs$vectors[,1] >= 0)) {
     } else {
       warning("Non-uniform signs of leading eigenvector")
-      if(sum(as.numeric(eigs$vectors[,1] < 0)) > (dim(rho)[1])/2) {
+      if(sum(as.numeric(eigs$vectors[,1] < 0)) > num.stocks/2) {
         eigenportfolio.amounts <- -(eigenportfolio.amounts)
       } }
   ##  all signs of the leading e-vector have to be +ve
-    eigenportfolio.returns <- sapply(1:num.eigs,function(x)sum(ret.mtx[i,]*eigenportfolio.amounts[,x]))
+    eigenportfolio.returns <- sapply(1:num.eigs,function(x)sum(ret.s[i,]*eigenportfolio.amounts[,x]))
     accum.mtx[j,] <- c(as.numeric(eigenportfolio.amounts),sqrt(vars),eigenportfolio.returns,eigs$values[1:num.eigs])
         ## cat("|")
 

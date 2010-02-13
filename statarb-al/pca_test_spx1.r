@@ -1,11 +1,9 @@
-source("tr_test_spx1_batch.r")
-require("Revobase")
-require("foreach")
-require("doMC")
+ret.mtx.file <- "spx_ret_mtx"
+source("tr_test_generic_batch.r")
 
-N <- 80
-est.win <- 60
-num.eigs <- 2
+
+est.win <- 252
+num.eigs <- 15 
 source("functions.r")
 ## Rprof("pcastuff.Rprof")
 mtx1 <- stock.pca.signals(ret.s,tc.spx,num.days=N-est.win+1,num.eigs=num.eigs)
@@ -27,3 +25,15 @@ qplot(1:nrow(sorted.ev),ev,data=sorted.ev,color=ind,xlab="Sorted eigenvector ind
 plot(rev(sort(q.eigenvecs[,2])),type='l'); abline(h=0)
 
 plot(rev(sort(q.eigenvecs[,3])),type='l'); abline(h=0)
+
+#Rprof("pcastuff.Rprof")
+registerDoMC(2)
+getDoParWorkers()
+stock.pca.signals(ret.s,tc.subset,num.days=N-est.win+1,num.eigs=num.eigs)
+#Rprof(NULL)
+num.stocks <- dim(mtx1)[3]
+q.factors <-
+  matrix(mtx1[1,1:(num.eigs*num.stocks),1],nrow=num.stocks,ncol=num.eigs,byrow=F)
+q.sdevs <- mtx1[1,(num.eigs*num.stocks+1):(num.eigs*(num.stocks+1)),1]
+q.evals <- mtx1[1,(num.eigs*(num.stocks+1)+1):(num.eigs*(num.stocks+2)),1]
+

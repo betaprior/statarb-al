@@ -46,6 +46,7 @@ sim.trades.f.all.cpp <- run.trading.simulation.cpp(  sig.f, price.df.f
                                                    , pos.allocation="beta.neutral")
 
 
+
 if(testObject(trading.f.list)) rm(trading.f.list)
 trading.f.list <- list()
 for(i in seq(along=instr.p.all)){

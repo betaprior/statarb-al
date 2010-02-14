@@ -21,8 +21,9 @@ run.trading.simulation.cpp <- function(  signals.struct, prices
                                        , init.cash=100000
                                        , pos.allocation="beta.neutral"){
 
-  tickers <- dimnames(signals.struct)[3]
-  dates <- dimnames(signals.struct)[1]
+  stopifnot(class(signals.struct)=="array")
+  tickers <- dimnames(signals.struct)[[3]]
+  dates <- dimnames(signals.struct)[[1]]
 
   stopifnot(all(instr.p %in% tickers))
   tickers.instrp.idx <- match(instr.p,tickers)

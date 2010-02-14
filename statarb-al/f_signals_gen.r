@@ -89,7 +89,8 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60
-           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE, ar.method="yw"){
+           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE
+           , ar.method="yw", factor.names=c("beta"), select.factors=TRUE){
     ## -- sanity checks and data cleanup: -------------------------
     stopifnot(num.days > 1 && win>10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
@@ -103,14 +104,13 @@ stock.etf.signals <-
     stopifnot(!is.unsorted(rev(dates.range))) ## rev. dates must be chron sorted
     sig.list <- vector('list',length(dates.range))
     stocks.list <- classified.stocks.list$TIC
-    ret.s <- ret.s[names(ret.s) %in% stocks.list]
-    stock.names <- names(ret.s)
-    omitted.stocks <- stocks.list %w/o% names(ret.s)
+    ret.s <- ret.s[ ,colnames(ret.s) %in% stocks.list]
+    stock.names <- colnames(ret.s)
+    omitted.stocks <- stocks.list %w/o% colnames(ret.s)
     if(length(omitted.stocks)>0)
       warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
 
     ## -- preallocations for fit coeff matrices: ------------------
-    factor.names <- c("beta")
     num.beta.fit.coefs <- length(factor.names)+1
     num.ar.fit.coefs <- 3
     sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
@@ -125,9 +125,12 @@ stock.etf.signals <-
     cfun <- function(...) abind(...,along=3)
     combined.fit.mtx <-
       foreach(i = seq(along=stock.names), .combine = "cfun", .multicombine = TRUE) %dopar% {
-        gen.fits.pq(  cbind(  as.matrix(ret.s[stock.names[i]])
+        if(select.factors){
+          factor.returns <- as.matrix(ret.e[ ,as.character(classified.stocks.list[stock.names[i],][-1]) ] )
+        } else { factor.returns <- as.matrix(ret.e) }
+        gen.fits.pq(  cbind(  as.matrix(ret.s[, stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
-                            , as.matrix(ret.e[ as.character(classified.stocks.list[stock.names[i],][-1]) ] ))
+                            , factor.returns)
                     , classified.stocks.list=classified.stocks.list
                     , num.dates=length(dates.range)
                     , win=win, ar.method=ar.method)

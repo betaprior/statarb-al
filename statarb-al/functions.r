@@ -147,37 +147,27 @@ draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 
 stock.pca.signals <-
   function(ret.s,classified.stocks.list,num.days,win=60,win.pca=252,num.eigs=15
-           , subtract.average=TRUE, ar.method="yw"){
+           , subtract.average=TRUE, ar.method="yw",scale.by.sqrt.lambda=TRUE
+           , eigenstuff.file=NULL){
     ## -- sanity checks and data cleanup: -------------------------
     stopifnot(num.days > 1 && win>10)
-    stopifnot(nrow(ret.s) >= num.days + win - 1)
-    dates.range <- row.names(ret.s)[1:num.days]
-    if(is.unsorted(rev(dates.range)))
-      if(!is.unsorted(dates.range)){
-        ret.s <- reverse.rows(ret.s); ret.e <- reverse.rows(ret.e)
-        dates.range <- row.names(ret.s)[1:num.days]
+    stopifnot(nrow(ret.s) >= num.days + win + win.pca - 1)
+    dates.range <- row.names(ret.s)[1:(num.days+win)]
+    if(is.unsorted(rev(dates.range)) && (!is.unsorted(dates.range))){
+        ret.s <- reverse.rows(ret.s)
+        dates.range <- row.names(ret.s)[1:(num.days+win)]
       }
     stopifnot(!is.unsorted(rev(dates.range))) ## rev. dates must be chron sorted
     stocks.list <- classified.stocks.list$TIC
     stock.names <- names(ret.s)[names(ret.s) %in% stocks.list]
-    ret.s <- as.matrix(ret.s[stock.names],names=stock.names)
+    ret.s <- as.matrix(ret.s[stock.names],colnames=stock.names)
     omitted.stocks <- stocks.list %w/o% stock.names
     if(length(omitted.stocks)>0)
       warning(paste(length(omitted.stocks),"stocks omitted from the provided list (most likely due to bad data)"))
     ## browser()
     ## -- preallocations for fit coeff matrices: ------------------
     num.factors <- num.eigs ##number of eigenportfolios
-    factor.names <- c("beta1","beta2")
-    num.beta.fit.coefs <- length(factor.names)+1
-    num.ar.fit.coefs <- 3
     num.stocks <- length(stock.names)
-    sig.param.names <- c("action","s","k","m","mbar","a","b","varz",factor.names)
-    ## beta.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs,num.stocks)
-    ##                       , dimnames=list(rev(dates.range),NULL,stock.names))
-    ## ar.fit.mtx <- array(dim=c(length(dates.range),num.ar.fit.coefs,num.stocks)
-    ##                     , dimnames=list(rev(dates.range),NULL,stock.names))
-    ## combined.fit.mtx <- array(dim=c(length(dates.range),num.beta.fit.coefs+num.ar.fit.coefs,num.stocks)
-    ##                            , dimnames=list(rev(dates.range),NULL,stock.names))
     ## eigenportf.weights.mtx <- array(dim=c(length(dates.range),num.stocks*num.factors,num.stocks)
     ##                                 , dimnames=list(rev(dates.range),NULL,stock.names))
     ## eigenportf.returns.mtx <- array(dim=c(length(dates.range),num.factors,num.stocks)
@@ -185,11 +175,16 @@ stock.pca.signals <-
     ## rows are m inline-combined weights vectors followed by m returns
     stopifnot(num.stocks==dim(ret.s)[2]) ## since using dim(ret.s)[2] as proxy
                                          ## for no. stocks in the eigenvector generating function
+
+    ## compute the eigenstuff
+    if(file.exists(eigenstuff.file)){
+      load(eigenstuff.file) ## loads eig.mtx
+      eigenreturns.mtx <- eig.mtx[ ,attributes(eig.mtx)$subdivision.idxs$returns]
+    } else {
     date.piece.length <- 442
     date.cuts.idxs <-as.numeric(cut(1:length(dates.range),seq(0,length(dates.range)+date.piece.length+1,by=date.piece.length),include.lowest=T))
     ## eig.mtx <- array(dim=c(date.piece.length,num.stocks*(num.factors+1)+2*num.factors,num.stocks)
                                     ## , dimnames=list(NULL,NULL,stock.names))
-    system("date")
     eig.mtx <- foreach(ii = rev(unique(date.cuts.idxs)), .combine = "rbind",
                        .multicombine = TRUE) %dopar% {
       dates.chunk.idxs <- which(as.numeric(date.cuts.idxs)==ii,arr.ind=T)
@@ -197,18 +192,32 @@ stock.pca.signals <-
       ## browser()
       cat(ii,"-")
       run.pca.analysis(ret.s[dates.est, ], num.dates=length(dates.chunk.idxs)
-                       , num.eigs=num.factors, win.pca=win.pca)
+                       , num.eigs=num.factors, win.pca=win.pca
+                       , scale.by.sqrt.lambda = scale.by.sqrt.lambda)
         
     }
     rownames(eig.mtx) <- rev(dates.range)
-    system("date")
-    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx_nl.RObj",sep=""))
-    ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
-      ## gc()
-  }
-  
+    attr(eig.mtx,"tickers") <- stock.names
+    attr(eig.mtx,"num.eigs") <- num.factors
+    attr(eig.mtx,"subdivision.idxs") <-
+    list(eigvecs=1:(num.stocks*num.factors),sdevs=(num.stocks*(num.factors)+1):(num.stocks*(num.factors)+num.factors),returns=(num.stocks*(num.factors+1)+1):(num.stocks*(num.factors+1)+num.factors),eigvals=(num.stocks*(num.factors+1)+num.factors+1):(num.stocks*(num.factors+1)+2*num.factors))
 
-run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7){
+    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx.RObj",sep=""))
+    ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
+    eigenreturns.mtx <- eig.mtx[ ,attributes(eig.mtx)$subdivision.idxs$returns]
+  }
+    if(is.unsorted(rev(rownames(eigenreturns.mtx))) && (!is.unsorted(rownames(eigenreturns.mtx)))){
+      eigenreturns.mtx <- reverse.rows(eigenreturns.mtx)
+    }
+    stopifnot(all(rownames(ret.s)[1:nrow(eigenreturns.mtx)] == rownames(eigenreturns.mtx)))
+    factor.names <- paste("beta",1:num.factors,sep="")
+    stock.etf.signals(  ret.s[1:nrow(eigenreturns.mtx), ]
+                      , eigenreturns.mtx,classified.stocks.list,num.days,win,factor.names=factor.names
+                      , select.factors=FALSE)
+  }
+
+run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca,
+  corr.reg=1e-7, scale.by.sqrt.lambda=TRUE){
   num.stocks <- dim(ret.s)[2]
   accum.mtx <- matrix(nrow=num.dates,ncol=num.stocks*(num.eigs+1) + 2*num.eigs)
   rho <- matrix(0.0,num.stocks,num.stocks)
@@ -225,8 +234,9 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7)
     ## cat(".")
     eigenportfolio.amounts <- eigs$vectors[,1:num.eigs]/sqrt(vars[1:num.eigs])
     ## scaled by lambda:
-#    eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),num.stocks,num.eigs,byrow=T) 
-
+    if(scale.by.sqrt.lambda){
+      eigenportfolio.amounts <- eigenportfolio.amounts/matrix(sqrt(eigs$values[1:num.eigs]),num.stocks,num.eigs,byrow=T) 
+    }
 
     ##eigenportfolio.amounts <- eigenportfolio.amounts/matrix(colSums(eigenportfolio.amounts),dim(rho)[1],num.eigs,byrow=T) ## normalize columns
     ## note that normalization should also take care of the sign
@@ -234,7 +244,7 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca, corr.reg=1e-7)
       eigenportfolio.amounts <- -(eigenportfolio.amounts)
     } else if(all(eigs$vectors[,1] >= 0)) {
     } else {
-      warning("Non-uniform signs of leading eigenvector")
+      ## warning("Non-uniform signs of leading eigenvector")
       if(sum(as.numeric(eigs$vectors[,1] < 0)) > num.stocks/2) {
         eigenportfolio.amounts <- -(eigenportfolio.amounts)
       } }

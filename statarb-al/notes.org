@@ -681,3 +681,10 @@ all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
 
   In order to make sure I understand what is goign on with eigenportfolios,
   reproduce Figs. 3, 4, 5.
+
+  I get good qualitative agreement, observing clustering, as well as
+  positive-weighted market eigenportfolio that tracks very close to SPY.
+  Note that after 2004 I don't get any negative weights in the market
+  eigenportfolio; have 1 (sometimes 0) in '04, have 1-4 in '02.
+
+  All this analysis is in pca_test_fig3.r

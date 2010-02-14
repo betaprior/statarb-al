@@ -28,11 +28,6 @@ price.df.f <- univ1.master.price[,names(univ1.master.price) %w/o% (dups %w/o% "H
 instr.p.all <- instr.p.all[-which(instr.p.all %in% (instr.p.all %w/o% names(price.df.f)))]
 ## gets rid of JCI, PXD
 
-instr <- "FDX"
-sim.trades.f <- run.trading.simulation(  sig.f, price.df.f
-                                       , instr, c(instr,tc.spx[instr,]$SEC_ETF), tc.spx
-                                       , debug=FALSE, silent=FALSE)
-##pgr.equity <- sim.trades.f$equity
 
 ##Now we try to trade all of them in the same simulation
 sim.trades.f.all <- run.trading.simulation(  sig.f, price.df.f
@@ -45,6 +40,21 @@ sim.trades.f.all.cpp <- run.trading.simulation.cpp(  sig.f, price.df.f
                                                    , debug=FALSE, silent=FALSE
                                                    , pos.allocation="beta.neutral")
 
+
+## testing the new trading simulation interface:
+source("f_trading_sim_cpp_mtx.r")
+sim.trades.f.all.cpp <- run.trading.simulation.cpp(  sig.mtx.f, price.df.f
+                                                   , instr.p.all, c(instr.p.all,instr.q.all), tc.spx
+                                                   , num.factors=1, PCA=FALSE
+                                                   , debug=FALSE, debug.name="JPM"
+                                                   , silent=FALSE
+                                                   , pos.allocation="beta.neutral")
+
+instr <- "FDX"
+sim.trades.f <- run.trading.simulation(  sig.f, price.df.f
+                                       , instr, c(instr,tc.spx[instr,]$SEC_ETF), tc.spx
+                                       , debug=FALSE, silent=FALSE)
+##pgr.equity <- sim.trades.f$equity
 
 if(testObject(trading.f.list)) rm(trading.f.list)
 trading.f.list <- list()

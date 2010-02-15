@@ -40,16 +40,23 @@ T fromString(const string& s){
   return t;
 }
 
+
 void get_dims(Rcpp::VectorBase &vec, vector<int> &dims){
     Rcpp::RObject y = vec.attr("dim");
-    vector<int> tmp = y.asStdVectorInt();
+    vector<int> tmp(Rcpp::as< vector<int> >(y));
     for(int i=0; i<tmp.size(); i++){
       dims[i] = tmp[i];
     }
 }
 
-template <typename T, int RTYPE, typename CTYPE>
-void col_sums(Rcpp::SimpleVector<RTYPE, CTYPE> &vec, vector<T> &result){
+vector<int> get_dimensions(Rcpp::VectorBase &vec){
+    Rcpp::RObject y = vec.attr("dim");
+    return(Rcpp::as< vector<int> >(y));
+}
+
+
+template <typename T, int RTYPE>
+void col_sums(Rcpp::SimpleVector<RTYPE> &vec, vector<T> &result){
   vector<int> dims_buffer(2,0); //hold dimensions by get_dims
   get_dims(vec, dims_buffer);
   for(int col=0; col < dims_buffer[1]; col++){
@@ -115,7 +122,7 @@ double get_kth_sigArr_entry(Rcpp::NumericVector &sig2d, int i, int j, int k, int
  * - r_sig_mtx, r_sig_actions, r_params
  */
 RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEXP r_pca,
-			      SEXP r_instr_pq, SEXP r_prices_instrpq_idx, SEXP r_dates,
+			      SEXP r_instr_pq, SEXP r_prices_instrpq_idx, SEXP r_dates, SEXP r_num_factors,
 			      SEXP r_q_alloc_mtx, SEXP r_prices_qalloc_idx,
 			      SEXP r_prices, SEXP r_positions, SEXP r_positions_p, 
 			      SEXP r_sig_mtx, SEXP r_sig_actions, SEXP r_params) {
@@ -125,20 +132,20 @@ RcppExport SEXP backtest_loop(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEXP r_
 
   try {
     Rcpp::CharacterVector instr_p(r_instr_p);
-    Rcpp::SimpleVector<INTSXP,int> tickers_instrp_idx(r_tickers_instrp_idx);
+    Rcpp::SimpleVector<INTSXP> tickers_instrp_idx(r_tickers_instrp_idx);
     Rcpp::LogicalVector pca(r_pca);
     bool is_pca = pca[0];
     Rcpp::CharacterVector instr_pq(r_instr_pq);
-    Rcpp::SimpleVector<INTSXP,int> prices_instrpq_idx(r_prices_instrpq_idx);
+    Rcpp::SimpleVector<INTSXP> prices_instrpq_idx(r_prices_instrpq_idx);
     Rcpp::CharacterVector dates(r_dates);
     Rcpp::CharacterVector pq_factor_list;
     if(!is_pca){
       pq_factor_list = Rcpp::CharacterVector(r_q_alloc_mtx);
-      cout << "PCA NOT in effect" << endl;
+      cout << "PCA NOT in effect." << endl;
     }
     Rcpp::NumericVector prices(r_prices);
-    Rcpp::SimpleVector<INTSXP,int> positions(r_positions);
-    Rcpp::SimpleVector<INTSXP,int> positions_p(r_positions_p);
+    Rcpp::SimpleVector<INTSXP> positions(r_positions);
+    Rcpp::SimpleVector<INTSXP> positions_p(r_positions_p);
     Rcpp::NumericVector sig_mtx(r_sig_mtx);
     Rcpp::NumericVector sig_actions(r_sig_actions);
     RcppParams params(r_params);
@@ -339,7 +346,7 @@ RcppExport SEXP rcpp_test4(SEXP N1, SEXP V1, SEXP M1, SEXP parms) {
     bool verbose = rparam.getBoolValue("verbose");
     RcppResultSet rs;
     Rcpp::RObject n1sexp(N1);
-    double n1 = n1sexp.asDouble();
+    double n1 = Rcpp::as<double>(n1sexp);
     Rcpp::NumericVector nv1(V1);
 
     Rprintf("The value of isna is %d\n",R_IsNA(n1));

@@ -23,9 +23,15 @@ which(names(univ1.master.price)=="HHH")
 ## > head(univ1.master.price[,c(201,1621)])
 ##             HHH HHH.1
 ## 20081231 31.900    NA
-univ1.master.price <- univ1.master.price[,-which(names(univ1.master.price)=="HHH")[2]]
-price.df.f <- univ1.master.price[,names(univ1.master.price) %w/o% (dups %w/o% "HHH")]
-instr.p.all <- instr.p.all[-which(instr.p.all %in% (instr.p.all %w/o% names(price.df.f)))]
+univ1.master.price <- univ1.master.price[,-c( which(names(univ1.master.price)=="HHH")[2]
+                                             , which(names(univ1.master.price)=="JCI")[2]
+                                             , which(names(univ1.master.price)=="PXD")[2])]
+price.df.f <- univ1.master.price[,names(univ1.master.price) %w/o% (dups %w/o%
+                                                                   c("HHH","JCI","PXD"))]
+if(length(-which(instr.p.all %in% (instr.p.all %w/o% names(price.df.f))))>0){
+  instr.p.all <- instr.p.all[which(instr.p.all %in% (instr.p.all %w/o%
+                                                    names(price.df.f)))]
+}
 ## gets rid of JCI, PXD
 
 

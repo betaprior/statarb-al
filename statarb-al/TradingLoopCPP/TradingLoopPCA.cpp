@@ -42,14 +42,20 @@ T fromString(const string& s){
 
 void get_dims(Rcpp::VectorBase &vec, vector<int> &dims){
     Rcpp::RObject y = vec.attr("dim");
-    vector<int> tmp = y.asStdVectorInt();
+    vector<int> tmp(Rcpp::as< vector<int> >(y));
     for(int i=0; i<tmp.size(); i++){
       dims[i] = tmp[i];
     }
 }
 
-template <typename T, int RTYPE, typename CTYPE>
-void col_sums(Rcpp::SimpleVector<RTYPE, CTYPE> &vec, vector<T> &result){
+vector<int> get_dimensions(Rcpp::VectorBase &vec){
+    Rcpp::RObject y = vec.attr("dim");
+    return(Rcpp::as< vector<int> >(y));
+}
+
+
+template <typename T, int RTYPE>
+void col_sums(Rcpp::SimpleVector<RTYPE> &vec, vector<T> &result){
   vector<int> dims_buffer(2,0); //hold dimensions by get_dims
   get_dims(vec, dims_buffer);
   for(int col=0; col < dims_buffer[1]; col++){
@@ -130,18 +136,18 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 
   try {
     Rcpp::CharacterVector instr_p(r_instr_p);
-    Rcpp::SimpleVector<INTSXP,int> tickers_instrp_idx(r_tickers_instrp_idx);
+    Rcpp::SimpleVector<INTSXP> tickers_instrp_idx(r_tickers_instrp_idx);
     Rcpp::LogicalVector pca(r_pca);
     bool is_pca = pca[0];
-    Rcpp::SimpleVector<INTSXP,int> num_factors_(r_num_fact);
+    Rcpp::SimpleVector<INTSXP> num_factors_(r_num_fact);
     int num_factors = num_factors_[0]; 
-    cout << "Num. factors: " << num_factors << endl;
+    // cout << "Num. factors: " << num_factors << endl;
     Rcpp::CharacterVector instr_pq(r_instr_pq);
-    Rcpp::SimpleVector<INTSXP,int> prices_instrpq_idx(r_prices_instrpq_idx);
+    Rcpp::SimpleVector<INTSXP> prices_instrpq_idx(r_prices_instrpq_idx);
     Rcpp::CharacterVector dates(r_dates);
     Rcpp::CharacterVector pq_factor_list;
     Rcpp::NumericVector q_alloc_mtx;
-    Rcpp::SimpleVector<INTSXP,int> prices_qalloc_idx;
+    Rcpp::SimpleVector<INTSXP> prices_qalloc_idx;
     map<int,int> qalloc_idx_to_price_col;
     int eigenport_length;
     if(!is_pca){
@@ -149,7 +155,7 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
       cout << "PCA NOT in effect" << endl;
     } else {
       q_alloc_mtx = Rcpp::NumericVector(r_q_alloc_mtx);
-      prices_qalloc_idx = Rcpp::SimpleVector<INTSXP,int>(r_prices_qalloc_idx);
+      prices_qalloc_idx = Rcpp::SimpleVector<INTSXP>(r_prices_qalloc_idx);
       vector<int> dims_buffer(2,0); //hold dimensions by get_dims
       get_dims(q_alloc_mtx, dims_buffer);
       eigenport_length = dims_buffer[1]/num_factors;
@@ -157,9 +163,15 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	qalloc_idx_to_price_col.insert(std::pair<int,int>(i,prices_qalloc_idx(i)-1));
       }
     }
+    // map<int,int>::iterator it;
+    // // showing contents:
+    // std::cout << "qalloc_idx_to_price_col contains:\n";
+    // for ( it=qalloc_idx_to_price_col.begin() ; it != qalloc_idx_to_price_col.end(); it++ )
+    //   std::cout << (*it).first << " => " << (*it).second << endl;
+
     Rcpp::NumericVector prices(r_prices);
-    Rcpp::SimpleVector<INTSXP,int> positions(r_positions);
-    Rcpp::SimpleVector<INTSXP,int> positions_p(r_positions_p);
+    Rcpp::SimpleVector<INTSXP> positions(r_positions);
+    Rcpp::SimpleVector<INTSXP> positions_p(r_positions_p);
     Rcpp::NumericVector sig_mtx(r_sig_mtx);
     Rcpp::NumericVector sig_actions(r_sig_actions);
     RcppParams params(r_params);
@@ -205,38 +217,102 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
       pq_idx_to_price_col.insert(std::pair<int,int>(i,prices_instrpq_idx(i)-1));
     }
 
+    bool print_dimensions = false;
+    if(print_dimensions){
+      Rprintf("instr_p has length %d\n",instr_p.size());
+      Rprintf("instr_pq has length %d\n",instr_pq.size());
+      Rprintf("dates has length %d\n",dates.size());
+      if(!is_pca){
+	Rprintf("pq_factor_list has length %d\n",pq_factor_list.size());
+	get_dims(pq_factor_list, dims_buffer);
+      }
+      Rprintf("got dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(prices, dims_buffer);
+      //      Rcpp::RObject::AttributeProxy dim_att(prices, "dim");
+      //vector<int> pric_dims((string)dim_att);
+      //      const vector<int> pric_dims((std::vector <int>)prices.attr("dim"));
+      //cout << "prices: directly getting dims: " 
+      //	   << pric_dims << endl;
+      Rprintf("prices has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(positions, dims_buffer);
+      Rprintf("positions has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(sig_mtx, dims_buffer);
+      Rprintf("sig_mtx has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+      get_dims(sig_actions, dims_buffer);
+      Rprintf("sig_actions has dims %d,%d\n",dims_buffer[0],dims_buffer[1]);
+
+      // cout << "different way to get dimensions: " << endl;
+      // vector<int> sa_dims(get_dimensions(sig_actions));
+      // Rcpp::RObject y = sig_actions.attr("dim");
+      // vector<int> sa_dims(y.asStdVectorInt());
+      // Rprintf("sig_actions has dims %d,%d\n",sa_dims[0],sa_dims[1]);
+
+      cout << "third way to get dimensions: " << endl;
+      Rcpp::RObject::AttributeProxy sa_dims_ap(sig_actions.attr("dim"));
+      vector<int> sa_dims2(Rcpp::as< vector<int> >(sa_dims_ap));
+      Rprintf("sig_actions has dims %d,%d\n",sa_dims2[0],sa_dims2[1]);
+
+      // proper way according to romain
+      cout << "Proper way to get dimensions: " << endl;
+      vector<int> sa_dims3 = sig_actions.attr("dim");
+      Rprintf("sig_actions has dims %d,%d\n",sa_dims3[0],sa_dims3[1]);
+
+      int i,j;
+      for(i=0;i<1;i++){
+	cout << "date: " << string(dates(i)) << endl;
+	for(j=0;j<instr_p.size();j++){
+	  if(j >= 3){ break; }
+	  int tkr_idx = p_name_to_tkr_idx[string(instr_p(j))];
+	  cout << string(instr_p(j)) << ":" << tkr_idx << " ";
+	  cout << i << "," << j << ":" << get_kth_sigArr_entry(sig_mtx,i,j,SA_S_IDX,SIG_COL_OFFSET) << endl;
+	}
+	cout << endl;
+      }
+      cout << endl;
+    }
+
+
+
     int num_pq = instr_pq.size();
     vector<int> net_positions(num_pq, 0);
     vector<double> day_prices(num_pq, 0);
     double instr_price;
     double nav = 0;
     double lambda = (double)2/max(100,instr_p.size());
+    // double lambda = (double)2/400;
     double cash = init_cash;
     vector<double> equity(dates.size(), 0);
     /* -----------  main trading loop ------------------ */
-    for(i=0; i < dates.size(); i++){
-           // for(i=0; i < 55; i++){
+    bool DONOTRUN=false;
+    // for(i=0; i < dates.size(); i++){
+    for(i=0; i < 300; i++){
+      if(DONOTRUN) { break; }
       
       //      if(!opt_silent){ if(i % 50 == 0) cout << i << " "; }
       if(!opt_silent){ if(i % 50 == 0) Rprintf("%d ",i); }
       col_sums(positions,net_positions);
       
+      // cout << "i:" << i << "---------- @pos:" << endl;
       nav = 0;
       for(int ii=0; ii < num_pq; ii++){
 	day_prices[ii] = prices(i, pq_idx_to_price_col[ii]);
 	if(isnan(day_prices[ii])){ day_prices[ii] = 0; }
 	nav += day_prices[ii] * net_positions[ii];
+	// cout << ii << ":" << net_positions[ii] << " ";
       }
       
       equity[i] = cash + nav;
+      // cout << "cash: " << cash << " equity: " << equity[i] << endl;
 
-      vector<double> eigenport_prices(eigenport_length,0);
-      vector<int> num_shr_q(eigenport_length,0);
-      vector<double> inv_amount_q(eigenport_length,0);
       //  for(j=0; j < 3; j++){
       for(j=0; j < instr_p.size(); j++){
 	if (debug)
 	  if(j!=debug_j) { continue; } else { /*cout << endl;*/ }
+
+	vector<double> eigenport_prices(eigenport_length,0);
+	vector<int> num_shr_q(eigenport_length,0);
+	vector<double> inv_amount_q(eigenport_length,0);
+
 
 	int tkr_idx = p_idx_to_tkr_idx[j];
 	int current_pos = positions_p(j);
@@ -258,6 +334,9 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
         vector<double> betas(num_factors,0);
 	get_kth_sigArr_slice(sig_mtx,i,tkr_idx,SA_BETA_IDX,SIG_COL_OFFSET,num_factors,
 			     betas);
+	// for(int ii=0; ii < betas.size(); ii++){ cout << "b" << ii << ":" <<
+	//     betas[ii] << " "; }
+	// cout << endl;
 
 	/*	*/
 	bool print_signals = false;
@@ -277,26 +356,39 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	int num_shr_p;
 	num_shr_p = cint(tot / this_price); 
 
-	bool saw_na_price = false;
+	int saw_na_price = 0;
+	int MAX_NA_OBS = 6;
 	for(int kk=0; kk<eigenport_length; kk++){
 	  eigenport_prices[kk] = prices(i, qalloc_idx_to_price_col[kk]);
-	  if(isnan(eigenport_prices[kk]) || eigenport_prices[kk] <= 0)
-	    saw_na_price = true;
+	  // cout << "ep:" << kk << ":" << qalloc_idx_to_price_col[kk] 
+	  //      << ":" << eigenport_prices[kk] << "|";
+	  if(isnan(eigenport_prices[kk]) || eigenport_prices[kk] <= 0){
+	    saw_na_price++;
+	    eigenport_prices[kk]=0;
+	  }
 	  for(int jj=0; jj<num_factors; jj++){
+	    // cout << "accessing index " << kk+jj*eigenport_length << endl;
 	    inv_amount_q[kk] += betas[jj] * q_alloc_mtx(i,kk+jj*eigenport_length);
 	  }
 	  num_shr_q[kk] = -cint(tot * inv_amount_q[kk] / eigenport_prices[kk]);
+	  if(isnan(eigenport_prices[kk])){ num_shr_q[kk] = 0; }
 	}
-	if(isnan(this_price) || saw_na_price || this_price <= 0)
-	  continue;
+	if(isnan(this_price) || (saw_na_price > MAX_NA_OBS) || this_price <= 0)
+	  continue; 
 	
 
-	
-	// if(debug && j==debug_j){
-	//   cout << "i:" << i << "; eq[i]: " << equity[i] << "; cash: " << cash << "; nav: " << nav 
-	//        << "curr P pos: " << current_pos << " targets: num p " << num_shr_p << " num q " << num_shr_q << endl; 
-	//   cout  << "tot is " << tot << " beta is " << beta  << " this_price is " 
-	// 	<< this_price << " pair_pr " << pair_price << endl; }
+	if(debug && j==debug_j){
+	  double inv_in_p, inv_in_q=0;
+	  inv_in_p = tot; 
+	  for(int ii=0; ii < eigenport_length; ii++){ inv_in_q += tot*inv_amount_q[ii]; }
+
+	  cout << "i:" << i << "; eq[i]: " << equity[i] << "; cash: " << cash << "; nav: " << nav 
+	       << "curr P pos: " << current_pos << " targets: num p " << num_shr_p << " invp " << inv_in_p << " invq " << inv_in_q << endl; 
+	  cout  << "portf. Q's and b's: ";
+	  for(int ii=0; ii < betas.size(); ii++){ cout << "b" << ii << ":" <<
+	      betas[ii] << " Q" << ii << ":" << inv_amount_q[ii]; }
+	  cout << endl;
+	}
 
 	if(sig_sto && (current_pos >= 0)){ //flat or long
 	  //           	sell stock, buy factors #opening short (if flat before, as we should be)
@@ -310,7 +402,17 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	  positions(j, instr_price_idx) += num_shr_p;
 	  positions_p(j) += num_shr_p;
 	  cash -= this_price*num_shr_p;
-	  if(debug && j==debug_j){ cout << i << ": STO on " << instr_p(j) << endl; }
+	  if(debug && j==debug_j){ cout << i << ": STO on " << instr_p(j) << endl; 
+	    double q_inv=0; double p_inv = num_shr_p * this_price;
+	    for(int kk=0; kk<eigenport_length; kk++){
+	      q_inv += num_shr_q[kk] * eigenport_prices[kk];
+	      if(num_shr_q[kk]>0){ cout << kk << ":" << num_shr_q[kk] << "|"; }
+	    } 
+	    cout << endl;
+	    cout << i << ": STO on " << instr_p(j) 
+		 << " P inv: " << p_inv << " Q inv: " 
+		 << q_inv << " eff.beta: " << (double)abs(p_inv)/abs(q_inv) << endl;
+	  }
 	} //#else do nothing #already short 
 	if(sig_close_short && (current_pos < 0)){
 	  //           ## buy stock, sell factors #closing short
@@ -330,10 +432,19 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	  for(int kk=0; kk<eigenport_length; kk++){
 	    positions(j,qalloc_idx_to_price_col[kk]) += num_shr_q[kk];
 	    cash -= num_shr_q[kk] * eigenport_prices[kk];
+	    //	    if(num_shr_q[kk] > 0){ cout << kk << ":" << num_shr_q[kk] << "|"; }
 	  }
 	  cash -= this_price*num_shr_p;
-	  
-	  if(debug && j==debug_j){ cout << i << ": BTO on " << instr_p(j) << endl; }
+
+	  if(debug && j==debug_j){ cout << i << ": BTO on " << instr_p(j) << endl; 
+	    double q_inv=0; double p_inv = num_shr_p * this_price;
+	    for(int kk=0; kk<eigenport_length; kk++){
+	      q_inv += num_shr_q[kk] * eigenport_prices[kk];
+	    }
+	    cout << i << ": BTO on " << instr_p(j) 
+		 << " P inv: " << p_inv << " Q inv: " 
+		 << q_inv << " eff.beta: " << (double)abs(p_inv)/abs(q_inv) << endl;
+	  }
 	}//# else: do nothing #already long
 	if(sig_close_long && (current_pos > 0)){
 	  //           ##          sell stock, buy factors #closing long
@@ -384,7 +495,7 @@ RcppExport SEXP rcpp_test4(SEXP N1, SEXP V1, SEXP M1, SEXP parms) {
     bool verbose = rparam.getBoolValue("verbose");
     RcppResultSet rs;
     Rcpp::RObject n1sexp(N1);
-    double n1 = n1sexp.asDouble();
+    double n1 = Rcpp::as<double>(n1sexp);
     Rcpp::NumericVector nv1(V1);
 
     Rprintf("The value of isna is %d\n",R_IsNA(n1));

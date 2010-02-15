@@ -30,6 +30,7 @@ gen.fits.pq <- function(p1q.matrix.alldates, classified.stocks.list, num.dates, 
 ## beta, ar fit matrices have dimensions 1:dates,2:fit.params,3:instrument
 gen.signals <- function(beta.fit.mtx,ar.fit.mtx,subtract.average, avg.mod=0
                         , thresholds=c(sbo=1.25,sso=1.25,sbc=0.75,ssc=0.5,kmin=8.4)){
+  ## if(!flipsign){ sign <- 1 }else{ sign <- -1 }
   param.names <- c("s","k","m","mbar","a","b","varz") #NB: doesn't incl. action field
   exclude.alpha <- 1 ##must be either 1 or 0!
   num.betas <- dim(beta.fit.mtx)[2]-exclude.alpha
@@ -89,7 +90,7 @@ decode.betas <- function(y){ y[9:length(y)] }
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
   function(ret.s,ret.e,classified.stocks.list,num.days,win=60
-           , compact.output=TRUE, flipsign=FALSE, subtract.average=TRUE
+           , compact.output=TRUE, subtract.average=TRUE
            , ar.method="yw", factor.names=c("beta"), select.factors=TRUE){
     ## -- sanity checks and data cleanup: -------------------------
     stopifnot(num.days > 1 && win>10)
@@ -127,7 +128,10 @@ stock.etf.signals <-
       foreach(i = seq(along=stock.names), .combine = "cfun", .multicombine = TRUE) %dopar% {
         if(select.factors){
           factor.returns <- as.matrix(ret.e[ ,as.character(classified.stocks.list[stock.names[i],][-1]) ] )
-        } else { factor.returns <- as.matrix(ret.e) }
+        } else {
+          stopifnot(num.beta.fit.coefs == 1+ncol(ret.e))
+          factor.returns <- as.matrix(ret.e)
+        }
         gen.fits.pq(  cbind(  as.matrix(ret.s[, stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
                             , factor.returns)

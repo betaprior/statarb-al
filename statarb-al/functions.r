@@ -148,7 +148,7 @@ draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 stock.pca.signals <-
   function(ret.s,classified.stocks.list,num.days,win=60,win.pca=252,num.eigs=15
            , subtract.average=TRUE, ar.method="yw",scale.by.sqrt.lambda=TRUE
-           , eigenstuff.file=NULL){
+           , eigenstuff.file="", flipsign=FALSE, save.eigenm.fn="eigenmatrix.RObj"){
     ## -- sanity checks and data cleanup: -------------------------
     stopifnot(num.days > 1 && win>10)
     stopifnot(nrow(ret.s) >= num.days + win + win.pca - 1)
@@ -202,7 +202,7 @@ stock.pca.signals <-
     attr(eig.mtx,"subdivision.idxs") <-
     list(eigvecs=1:(num.stocks*num.factors),sdevs=(num.stocks*(num.factors)+1):(num.stocks*(num.factors)+num.factors),returns=(num.stocks*(num.factors+1)+1):(num.stocks*(num.factors+1)+num.factors),eigvals=(num.stocks*(num.factors+1)+num.factors+1):(num.stocks*(num.factors+1)+2*num.factors))
 
-    save(eig.mtx,file=paste("pca_spx_eig_mtx_spx.RObj",sep=""))
+    save(eig.mtx,file=save.eigenm.fn)
     ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
     eigenreturns.mtx <- eig.mtx[ ,attributes(eig.mtx)$subdivision.idxs$returns]
   }
@@ -212,8 +212,8 @@ stock.pca.signals <-
     stopifnot(all(rownames(ret.s)[1:nrow(eigenreturns.mtx)] == rownames(eigenreturns.mtx)))
     factor.names <- paste("beta",1:num.factors,sep="")
     stock.etf.signals(  ret.s[1:nrow(eigenreturns.mtx), ]
-                      , eigenreturns.mtx,classified.stocks.list,num.days,win,factor.names=factor.names
-                      , select.factors=FALSE)
+                      , eigenreturns.mtx[,1:num.factors],classified.stocks.list,num.days,win,factor.names=factor.names
+                      , select.factors=FALSE, flipsign=flipsign)
   }
 
 run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca,

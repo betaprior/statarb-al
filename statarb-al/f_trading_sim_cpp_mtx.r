@@ -3,6 +3,7 @@
 ###source("TradingLoopCPP/TradingLoopCPP.r")
 
 dyn.load("TradingLoopCPP/TradingLoop.so")
+dyn.load("TradingLoopCPP/TradingLoopPCA.so")
 
 ## 20100213:
 ## instead of passing a list of {P,Q} instruments,
@@ -66,9 +67,6 @@ run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.
                                         # must include all signals+more
   stopifnot(all(instr.pq %in% colnames(prices)))
   stopifnot(!any(duplicated(colnames(prices))))
-  prices <- prices[, instr.pq] ## align instr.q (and also positions) and prices columns
-  prices.instrpq.idx <- match(instr.pq,colnames(prices))
-   ## instr.q, price.instrpq.idx form an aligned key/value set
 
   if (!PCA) {
     pq.factor.list <- q.allocations.matrix
@@ -78,16 +76,26 @@ run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.
     stopifnot(!any(is.na(pq.factor.list$SEC_ETF))) ##sanity check against NAs
     q.allocations.matrix <- pq.factor.list
     prices.qalloc.idx <- NULL
+    qalloc.names <- NULL
   } else {
     qalloc.names <-
        colnames(q.allocations.matrix)[1:(ncol(q.allocations.matrix)/num.factors)]
-    stopifnot(all(qalloc.names %in% instr.pq))
-    prices.qalloc.idx <- match(qalloc.names,colnames(prices))
+    stopifnot(all(qalloc.names %in% colnames(prices)))
   }
+  instr.pqa <- union(instr.pq,qalloc.names)
+  prices <- prices[, instr.pqa] ## align instr.q (and also positions) and prices columns
+  prices.instrpq.idx <- match(instr.pq,colnames(prices))
+   ## instr.q, price.instrpq.idx form an aligned key/value set
+  if(PCA){
+    prices.qalloc.idx <- match(qalloc.names,colnames(prices))
+    stopifnot(all(qalloc.names %in% colnames(prices)))
+  }
+
+  
   prices <- prices[dates,] ## align the data frames
   stopifnot(all(row.names(prices)==dates))
-  positions <- matrix(0,length(instr.p),length(instr.pq))
-  colnames(positions) <- instr.pq;  row.names(positions) <- instr.p
+  positions <- matrix(0,length(instr.p),length(instr.pqa))
+  colnames(positions) <- instr.pqa;  row.names(positions) <- instr.p
   positions.p <- rep(0,length(instr.p))
 
   ## get the number of signal array entries
@@ -98,9 +106,12 @@ run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.
   ## sig.actions[1,1] <- NA
   ## sig.mtx.2d[1,2] <- NA
   stopifnot(all(colnames(positions)==colnames(prices))) ##since same corr. map used
-  .Call("backtest_loop"
+  if(!PCA){ cpp.function <- "backtest_loop" } else { cpp.function <- "backtest_loop_pca" }
+  ## browser()
+  prices[is.na(prices) || (prices < 0)] <- 0
+  .Call(cpp.function
         , instr.p, tickers.instrp.idx, as.logical(PCA)
-        , instr.pq, prices.instrpq.idx, dates
+        , instr.pq, prices.instrpq.idx, dates, num.factors
         , as.matrix(q.allocations.matrix), prices.qalloc.idx
         , as.matrix(prices), as.matrix(positions), positions.p
         , as.matrix(sig.mtx.2d), as.matrix(sig.actions)

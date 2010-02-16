@@ -1,6 +1,7 @@
 ## Trading simulation function
 ## input: signals object, prices df
 ###source("TradingLoopCPP/TradingLoopCPP.r")
+require("stinepack")
 
 dyn.load("TradingLoopCPP/TradingLoop.so")
 dyn.load("TradingLoopCPP/TradingLoopPCA.so")
@@ -45,15 +46,18 @@ dyn.load("TradingLoopCPP/TradingLoopPCA.so")
 ## - PCA
 ##    flag indicating PCA or single-factor approach
 ## - num.factors
+## - num.iterations
+##    Negative value === run for all dates; non-neg. indicates # of dates to iterate over
 ## --- other stuff.........
 run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.q
                                        , q.allocations.matrix, num.factors
-                                       , PCA=NULL
+                                       , PCA=NULL, na.interpolate=FALSE
                                        , debug=FALSE, silent=FALSE
                                        , debug.name=instr.p[1]
-                                       , init.cash=100000
+                                       , init.cash=100000, num.iterations=-1
                                        , pos.allocation="beta.neutral"){
 
+  if(is.null(num.iterations)){ num.iterations <- -1 }
   stopifnot(class(signals.struct)=="array")
   tickers <- dimnames(signals.struct)[[3]]
   dates <- dimnames(signals.struct)[[1]]
@@ -107,7 +111,7 @@ run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.
   ## sig.mtx.2d[1,2] <- NA
   stopifnot(all(colnames(positions)==colnames(prices))) ##since same corr. map used
   if(!PCA){ cpp.function <- "backtest_loop" } else { cpp.function <- "backtest_loop_pca" }
-  ## browser()
+  if(na.interpolate){ prices <- na.stinterp(prices,na.rm=F,along=1:nrow(prices)) }
   prices[is.na(prices) || (prices < 0)] <- 0
   .Call(cpp.function
         , instr.p, tickers.instrp.idx, as.logical(PCA)
@@ -116,6 +120,7 @@ run.trading.simulation.cpp <- function(  signals.struct, prices, instr.p, instr.
         , as.matrix(prices), as.matrix(positions), positions.p
         , as.matrix(sig.mtx.2d), as.matrix(sig.actions)
         , list(debug=debug, debug.name=debug.name, silent=silent
-               , pos.allocation=pos.allocation, init.cash=init.cash))
+               , pos.allocation=pos.allocation, init.cash=init.cash
+               , num.iterations=num.iterations))
   
 }

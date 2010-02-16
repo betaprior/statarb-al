@@ -154,6 +154,7 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
       pq_factor_list = Rcpp::CharacterVector(r_q_alloc_mtx);
       cout << "PCA NOT in effect" << endl;
     } else {
+      cout << "PCA in da house!" << endl;
       q_alloc_mtx = Rcpp::NumericVector(r_q_alloc_mtx);
       prices_qalloc_idx = Rcpp::SimpleVector<INTSXP>(r_prices_qalloc_idx);
       vector<int> dims_buffer(2,0); //hold dimensions by get_dims
@@ -176,6 +177,7 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
     Rcpp::NumericVector sig_actions(r_sig_actions);
     RcppParams params(r_params);
     double init_cash = params.getDoubleValue("init.cash");
+    int max_iterations = params.getIntValue("num.iterations");
     string position_allocation(params.getStringValue("pos.allocation"));
     bool opt_dollar_neutral = false;
     if (position_allocation=="dollar.neutral"){ opt_dollar_neutral = true; cout << "using dollar neutral alloc." << endl; }
@@ -282,10 +284,11 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
     // double lambda = (double)2/400;
     double cash = init_cash;
     vector<double> equity(dates.size(), 0);
+    if(max_iterations < 0){ max_iterations = dates.size(); }
     /* -----------  main trading loop ------------------ */
     bool DONOTRUN=false;
-    // for(i=0; i < dates.size(); i++){
-    for(i=0; i < 300; i++){
+    for(i=0; i < max_iterations; i++){
+    // for(i=0; i < 300; i++){
       if(DONOTRUN) { break; }
       
       //      if(!opt_silent){ if(i % 50 == 0) cout << i << " "; }
@@ -312,7 +315,9 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	vector<double> eigenport_prices(eigenport_length,0);
 	vector<int> num_shr_q(eigenport_length,0);
 	vector<double> inv_amount_q(eigenport_length,0);
-
+/*DEBUG*/	vector<double> inv_amount_q1(eigenport_length,0);
+/*DEBUG*/	vector<double> inv_amount_q2(eigenport_length,0);
+/*DEBUG*/	vector<double> num_shr_q_frac(eigenport_length,0); /*DEBUG*/
 
 	int tkr_idx = p_idx_to_tkr_idx[j];
 	int current_pos = positions_p(j);
@@ -369,21 +374,40 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	  for(int jj=0; jj<num_factors; jj++){
 	    // cout << "accessing index " << kk+jj*eigenport_length << endl;
 	    inv_amount_q[kk] += betas[jj] * q_alloc_mtx(i,kk+jj*eigenport_length);
+	    /*DEBUG*/ if(jj==0){ inv_amount_q1[kk] += betas[0] * q_alloc_mtx(i,kk+0*eigenport_length); }
+	    /*DEBUG*/ if(jj==1){ inv_amount_q2[kk] += betas[1] * q_alloc_mtx(i,kk+1*eigenport_length); }
+
 	  }
 	  num_shr_q[kk] = -cint(tot * inv_amount_q[kk] / eigenport_prices[kk]);
-	  if(isnan(eigenport_prices[kk])){ num_shr_q[kk] = 0; }
+	  /*DEBUG*/ num_shr_q_frac[kk] = -tot * inv_amount_q[kk] / eigenport_prices[kk]; //DEBUG//
+	  if(isnan(eigenport_prices[kk]) || eigenport_prices[kk]<=0){ num_shr_q[kk] = 0; }
+	  /*DEBUG*/	  if(isnan(eigenport_prices[kk]) || eigenport_prices[kk]<=0){ num_shr_q_frac[kk] = 0; }  //DEBUG//
 	}
 	if(isnan(this_price) || (saw_na_price > MAX_NA_OBS) || this_price <= 0)
 	  continue; 
 	
 
 	if(debug && j==debug_j){
-	  double inv_in_p, inv_in_q=0;
+	  double inv_in_p, inv_in_q=0, inv_in_q1=0, inv_in_q2=0;
+	  double inv_in_q_exp=0, inv_in_q_e_fr=0; //what would we be investing if we got prescribed num_shr_q?
 	  inv_in_p = tot; 
-	  for(int ii=0; ii < eigenport_length; ii++){ inv_in_q += tot*inv_amount_q[ii]; }
+	  for(int ii=0; ii < eigenport_length; ii++){ 
+	    inv_in_q += tot*inv_amount_q[ii]; 
+	    inv_in_q1 += tot*inv_amount_q1[ii]; 
+	    inv_in_q2 += tot*inv_amount_q2[ii]; 
+	    inv_in_q_exp += num_shr_q[ii]*eigenport_prices[ii];
+	    inv_in_q_e_fr += num_shr_q_frac[ii]*eigenport_prices[ii];
+	  }
+	  double nav2=0, nav_p=0;
+	  nav_p += this_price*positions_p(j);
+	  for(int kk=0; kk<eigenport_length; kk++){
+	    nav2 += positions(j,qalloc_idx_to_price_col[kk]) * eigenport_prices[kk];
+	  }
 
-	  cout << "i:" << i << "; eq[i]: " << equity[i] << "; cash: " << cash << "; nav: " << nav 
-	       << "curr P pos: " << current_pos << " targets: num p " << num_shr_p << " invp " << inv_in_p << " invq " << inv_in_q << endl; 
+	  cout << "i:" << i << "; eq[i]: " << equity[i] << "; cash: " << cash << "; nav: " 
+	       << nav << "; nav_p: " << nav_p << "; nav2: " << nav2 
+	       << " curr P pos: " << current_pos << " targets: num p " << num_shr_p << " invp " 
+	       << inv_in_p << " invq " << inv_in_q << " invq1 " << inv_in_q1 << " invq2 " << inv_in_q2 <<" invq_exp " << inv_in_q_exp << " invq_e_fr " << inv_in_q_e_fr << endl; 
 	  cout  << "portf. Q's and b's: ";
 	  for(int ii=0; ii < betas.size(); ii++){ cout << "b" << ii << ":" <<
 	      betas[ii] << " Q" << ii << ":" << inv_amount_q[ii]; }
@@ -416,7 +440,7 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	} //#else do nothing #already short 
 	if(sig_close_short && (current_pos < 0)){
 	  //           ## buy stock, sell factors #closing short
-	  cash += this_price*positions(j, instr_price_idx);
+	  //NO!!!	  // cash += this_price*positions(j, instr_price_idx);
 	  for(int kk=0; kk<eigenport_length; kk++){
 	    cash += positions(j,qalloc_idx_to_price_col[kk]) * eigenport_prices[kk];
 	    positions(j,qalloc_idx_to_price_col[kk]) = 0;
@@ -449,7 +473,7 @@ RcppExport SEXP backtest_loop_pca(SEXP r_instr_p, SEXP r_tickers_instrp_idx, SEX
 	if(sig_close_long && (current_pos > 0)){
 	  //           ##          sell stock, buy factors #closing long
 	  if(debug && j==debug_j){ cout << i << ": CL on " << instr_p(j) << endl; }
-	  cash += this_price*positions(j, instr_price_idx);
+	  // NOOO!!!	  // cash += this_price*positions(j, instr_price_idx);
 	  for(int kk=0; kk<eigenport_length; kk++){
 	    cash += positions(j,qalloc_idx_to_price_col[kk]) * eigenport_prices[kk];
 	    positions(j,qalloc_idx_to_price_col[kk]) = 0;

@@ -202,7 +202,7 @@ stock.pca.signals <-
     attr(eig.mtx,"subdivision.idxs") <-
     list(eigvecs=1:(num.stocks*num.factors),sdevs=(num.stocks*(num.factors)+1):(num.stocks*(num.factors)+num.factors),returns=(num.stocks*(num.factors+1)+1):(num.stocks*(num.factors+1)+num.factors),eigvals=(num.stocks*(num.factors+1)+num.factors+1):(num.stocks*(num.factors+1)+2*num.factors))
 
-    save(eig.mtx,file=save.eigenm.fn)
+    if(!is.null(save.eigenm.fn)){ save(eig.mtx,file=save.eigenm.fn) }
     ## cat("Wrote file:",paste("pca_spx_eig_mtx",ii,".RObj",sep=""),"\n")
     eigenreturns.mtx <- eig.mtx[ ,attributes(eig.mtx)$subdivision.idxs$returns]
   }
@@ -212,8 +212,8 @@ stock.pca.signals <-
     stopifnot(all(rownames(ret.s)[1:nrow(eigenreturns.mtx)] == rownames(eigenreturns.mtx)))
     factor.names <- paste("beta",1:num.factors,sep="")
     stock.etf.signals(  ret.s[1:nrow(eigenreturns.mtx), ]
-                      , eigenreturns.mtx[,1:num.factors],classified.stocks.list,num.days,win,factor.names=factor.names
-                      , select.factors=FALSE, flipsign=flipsign)
+                      , eigenreturns.mtx[,1:num.factors,drop=F],classified.stocks.list,num.days,win,factor.names=factor.names
+                      , select.factors=FALSE)
   }
 
 run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca,

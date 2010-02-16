@@ -129,9 +129,9 @@ stock.etf.signals <-
         if(select.factors){
           factor.returns <- as.matrix(ret.e[ ,as.character(classified.stocks.list[stock.names[i],][-1]) ] )
         } else {
-          stopifnot(num.beta.fit.coefs == 1+ncol(ret.e))
           factor.returns <- as.matrix(ret.e)
         }
+        stopifnot(num.beta.fit.coefs == 1+ncol(factor.returns))
         gen.fits.pq(  cbind(  as.matrix(ret.s[, stock.names[i]])
                             , as.matrix(rep(1,nrow(ret.s))) ##to ease the construction of fit design mtx
                             , factor.returns)

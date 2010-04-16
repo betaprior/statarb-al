@@ -151,14 +151,18 @@ save(sim.tr.fin.3ev.1e8,file="tmp3ev1.RObj")
 sim.tr.fin.3ev <- run.trading.1(sig.ev.3, is.pca=TRUE, q.alloc.mtx=q.alloc.mtx3,num.factors=num.factors,na.interpolate=T,num.iterations=NULL)
 save(sim.tr.fin.3ev,file="tmp3ev.RObj")
 
-sim.tr.spx.ev.1e8=list(sim.tr.fin.1ev.1e8,sim.tr.fin.2ev.1e8,sim.tr.fin.3ev.1e8)
-for(num.factors in 4:15){
+sim.tr.spx.ev.1e8 <- list(sim.tr.fin.1ev.1e8,sim.tr.fin.2ev.1e8,sim.tr.fin.3ev.1e8)
+## sim.tr.spx.ev.1e8 <- foreach(num.factors = 1:15) %dopar% {
+sim.tr.spx.ev.1e8 <- foreach(num.factors = 1:15) %dopar% {
+  dyn.load("TradingLoopCPP/TradingLoopPCA5.so")
   q.alloc.mtx.n <- (eig.mtx[ ,attributes(eig.mtx)$subdivision.idxs$eigvecs])[ ,1:(qalloc.chunk*num.factors)]
   colnames(q.alloc.mtx.n) <- rep(attributes(eig.mtx)$tickers,num.factors)
-  sim.tr.spx.n.ev <- run.trading.1(sig.eig.list[[num.factors]], is.pca=TRUE, q.alloc.mtx=q.alloc.mtx.n,num.factors=num.factors,na.interpolate=T,num.iterations=NULL,init.cash=1e8)
-  sim.tr.spx.ev.1e8[[num.factors]] <- sim.tr.spx.n.ev
+  run.trading.1(sig.eig.list[[num.factors]], is.pca=TRUE, q.alloc.mtx=q.alloc.mtx.n,num.factors=num.factors,na.interpolate=T,num.iterations=NULL,init.cash=1e8)
 }  
 save(sim.tr.spx.ev.1e8,file="spx_tr_sim_for_varying_eigvec_num.RObj")
+
+for(i in 5:12){ sim.tr.spx.ev.1e8[[i]] <- tmp[[i-4]] }
+for(i in 13:15){sim.tr.spx.ev.1e8[[i]] <- tmp2[[i-12]] }
 
 num.factors <- 2; stk <- "JPM"; n.iter <- 50; init.cash <- 1e8
 dyn.load("TradingLoopCPP/TradingLoopPCA5.so")
@@ -313,3 +317,58 @@ tr.sim.jpm.1ev.dbg1 <- run.trading.1(sig.ev.1, is.pca=TRUE, q.alloc.mtx=q.alloc.
 ## source("tr_test_generic_batch.r")
 ## source("f_signals_gen.r")
 ## source("f_trading_sim_cpp_mtx.r")            
+
+## --------- Now generate SPX trading signals aligned with the PCA ones
+#            and check the relative performance of PCA vs ETF strategies
+ret.mtx.file <- "spx_ret_mtx"
+source("tr_test_generic_batch.r")
+sig.num.days <- N-est.win+1
+corr.est.win <- 252; fit.est.win <- 60
+sig.pca.num.days <- N-corr.est.win-fit.est.win+1
+source("f_signals_gen.r")
+
+## generate signals based on tc.xlf:
+sig.spx.etf <- stock.etf.signals(ret.s,ret.e,tc.subset,num.days=sig.pca.num.days,subtract.average=TRUE)
+
+## generate signals based on SPY:
+ret.e.spy <- ret.e[,c("SPY"),drop=F]
+sig.spx.spy <- stock.etf.signals(ret.s,ret.e.spy,tc.subset,num.days=sig.pca.num.days,subtract.average=TRUE,select.factors=FALSE)
+tc.spy <- tc.subset; tc.spy$SEC_ETF = rep("SPY",nrow(tc.spy))
+
+## generate signals based on SPY && XLF:
+tc.spy.etf <- cbind(tc.spy, tc.subset$SEC_ETF)
+sig.spx.spy.etf <- stock.etf.signals(ret.s,ret.e,tc.spy.etf
+                                 ,num.days=sig.pca.num.days
+                                 ,subtract.average=TRUE,select.factors=TRUE,factor.names=c("beta1","beta2"))
+
+## save(sig.spx.spy.etf,sig.spx.spy,sig.spx.etf,file="spx_signals_wrt_etfs_spy.RObj")
+## load("spx_signals_wrt_etfs_spy.RObj")
+n.iter <- NULL; init.cash <- 1e8; num.factors <- 1
+source("f_trading_sim_cpp_mtx.r")            
+dyn.load("TradingLoopCPP/TradingLoop1.so")
+tr.sim.spx.etf <- run.trading.1(sig.spx.etf, is.pca=FALSE, q.alloc.mtx=tc.subset
+                                , num.factors=num.factors,na.interpolate=T
+                                , debug=FALSE,debug.name="",num.iterations=n.iter,init.cash=init.cash)
+tr.sim.spx.spy <- run.trading.1(sig.spx.spy, is.pca=FALSE, q.alloc.mtx=tc.subset
+                                , num.factors=num.factors,na.interpolate=T
+                                , debug=FALSE,debug.name="",num.iterations=n.iter,init.cash=init.cash)
+tr.sim.spx.spy.etf <- run.trading.1(sig.spx.spy.etf, is.pca=FALSE, q.alloc.mtx=tc.subset
+                                    , num.factors=2,na.interpolate=T
+                                    , debug=FALSE,debug.name="",num.iterations=n.iter,init.cash=init.cash)
+save(tr.sim.spx.etf,tr.sim.spx.spy,tr.sim.spx.spy.etf,file="spx_sim_wrt_etfs_spy.RObj")
+## load("spx_sim_wrt_etfs_spy.RObj")
+
+## to plot all this:
+add.sim.line <- function(x)lines(sim.tr.spx.ev.1e8[[x]]$equity/1000,col=x)
+
+load("spx_tr_sim_for_varying_eigvec_num.RObj")
+plot(sim.tr.spx.ev.1e8$equity/1000,type='l')
+invisible(sapply(2:4,add.sim.line))
+invisible(sapply(5:8,add.sim.line))
+invisible(sapply(9:12,add.sim.line))
+invisible(sapply(13:15,add.sim.line))
+
+load("spx_sim_wrt_etfs_spy.RObj")
+plot(tr.sim.spx.spy$equity/1000,type='l')
+lines(tr.sim.spx.etf$equity/1000,col=2)
+lines(tr.sim.spx.spy.etf$equity/1000,col=3)

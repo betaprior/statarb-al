@@ -1,4 +1,4 @@
-source("f_signals_gen.r")  ## signal generation (some signals post-processing fns
+source("f_signals_gen.r")  # signal generation (some signals post-processing fns
                                         # are in this file though)
 options(stringsAsFactors = FALSE)
 ##~ quick-and-dirty utility functions
@@ -217,7 +217,7 @@ stock.pca.signals <-
   }
 
 run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca,
-  corr.reg=1e-7, scale.by.sqrt.lambda=TRUE){
+                             corr.reg=1e-7, scale.by.sqrt.lambda=TRUE){
   num.stocks <- dim(ret.s)[2]
   accum.mtx <- matrix(nrow=num.dates,ncol=num.stocks*(num.eigs+1) + 2*num.eigs)
   rho <- matrix(0.0,num.stocks,num.stocks)

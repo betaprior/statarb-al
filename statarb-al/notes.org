@@ -6,6 +6,25 @@ paper:
 My notes on the paper: 
 [[file:~/projects/finance/notes/avellaneda-lee-paper-notes.jnt][(jnt file)]]
 
+* Results synopsys:
+  "universe" data set (SPX + Russell 1000 + half R2K)
+** ETF trading (2001-2009)
+   [[file:plots/simtrade_etf1.png]]
+   [[file:plots/simtrade_etf2.png]]
+** PCA trading (2001-2009)   
+   [[file:plots/spx_pnl_gamut_pca.png]]
+** Studying eigenportfolios:
+   This shows that the leading eigenvector's portfolio is a proxy for the
+   market performance:
+   [[file:plots/spy_vs_market_eigenportf.png]]
+** Sample trading signal:
+   [[file:plots/jpm.sig.png]]
+** Mean reversion demonstration: PNL of a market-neutral portfolio held over n days
+   Actual data: [[file:plots/MNPlotsSTT.png]]
+   GARCH(1,1)/student-t simulation: [[file:plots/MNPlotsSim.png]]
+** Price process simulation: parameters estimated from XLF data
+   GARCH(1,1): [[file:plots/XLF_sim_garch_ar-t.png]]
+   AR(2)/GARCH(1,1): [[file:plots/XLF_sim_garch_ar-garch.png]]
 * Source data:
   CRSP-97-08.csv.gz  CRSP-97-08_etf.csv.gz  CRSP-97-08_etf_shrt.csv.gz
   Obtained from WRDS CRSP database using my reference universe (SPX tickers
@@ -667,7 +686,7 @@ all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
   
   In some notes, Avellaneda scales eigenreturns by sqrt(lambda) (cf slide 7
   of Lecture2Risk2010.pdf); this seems to give eigenreturns on a more uniform
-  scale, si I will follow this approach.
+  scale, so I will follow this approach.
 
   Currently, store the PCA results in a 3d matrix of 
   (dates (chron) x eig. stuff x stocks)

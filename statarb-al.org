@@ -1,12 +1,30 @@
-Objective: to implement the trading algorithms and reproduce the results
-(specifically, Figures 8, 9, 10, 11, and 17) described in the following
-paper: 
-[[file:~/projects/finance/literature/AvellanedaLeeStatArb20090616.pdf][M. Avellaneda and J.-H. Lee. Statistical Arbitrage in the U.S. Equities Market.]]
+#+TITLE: Statistical arbitrage with pairs trading
+#+AUTHOR: Leo Alekseyev
 
-My notes on the paper: 
-[[file:~/projects/finance/notes/avellaneda-lee-paper-notes.jnt][(jnt file)]]
+* Introduction
 
-* Results synopsys:
+Statistical arbitrage comes in many varieties and flavors. Among these,
+long/short market neutral strategies comprise a popular set of
+approaches. The simplest of such strategies are relatively easy to understand
+and model. Even though these days, such simple setups aren't expected to
+generate substantial (if any) returns, they are very useful for obtaining
+insight into the general mechanics of trading and statistical arbitrage.
+
+In this project, we explore a 2009 paper by Avellaneda and Lee that describes a
+particular trading strategy -- a variation on a pairs trading scheme.
+
+Our objective is to implement the trading algorithms and reproduce the results
+(specifically, Figures 8, 9, 10, 11, and 17) of the paper. The backtesting is
+done on the daily closing prices using WRDS CRSP database from Jul 01 1996 -
+Jun 30 2009.
+
+Links:
+
+[[file:literature/AvellanedaLeeStatArb20090616.pdf][M. Avellaneda and J.-H. Lee. Statistical Arbitrage in the U.S. Equities Market]]
+
+My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
+
+* Results synopsis:
   "universe" data set (SPX + Russell 1000 + half R2K)
 ** ETF trading (2001-2009)
    [[file:plots/simtrade_etf1.png]]

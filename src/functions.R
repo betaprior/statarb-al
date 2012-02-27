@@ -1,55 +1,105 @@
-source("f_signals_gen.r")  # signal generation (some signals post-processing fns
+if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
+source.files <- c("f_signals_gen.R")    # signal generation (some signals post-processing fns
                                         # are in this file though)
+source(paste(statarb.al.proj$src.path, source.files, sep=""))
 options(stringsAsFactors = FALSE)
+
+##~ -----------
+
 ##~ quick-and-dirty utility functions
 
 encode <- function(...) apl.encode(...)
 
+
+set.from.cmdargs <- function(cmdargs.default, vstr) {
+  if (! vstr %in% names(cmdargs.default))
+    stop(paste(vstr, "not found in the supplied cmdargs list"))
+  args.cmdstring <- vstr
+  arg.class <- cmdargs.default[[vstr]]$class
+  args.default <- cmdargs.default[[vstr]]$val
+  arg.val <- as(getCmdArgs(args.cmdstring), arg.class)
+
+  if (is.na(arg.val)) 
+    if (is.null(args.default)) {
+      stop("Can't find default arguments")
+    } else {
+    }
+      arg.val <- args.default
+  arg.val
+}
+
+
 ##~ functions related to AL paper analysis
-get.stock.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){
+
+## get.stock.returns
+##
 ## reads in files if requested; performs data cleanup (removes symbols with excessive number of NAs)
-  if(file){ ret.mtx <- read.csv(ret.mtx,row.names=1); ret.mtx <- ret.mtx[nrow(ret.mtx):1,]}
-  if(M+offset > dim(ret.mtx)[1]){ stop("Requested index exceeds num. of rows") }
-  ret.mtx <- ret.mtx[(1+offset):(M+offset),]
-  ret.mtx.na.totals <- apply(is.na(ret.mtx),2,sum)
-  ret.mtx.na.pct <- ret.mtx.na.totals / dim(ret.mtx)[1]
+## reads M rows with offset offset; assumes that the input matrix has data in rows
+## chronologically, thus, read offset...(M+offset) from the end
+## returns a matrix with M rows
+get.stock.returns <- function(ret.mtx, M=252, offset=0, file=FALSE, filter.fn=NULL) {
+  if (file) 
+    ret.mtx <- read.csv(ret.mtx, row.names=1)
+  stopifnot(is.data.frame(ret.mtx))
+  stopifnot(M + offset <= nrow(ret.mtx)) # requested index must be in the matrix
+  ret.mtx <- ret.mtx[nrow(ret.mtx) - seq(offset, len=M), ] # read rows off...(M+off) from the end
+  if (!is.null(filter.fn)) {
+    select.names <- filter.fn(ret.mtx)
+  } else {
+    select.names <- names(ret.mtx)
+  }
+  ret.mtx[names(ret.mtx) %in% select.names]
+}
+
+select.tickers.filter <- function(nameList) {
+  function(ret.mtx) nameList
+}
+
+na.pct.cutoff.filter <- function(pct.cutoff=0.01) {
+  function(ret.mtx) {
+    ret.mtx.na.totals <- apply(is.na(ret.mtx), 2, sum)
+    ret.mtx.na.pct <- ret.mtx.na.totals / nrow(ret.mtx)
                                         # pick the tickers where num NAs < cutoff
-  good.names <- names(ret.mtx.na.pct[ret.mtx.na.pct <= na.pct.cutoff])
-  good.name.idxs <- as.numeric(na.omit(match(good.names,names(ret.mtx.na.pct))))
-  ret.mtx[,good.name.idxs] #filtered
+    names(ret.mtx.na.pct[ret.mtx.na.pct <= pct.cutoff])
+  }
 }
 
-get.adjusted.returns <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){
-  ret.mtx <- get.stock.returns(ret.mtx,M,offset,na.pct.cutoff,file)
-  vars <- apply(ret.mtx,2,function(x){ var(x,use="complete.obs") })
-  means <- apply(ret.mtx,2,function(x){ mean(x,na.rm=TRUE) })
-  return(t(apply(ret.mtx,1,function(x){(x-means)/sqrt(vars)})))
+## DEPRECATED
+## use scale(ret.mtx) instead
+get.adjusted.returns <- function(ret.mtx, ...) {
+  ret.mtx <- get.stock.returns(ret.mtx, ...)
+  vars <- apply(ret.mtx, 2, function(x) var(x, use="complete.obs") )
+  means <- apply(ret.mtx, 2, function(x) mean(x, na.rm=TRUE) )
+  return(t(apply(ret.mtx, 1, function(x) (x-means)/sqrt(vars)) ))
 }
 
-get.emp.corr <- function(ret.mtx, M=252, offset=0, na.pct.cutoff=0.01, file=FALSE){
-  Y <- get.adjusted.returns(ret.mtx,M,offset,na.pct.cutoff,file)
-  rho <- matrix(0.0,dim(Y)[2],dim(Y)[2])
-  for(k in 1:M){ rho <- rho + (Y[k,] %o% Y[k,]) }
-  rho/(M-1)
+## Compute empirical correlation matrix (A.L. Eq. 8)
+## Note that unlike A.L., we keep dates in rows and stocks in columns
+## This is exactly the kind of correlation matrix one usually computes for PCA
+## Note that by construction (e.g. since observations in Y are normalized)
+## this matrix has 1's on the diagonal
+get.emp.corr <- function(ret.mtx, M=252, ...) {
+  Y <- scale(get.stock.returns(ret.mtx, M, ...)) # demean / divide by variance
+  rho <- matrix(0.0, ncol(Y), ncol(Y))
+  for (k in 1:M) 
+    rho <- rho + (Y[k, ] %o% Y[k, ])
+  rho / (M - 1)
 }
 
 
 get.etf.returns <- function(ret.mtx, M=252, offset=0, file=FALSE
                             , tickers=c("HHH","IYR","IYT","OIH","RKH","RTH"
                                 ,"SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")){
-  if(file){ ret.mtx <- read.csv(ret.mtx,row.names=1); ret.mtx <- ret.mtx[nrow(ret.mtx):1,]}
-  if(M+offset > dim(ret.mtx)[1]){ stop("Requested index exceeds num. of rows") }
-  ret.mtx <- ret.mtx[(1+offset):(M+offset),]
+  if (file) 
+    ret.mtx <- read.csv(ret.mtx, row.names=1)
+  stopifnot(M + offset <= nrow(ret.mtx)) # requested index must be in the matrix
+  ret.mtx <- ret.mtx[nrow(ret.mtx) - seq(offset, len=M), ] # read rows off...(M+off) from the end
+
   good.names <- tickers
   good.name.idxs <- as.numeric(na.omit(match(good.names,names(ret.mtx))))
   ret.mtx <- ret.mtx[,good.name.idxs] #filtered
 }
 
-get.mtx.gen <- function(ret.mtx, M=252, offset=0, file=FALSE){
-  if(file){ ret.mtx <- read.csv(ret.mtx,row.names=1); ret.mtx <- ret.mtx[nrow(ret.mtx):1,]}
-  if(M+offset > dim(ret.mtx)[1]){ stop("Requested index exceeds num. of rows") }
-  ret.mtx[(1+offset):(M+offset),]
-}
 
 get.classified.tickers <- function(fname){
   con <- pipe(paste("cut -d',' -f1,8 ",fname,sep=""))
@@ -61,15 +111,38 @@ get.dates.vec <- function(fname){
   vec <- scan(con,skip=1);  close(con); return(vec)
 }
 
+## returns POSIXt output
+## assumes input is a vector of numeric dates, e.g. 20080304
+## Doesn't assume a particular sorting of the dates vector
+first.trading.days <- function(dates.vector) {
+  dates.vector <- rev(sort(dates.vector))
+  d <- strptime(dates.vector, "%Y%m%d")
+  d[cumsum(rle(d$year)$lengths)]
+}
+
+## returns offsets into the dates.vector
+## corresponding to the first trading date of each year specified
+## in the years parameter
+get.year.offsets <- function(dates.vector, years) {
+  ftd <- first.trading.days(dates.vector)
+  ftd.years <-
+    strftime(ftd[match(as.character(years), strftime(ftd, "%Y"))],
+             "%Y%m%d")
+  offs <- which(as.logical(match(dates.vector, as.numeric(ftd.years))))
+  if (length(offs) != length(years))
+    stop("Unable to get first trading date for every year requested")
+  offs
+}
 
 
-fit.stock <- function(r.s,r.e,enforce.df=TRUE,get.fit=FALSE,refit.with.pos.betas=FALSE){
+
+fit.stock <- function(r.s, r.e, enforce.df=TRUE, get.fit=FALSE, refit.with.pos.betas=FALSE) {
 ##  if enforcing df, r.s must be generated using [,1,drop=F]
-  if(enforce.df){
-    stopifnot(is.data.frame(r.s),is.data.frame(r.e),all(row.names(r.e)==row.names(r.s)))
-  }else{ #assume r.s is a list and have to convert to df
+  if(enforce.df) {
+    stopifnot(is.data.frame(r.s), is.data.frame(r.e), all(row.names(r.e)==row.names(r.s)))
+  } else { #assume r.s is a list and have to convert to df
     r.s <- data.frame("RS"=r.s,row.names=row.names(r.e))
-#    names(r.s) <- r.s.name
+                                        # names(r.s) <- r.s.name
   }
   fml <- as.formula(paste(c(paste(names(r.s),"~ 1"),names(r.e)),collapse=" + "))
   fit <- lm(fml,data=cbind(r.s,r.e))
@@ -121,6 +194,7 @@ get.signals.mtx <- function(sig.list){
   else
     sig.mtx
 }
+
 get.signals.actions <- function(sig.mtx){
   sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
   sim.actions <- as.data.frame(do.call("rbind",sim.actions))
@@ -222,7 +296,7 @@ run.pca.analysis <- function(ret.s, num.dates, num.eigs, win.pca,
   accum.mtx <- matrix(nrow=num.dates,ncol=num.stocks*(num.eigs+1) + 2*num.eigs)
   rho <- matrix(0.0,num.stocks,num.stocks)
   ## cat("|")
-  for(i in 1:num.dates){     # pass-by-reference semantics, what do you expect?
+  for(i in 1:num.dates) {     
     j <- num.dates-i+1
     ret.mtx <- ret.s[i:(i+win.pca-1), ,drop=F]
     vars <- apply(ret.mtx,2,function(x){ var(x,use="complete.obs") })

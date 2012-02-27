@@ -1,0 +1,474 @@
+FXI iShares China 25 Index Pacific Asia/excl. Japan 44 23.93% 45.29% 38.20% 70.02% 56.68% 0.00%
+PGJ PowerShares Gldn Dragon China 39 22.43% 39.22% 29.06% 65.97% 46.66% 0.00%
+SLX Mkt Vector Steel ETF Specialty-Natural Res. 36 20.99% 27.42% 19.24% 77.71% 35.35% -0.40%
+EEB Claymore BNY BRIC *None 34 21.99% 31.19% 25.56% 58.13% 41.19% 0.00%
+EWZ iShares Brazil Index Latin America Stock 32 21.71% 23.32% 19.01% 63.67% 37.29% -0.87%
+GXC SPDR S&P China *None 26 22.27% 44.00% 37.57% 0.00% 0.00% 0.00%
+ADRE BLDRS Emerging Mkts 50 ADR In. Diversified Emerging M 25 16.67% 22.67% 17.42% 42.18% 28.56% 0.00%
+EWH iShares Hong Kong Index Pacific Asia/excl. Japan 25 15.77% 24.74% 22.28% 35.81% 26.43% 0.00%
+ILF iShares S&P 40 Latin America Latin America Stock 24 16.02% 18.87% 14.43% 47.74% 27.45% 0.00%
+EWY iShares S. Korea Index Pacific Asia/excl. Japan 20 11.13% 11.28% 10.97% 45.55% 26.60% 0.00%
+DND Wisdom Tree Pacific ex-Japan Div. Pacific/Asia ex-Japan 20 13.51% 17.95% 12.64% 36.82% 21.25% -0.16%
+EWS iShares Singapore Index Pacific Asia/excl. Japan 20 14.67% 18.67% 10.14% 36.79% 18.13% 0.00%
+MXI iShares S&P Global Materials *None 20 12.40% 14.38% 9.55% 42.00% 21.50% -1.02%
+EPP iShares Pacific ex. Japan Pacific Asia/excl. Japan 20 13.74% 18.09% 12.03% 35.07% 20.45% -0.46%
+VWO Vanguard Emerging Mkts Diversified Emerg. Mkts 20 11.76% 15.95% 12.76% 38.78% 24.73% -0.25%
+EEM iShares Emerging Mkts Index Div. Emerging Mkts 20 14.08% 18.33% 13.38% 35.94% 24.05% 0.00%
+TF Thai Capital Fund Pacific Asia/excl. Japan 19 17.65% 15.61% 5.72% 36.75% 26.33% -2.04%
+IEZ iShares DJ Oil Equipm.&Service Specialty-Natural Reso 19 6.22% 14.70% 9.82% 43.47% 22.60% -0.23%
+EWA iShares Australia Index Foreign Large Blend 19 12.88% 17.65% 10.59% 36.58% 19.72% -0.89%
+DBN Wisdom Tree Intern. Basic Mater's *None 17 10.48% 12.34% 4.94% 39.80% 18.70% -1.06%
+OIH Oil Services HOLDRs Specialty-Natural Reso 16 5.45% 13.25% 7.73% 38.59% 20.51% -1.00%
+PXJ Dynamic Oil & Gas Services Oil & Gas 15 4.41% 10.87% 3.90% 40.59% 19.69% -0.64%
+XES SPDR Oil & Gas Equip./Services Specialty-Natural Res. 15 4.60% 11.40% 5.95% 36.77% 18.05% -0.84%
+GMF SPDR S&P Emerg. Asia Pacific *None 15 15.21% 24.53% 20.38% 0.00% 0.00% 0.00%
+EWC iShares Canada Index Foreign Large Value 14 8.58% 11.23% 6.96% 30.26% 16.26% -0.78%
+ITA iShares DJ US Aerospace&Defense Mid-Cap Blend 14 7.86% 7.97% 9.91% 32.02% 16.42% -0.52%
+DGG Wisdom Tree Intern. Communic's *None 14 8.02% 13.25% 10.44% 24.65% 14.93% 0.00%
+EWM iShares Malaysia Index Pacific Asia/excl. Japan 14 8.14% 9.60% 4.00% 34.29% 9.51% -0.41%
+PBW WilderHill Clean Energy Clean Energy 14 8.68% 6.78% 5.14% 34.53% 18.12% 0.00%
+PZD PowerShares Cleantech Portfolio *None 13 7.29% 8.07% 4.73% 30.42% 16.57% 0.00%
+USO U.S. Oil Fund *None 13 8.79% 12.92% 12.63% 19.44% 18.18% -3.08%
+PPA Aerospace & Defense Large Growth 13 6.16% 7.95% 9.24% 28.00% 14.60% -0.96%
+WMH Wireless HOLDRs Specialty-Communicati 13 7.24% 10.93% 8.99% 25.45% 16.44% -0.94%
+XBI State Street SPDR BioTech Specialty-Health 13 2.70% 9.48% 12.38% 26.90% 13.71% -0.24%
+HHH Internet HOLDRs Large Growth 13 8.34% 10.70% 8.77% 25.38% 12.13% -0.67%
+IYM Dow Jones US Basic Mat's Large Value 13 8.14% 10.75% 4.63% 26.64% 11.57% -0.56%
+XME SPDR Metals & Mining Specialty-Natural Reso 13 9.55% 12.90% -1.00% 30.66% 8.82% -5.36%
+IYE Dow Jones US Energy Specialty-Natural Res. 13 5.79% 10.83% 5.52% 28.55% 15.97% -1.10%
+IAH Internet Architecture HOLDRs Specialty-Technology 12 2.31% 8.20% 11.18% 26.74% 16.91% 0.00%
+IIF Morgan Stanley India Fund India 12 14.31% 17.86% 12.63% 2.32% 12.24% -1.52%
+IGE Goldman Sachs Natural Res. Specialty-Natural Res. 12 6.49% 10.50% 4.04% 27.46% 14.72% -0.69%
+IXP S&P Global Telecommunications Specialty-Commun. 12 6.49% 9.99% 9.07% 23.60% 13.39% -0.41%
+VAW Vanguard Materials VIPERS Specialty-Natural Res. 12 7.56% 9.79% 3.78% 26.24% 10.62% -1.33%
+RYE Rydex S&P Equal Weight Energy *None 12 6.00% 11.01% 3.12% 28.24% 14.18% -1.24%
+EWG iShares Germany Index Europe Stock 12 6.96% 8.26% 4.15% 29.44% 13.61% -0.49%
+PYZ PowerShares Dyn. Basic Materials *None 12 7.29% 10.66% 3.86% 28.17% 11.56% -0.64%
+DNH Wisdom Tree Pacific ex-Japan Hi Y. Pacific/Asia ex-Japan 12 9.78% 9.09% 4.15% 26.00% 12.45% -0.85%
+VDE Vanguard Energy VIPERS Specialty-Natural Res. 12 5.78% 10.63% 4.40% 28.57% 15.46% -0.80%
+XOP SPDR Oil & Gas Exploration Specialty-Natural Reso 12 8.16% 10.27% 1.57% 26.08% 11.61% -2.26%
+XLE Energy Select Sector Specialty-Natural Res. 12 5.33% 10.43% 4.66% 27.71% 15.20% -1.59%
+EVX Mkt Vector Environment. Serv's Mid-Cap Blend 11 6.88% 9.46% 5.46% 23.16% 13.37% 0.00%
+PWJ PowerShares Dyn. MidCap Growth Mid-Cap Growth 11 4.90% 6.05% 6.37% 27.23% 12.77% 0.00%
+PRFE PowerShares RAFI Energy Specialty-Natural Reso 11 5.38% 9.44% 3.60% 27.11% 14.47% -1.28%
+XLB Materials Select Sector Large Value 11 7.52% 8.92% 3.65% 22.38% 9.41% -1.39%
+GDX Mkt Vector Gold Miners Specialty-Precious Met 11 13.47% 12.74% 7.72% 9.75% 10.12% -4.28%
+GMM SPDR S&P Emerg. Markets *None 11 12.44% 17.64% 13.77% 0.00% 0.00% 0.00%
+UYM ProShares Ultra Basic Materials *None 11 16.54% 20.79% 6.59% 0.00% 0.00% -3.10%
+IEO iShares DJ Oil & Gas Expl.&Prod. Specialty-Natural Reso 11 8.08% 9.80% 0.77% 26.68% 11.29% -2.83%
+IXC S&P Global Energy Specialty-Natural Res. 11 6.37% 9.50% 2.78% 23.67% 14.86% -1.13%
+PGZ PowerShares Dyn. Aggressive Gr. *None 10 5.28% 7.65% 6.11% 19.37% 11.07% 0.00%
+QQQQ Nasdaq 100 Trust Shares Large Growth 10 4.63% 7.93% 7.28% 20.51% 12.07% 0.00%
+EWN iShares Netherlands Index Europe Stock 10 6.60% 6.74% 3.68% 22.20% 10.11% -1.23%
+EWT iShares Taiwan Index Pacific Asia/excl. Japan 10 7.96% 9.25% 3.64% 19.64% 15.64% 0.00%
+PIV PowerShares Value Line Select Large Growth 10 7.04% 10.81% 4.62% 16.08% 7.68% -0.11%
+IAU iShares Comex Gold Specialty-Natural Res. 10 7.36% 8.96% 10.35% 14.64% 9.61% -1.99%
+EZA iShares South Africa Index N/A 10 6.18% 11.44% 4.80% 17.80% 9.68% -1.43%
+GML SPDR S&P Emerg. Latin America *None 10 14.09% 15.11% 10.52% 0.00% 0.00% 0.00%
+GSG iShares GSCI Commodity Index *None 10 6.99% 9.35% 6.52% 16.12% 11.72% -2.43%
+DIG ProShares Ultra Oil & Gas *None 10 11.15% 19.76% 7.54% 0.00% 0.00% -2.35%
+HHD HealthShares Diagnostics *None 10 8.58% 12.48% 18.40% 0.00% 0.00% -0.21%
+GLD streetTRACKS Gold Shares Specialty-Precious Met 10 7.12% 8.83% 10.27% 14.46% 9.43% -2.14%
+JKH Morningstar MidGrowth Mid-Cap Growth 10 5.24% 6.71% 4.54% 21.74% 10.20% 0.00%
+EXI iShares S&P Global Industrials *None 9 5.19% 5.27% 3.38% 21.65% 10.39% -0.40%
+EFG iShares MSCI EAFE Growth Index *None 9 6.41% 7.25% 4.13% 17.54% 9.43% -0.48%
+IYW Dow Jones US Technology Specialty-Technology 9 3.71% 7.78% 5.53% 17.06% 10.57% 0.00%
+QQEW 1st Trust NASDAQ 100 Equal Wt. Large Blend 9 4.10% 6.80% 6.23% 18.46% 10.46% 0.00%
+VIS Vanguard Industrials Large Blend 9 5.05% 5.14% 4.62% 19.50% 10.09% -0.41%
+PYH PowerShares Value Industry Rotat. *None 9 6.95% 10.68% 3.61% 14.95% 7.63% 0.00%
+IHI iShares DJ US Medical Devices Specialty-Health 9 4.33% 4.43% 8.69% 19.06% 10.10% -0.26%
+JKK Morningstar SmallGrowth Small Growth 9 5.54% 7.84% 4.26% 16.49% 8.77% 0.00%
+PHO Water Resources Water Resources 9 5.02% 6.12% 4.82% 20.53% 12.13% 0.00%
+IGV Goldman Sachs Software Specialty-Technology 9 5.40% 8.80% 7.90% 13.39% 8.62% 0.00%
+PKB PowerShares Dyn. Build.&Constr. Large Blend 9 3.95% 7.65% -0.29% 24.56% 9.09% -4.20%
+FDN 1st Trust DJ Internet Index Specialty-Technology 9 6.69% 9.61% 1.11% 17.18% 7.70% -1.42%
+MTK Morgan Stanley Technology Specialty-Technology 9 4.49% 7.63% 6.86% 18.87% 12.17% -0.07%
+OTP Claymore Ocean Tomo Patent *None 9 5.94% 6.98% 4.96% 17.00% 9.99% -0.34%
+ADRA BLDRS Asia 50 ADR Index Diversified Pacific/Asia 9 8.53% 10.50% 3.93% 12.21% 9.64% 0.00%
+RSX Market Vectors Russia Foreign Large Blend 9 12.31% 12.12% 11.85% 0.00% 0.00% 0.00%
+IGM Goldman Sachs Tech. Index Specialty-Technology 9 3.85% 7.77% 5.93% 18.42% 11.12% 0.00%
+PRFM PowerShares RAFI Basic Materials Large Blend 9 5.62% 8.10% 1.64% 22.58% 8.21% -3.02%
+TKF Turkish Investment Fund Turkey 9 4.89% 2.13% 7.97% 21.34% 12.69% -6.96%
+PRN PowerShares Dyn. Industrials *None 8 3.21% 6.05% 1.12% 20.95% 8.91% -2.87%
+PXE PowerShares Dyn. Energy Explor. Energy 8 4.24% 9.63% -3.75% 22.55% 9.10% -5.25%
+XLK Technology Select Specialty-Technology 8 3.44% 6.42% 5.23% 17.63% 10.21% 0.00%
+IYJ Dow Jones US Industrial Large Blend 8 4.43% 4.46% 3.53% 17.79% 8.63% -0.97%
+XLI Industrial Select Sector Large Blend 8 4.22% 3.85% 4.67% 17.88% 9.22% -0.84%
+HHV HealthShares Enabling Tecnologies *None 8 9.14% 10.66% 14.03% 0.00% 0.00% 0.00%
+VOT Vanguard Mid-Cap Growth *None 8 4.20% 5.48% 2.07% 19.01% 8.41% -0.77%
+PWB PowerShares Dyn. Large Cap Gr. Large Growth 8 4.86% 6.87% 5.04% 13.52% 8.28% -0.16%
+HHK HealthShares Cancer Index *None 8 5.82% 11.90% 13.52% 0.00% 0.00% 0.00%
+FXC CurrencyShares Canadian Dollar *None 8 5.19% 5.50% 5.24% 16.62% 10.11% -0.68%
+IXN S&P Global Technology Specialty-Technolgy 8 4.13% 7.31% 5.30% 16.79% 11.40% 0.00%
+TTH Telecom HOLDRs Specialty-Communicati 8 4.29% 4.27% 5.29% 18.12% 8.63% 0.00%
+URE ProShares Ultra Real Estate *None 8 11.62% 19.16% 1.09% 0.00% 0.00% -33.25%
+GEX Market Vectors-Global Alt. Energy Specialty-Utilties 8 10.35% 13.16% 7.43% 0.00% 0.00% 0.00%
+NFO Claymore Zacks Sabriet Insider *None 8 4.86% 8.72% 2.05% 15.38% 7.22% 0.00%
+DOO Wisdom Tree Intern. Div. Top 100 Foreign Large Blend 8 6.00% 6.40% 3.51% 15.64% 7.74% -0.41%
+VBK Vanguard SmallCap Growth Small Growth 8 4.96% 7.34% 1.58% 16.49% 7.34% -0.61%
+DOL Wisdom Tree Intern. LargeCap Div. Foreign Large Blend 8 6.00% 6.67% 3.67% 15.91% 8.74% -0.14%
+DBU Wisdom Tree Intern. Utilites *None 8 5.79% 6.03% 5.18% 14.72% 8.14% -1.20%
+EZU European Monetary Union Index Europe Stock 8 5.94% 5.92% 2.33% 17.91% 8.64% -1.02%
+PHW PowerShares Dyn Hardw&Cons. El. Specialty-Technology 8 1.93% 8.38% 4.27% 15.84% 10.38% -0.45%
+JKE Morningstar Large Growth Large Growth 8 4.63% 6.77% 4.73% 14.23% 7.99% -0.03%
+ROM ProShares Ultra Technology *None 8 6.68% 14.53% 8.93% 0.00% 0.00% 0.00%
+PXQ PowerShares Dyn. Networking Specialty-Technology 8 4.45% 8.85% 2.25% 16.43% 7.73% -3.54%
+IJT S&P SmallCap 600/BARRA Small Growth 8 4.80% 7.20% 3.69% 15.33% 7.72% 0.00%
+DWM Wisdom Tree DEFA Fd Foreign Large Blend 8 6.24% 6.76% 3.03% 16.70% 8.51% -0.22%
+VGT Vanguard Info Technology Specialty-Technolgy 8 3.74% 7.13% 5.26% 17.34% 10.37% 0.00%
+XRO Claymore Zacks Sector Rotations *None 8 5.34% 8.05% 4.23% 13.74% 6.59% 0.00%
+EWP iShares Spain Index Europe Stock 7 5.50% 3.45% 4.59% 14.81% 7.49% 0.00%
+EWQ iShares France Index Europe Stock 7 6.22% 6.13% 0.70% 13.76% 6.80% -2.87%
+EMG streetTRACKS DJ Wilshire MC Gr. Mid-Cap Growth 7 4.53% 6.56% 1.30% 16.41% 6.95% -0.65%
+RGI Rydex S&P Equ. Wt. Industrials *None 7 4.27% 3.23% 1.80% 18.55% 7.96% -2.33%
+PRFN PowerShares RAFI Industrials Large Blend 7 3.79% 3.94% 2.92% 17.01% 7.84% -1.68%
+SWH Software HOLDRs Specialty-Technology 7 5.20% 5.87% 7.83% 7.75% 7.40% -0.27%
+EWW iShares Mexico Index Latin America Stock 7 3.27% 5.99% -1.55% 20.28% 8.13% -4.82%
+DKA Wisdom Tree Intern. Energy *None 7 4.49% 5.96% -1.74% 21.12% 11.61% -4.23%
+IOO S&P Global 100 World Stock 7 4.97% 5.30% 3.40% 13.13% 7.91% -0.39%
+KXI iShares S&P Global Consum. Stapl. *None 7 3.92% 4.66% 4.33% 13.48% 6.66% -0.30%
+FBT 1st Trust Biotechnolgy Index Specialty-Health 7 4.67% 6.93% 6.62% 9.43% 5.46% -1.64%
+ONEQ Fidelity Commonwealth Large Growth 7 4.19% 7.01% 3.95% 13.42% 8.10% 0.00%
+RTM Rydex S&P Equal Weight Materials *None 7 6.36% 6.10% 1.46% 15.46% 5.89% -2.93%
+FEZ Dow Jones Euro Stoxx 50 Europe Stock 7 6.04% 5.52% 3.00% 15.14% 7.90% -0.67%
+VUG Vanguard Growth Large Growth 7 3.99% 5.58% 3.99% 13.08% 7.10% -0.02%
+DSG DJ US SmallCap Growth Small Growth 7 4.19% 7.00% 1.06% 14.35% 6.34% -1.00%
+IBB Nasdaq Biotechnology Specialty-Health 7 4.44% 7.75% 7.02% 8.35% 6.19% 0.00%
+VGK Vanguard European Europe Stock 7 5.41% 5.73% 2.29% 15.79% 7.81% -0.74%
+IEV S&P Europe 350 Index Europe Stock 7 4.81% 5.29% 1.60% 14.36% 7.12% -1.53%
+ADRU BLDRS Europe 100 ADR Index *None 7 5.16% 5.87% 2.09% 15.01% 8.02% -0.75%
+EFA MSCI EAFE iShares Index Fd Foreign Large Blend 7 5.30% 5.39% 2.13% 13.96% 7.07% -0.39%
+DRW WisdomTree Internat. Real Estate *None 7 8.15% 13.16% 6.86% 0.00% 0.00% 0.00%
+IWF Russell 1000 Growth Large Growth 7 3.92% 5.30% 3.87% 13.00% 6.96% -0.26%
+IGN Goldman Sachs Networking Specialty-Technology 7 2.13% 7.35% 2.21% 14.83% 8.07% -3.30%
+JXI iShares S&P Global Utilities *None 7 4.93% 5.34% 4.16% 14.38% 6.67% -1.00%
+DIM Wisdom Tree Intern. MidCap Div. *None 6 4.03% 5.27% 0.11% 14.30% 5.65% -2.25%
+FXA CurrencyShares Australian Dollar *None 6 7.50% 3.36% 2.62% 11.55% 7.37% -1.07%
+IWZ Russell 3000 Growth Large Growth 6 3.88% 5.48% 3.58% 12.71% 6.81% -0.10%
+DGL PowerShares DB Gold Fund *None 6 6.86% 8.28% 9.31% 0.00% 8.58% -2.19%
+VXF Extended Mkts VIPERs Mid-Cap Blend 6 3.88% 6.69% 0.50% 11.27% 4.52% -1.75%
+ADRD BLDRS Develop. Mkts 100 ADR In. Foreign Large Blend 6 5.12% 5.22% 1.29% 12.33% 6.84% -1.31%
+DBC DB Commodity Index Specialty-Natural Reso 6 4.85% 6.48% 2.95% 10.90% 7.34% -3.16%
+DDI Wisdom Tree Intern. Industrial *None 6 2.09% 3.24% -2.17% 21.58% 6.98% -4.64%
+XSD StateStreet SPDR Semiconductors Specialty-Technology 6 1.31% 7.86% 0.58% 13.21% 7.08% -2.94%
+DJP iPath DJ-AIG Commodity Index *None 6 5.52% 5.86% 2.76% 8.93% 5.43% -1.77%
+GAF SPDR S&P Emerg. Mid.East/Africa *None 6 6.56% 10.16% 6.17% 0.00% 0.00% 0.00%
+OEF S&P 100 Index Large Growth 6 3.90% 4.91% 3.81% 9.55% 6.21% -0.14%
+IWP Russell MidCap Growth Mid-Cap Growth 6 4.01% 5.47% 1.64% 14.37% 6.13% -1.04%
+GUR SPDR S&P Emerging Europe *None 6 9.75% 7.71% 6.05% 0.00% 0.00% 0.00%
+DIA DIA Diamond EFT Large Value 6 4.22% 3.84% 3.78% 12.63% 7.23% -0.37%
+IVW S&P 500/BARRA Growth Large Growth 6 4.00% 5.19% 3.34% 10.47% 6.26% -0.22%
+NYC NYSE Composite Moderate Allocation 6 4.65% 5.78% 2.35% 11.11% 6.12% -0.42%
+FXZ 1st Trust Materials AlphaDEX *None 6 8.75% 11.41% 4.49% 0.00% 0.00% -0.05%
+DEB Wisdom Tree Europe Total Div. Europe Stock 6 4.46% 4.38% 1.01% 13.97% 6.49% -1.94%
+FPX 1st Trust IPOX-100 Index Large Growth 6 4.90% 6.01% -1.18% 12.89% 5.91% -3.32%
+IGW Goldman Sachs Semiconductor Specialty-Technology 6 1.63% 6.05% 1.78% 13.13% 7.39% -2.62%
+EWD iShares Sweden Index Europe Stock 6 6.77% 3.68% -0.56% 15.24% 7.17% -5.08%
+PRFQ PowerShares Telecom Specialty-Communicati 6 2.42% 4.85% 3.73% 14.04% 7.80% -0.29%
+RZG Rydex S&P SmallCap 600 Pure Gr. Small Growth 6 4.05% 7.24% 1.51% 10.54% 6.03% -0.49%
+IWO Russell 2000 Growth Small Growth 6 4.61% 7.38% 1.78% 12.17% 6.40% -0.64%
+PTH PowerShares Dyn. Heath Portf. *None 6 2.88% 3.89% 2.81% 14.47% 4.99% -0.24%
+PJF PowerShares Dyn. Large Cap *None 6 4.10% 5.31% 3.19% 9.53% 5.38% -0.28%
+DPN Wisdom Tree Intern. Cons. Non-Cyc *None 6 3.72% 4.29% 2.41% 12.54% 5.23% -0.53%
+ELG DJ US LargeCap Growth Large Growth 6 3.78% 5.36% 3.07% 11.86% 6.33% -0.18%
+VPL Vanguard Pacific ETF Japan Stock 6 6.15% 5.96% 2.59% 10.67% 6.31% -0.45%
+PTE PowerShares Dyn Telecom&Wirel. Specialty-Communicati 6 2.18% 6.99% 2.47% 12.51% 7.39% -0.55%
+IJK S&P MidCap 400/BARRA Mid-Cap Growth 6 3.63% 5.10% 1.12% 15.31% 5.83% -1.10%
+FEU streetTracks DJ STOXX 50 Europe Stock 6 5.47% 5.39% 2.57% 12.45% 6.92% -0.40%
+PID PowerShares Intl Div. Achievers Foreign Large Value 6 3.48% 4.08% 1.52% 12.92% 6.96% -1.15%
+VOX Vanguard Telecom Serv's Specialty-Commun. 6 2.84% 4.30% 1.71% 14.28% 6.01% -1.23%
+DTH Wisdom Tree DEFA High-Yield Foreign Large Blend 6 4.76% 4.51% 1.22% 12.91% 6.05% -1.34%
+ICF Cohen & Steers Realty Specialty-Real Estate 5 6.70% 12.46% 5.93% -3.43% -1.65% -16.10%
+XLG Rydex Russell Top 50 Large Blend 5 3.46% 4.79% 4.24% 7.77% 5.83% -0.05%
+VO Vanguard Mid-Cap Mid-Cap Blend 5 3.54% 5.05% -0.36% 11.69% 4.24% -2.69%
+PWO Powershares Dynamic OTC Mid-Cap Growth 5 2.71% 5.32% 1.33% 9.68% 4.91% -1.04%
+RYH Rydex S&P Equal Weight Health *None 5 3.03% 3.29% 0.67% 11.94% 3.75% -1.97%
+PUW PowerShares Progr. Energy Portf. *None 5 2.89% 2.96% -2.09% 15.82% 5.47% -4.92%
+IYK Dow Jones US Cons. Non-Cycl. Large Blend 5 3.95% 3.15% 3.35% 7.98% 4.30% 0.00%
+IYZ Down Jones US Telecom Specialty-Commun. 5 1.60% 3.66% 0.71% 15.51% 6.11% -2.34%
+IYY Dow Jones US Tot. Market Large Blend 5 3.62% 4.97% 2.07% 9.70% 4.93% -0.69%
+VIG Vanguard Div. Appreciation Large Blend 5 3.44% 3.38% 2.96% 8.51% 4.86% -0.21%
+PWV PowerShares Dyn. Large Value Large Value 5 3.83% 5.49% 2.08% 6.83% 3.81% -2.04%
+IWB Russell 1000 Index Large Blend 5 3.59% 4.66% 2.18% 9.28% 4.78% -0.53%
+IJR S&P Sm.Cap 600 Small Blend 5 3.50% 6.31% 0.55% 8.82% 3.82% -2.05%
+IJH S&P MidCap 400 Mid-Cap Blend 5 2.86% 4.61% -0.56% 11.54% 3.43% -3.09%
+VHT Vanguard Health Care Specialty-Health 5 3.02% 4.27% 2.58% 8.92% 3.69% -0.97%
+ISI S&P 1500 Large Blend 5 3.32% 4.64% 2.04% 9.21% 4.70% -0.77%
+VB Vanguard SmallCap Small Blend 5 3.80% 6.81% -0.44% 9.47% 3.73% -2.65%
+DEF Claymore Sabrient Defender *None 5 4.07% 5.18% 1.02% 10.12% 4.04% -1.71%
+VDC Vanguard Consumer Staples Large Blend 5 3.81% 3.34% 4.32% 10.04% 5.15% 0.00%
+RFG Rydex S&P MidCap 400 Pure Gr. Mid-Cap Growth 5 3.84% 5.23% -0.26% 12.75% 4.92% -2.11%
+VNQ Vanguard REIT Index Specialty-Real Estate 5 5.93% 11.67% 4.27% -3.21% -1.71% -14.47%
+DEW Wisdom Tree Europe High-Yield Europe Stock 5 4.23% 3.13% 0.84% 11.55% 5.26% -2.05%
+UXI ProShares Ultra Industrials *None 5 8.49% 6.39% 5.12% 0.00% 0.00% -3.59%
+ELR streetTRACKS DJ Wilshire Lcap Large Blend 5 3.73% 4.93% 2.09% 9.28% 5.02% -0.46%
+PZJ PowerShares Zacks Small Cap Small Blend 5 5.45% 9.13% 0.10% 7.18% 4.92% -1.87%
+IWV Russell 3000 Index Large Blend 5 3.56% 4.96% 1.93% 8.88% 4.56% -0.81%
+UTH Utilities HOLDRs Specialty-Utilities 5 3.01% 1.29% 3.14% 11.25% 4.57% -3.69%
+SPY SPDRS Large Blend 5 3.25% 4.26% 2.10% 8.81% 4.68% -0.68%
+IVV S&P 500 Large Blend 5 3.35% 4.54% 2.23% 8.75% 4.67% -0.61%
+DPC Wisdom Tree Intern. Cons. Cyclical *None 5 4.58% 3.01% -1.14% 14.05% 4.80% -3.24%
+VV Vanguard LargeCap Large Blend 5 3.52% 4.70% 2.36% 9.73% 5.08% -0.45%
+FIO iShares FTSE NAREIT Indust/Office *None 5 5.75% 9.88% 3.04% 0.00% 0.00% -8.07%
+FRI 1st Trust S&P REIT Index *None 5 6.23% 11.07% 3.94% 0.00% 0.00% -4.84%
+FTY iShares FTSE NAREIT RE 50 *None 5 6.01% 11.19% 3.75% 0.00% 0.00% -5.71%
+SMH Semiconductors HOLDRs Specialty-Technology 5 0.21% 3.92% -0.41% 15.78% 6.97% -4.98%
+VEU Vanguard FTSE All-Word ex-US *None 5 7.19% 8.22% 4.71% 0.00% 0.00% -0.03%
+PBE Dyn. Biotechnology/Genome Biotech & Genome 5 2.54% 4.08% 4.87% 9.49% 4.29% -1.82%
+OTR Claymore Ocean Tomo Growth *None 5 5.23% 8.03% 6.92% 0.00% 0.00% -0.34%
+DBO PowerShares DB Oil Fund *None 5 7.13% 7.21% 3.78% 0.00% 9.65% -2.53%
+JKD Morningstar Large Core Large Blend 5 3.82% 4.14% 3.82% 9.40% 5.76% -0.22%
+NY NYSE 100 Index Moderate Allocation 5 3.17% 4.32% 2.78% 8.17% 4.86% -0.10%
+DGT DJ Global Titans Large Blend 5 3.63% 4.80% 2.73% 7.83% 5.68% -0.06%
+VTI Total Market VIPERs Large Blend 5 3.27% 4.68% 1.70% 9.05% 4.55% -0.98%
+EWU iShares United Kingdom Index Europe Stock 5 3.05% 4.38% 1.09% 11.06% 5.88% -1.85%
+KLD iShares KLD Select Social Index Large Blend 5 3.13% 4.70% 3.16% 9.36% 5.57% 0.00%
+CWI SPDR MSCI All Country-ex U.S. *None 5 6.88% 7.28% 4.01% 0.00% 0.00% 0.00%
+MDY MidCap SPDRS Mid-Cap Blend 5 2.89% 4.70% -0.52% 11.57% 3.46% -3.04%
+UGE ProShares Ultra Consumer Goods *None 5 7.87% 5.55% 5.25% 0.00% 0.00% -0.71%
+EWL iShares Switzerland Index Europe Stock 5 4.57% 5.46% 1.64% 9.36% 4.54% -0.87%
+DBP PowerShares DB Precious Metals *None 5 6.82% 7.02% 7.85% 0.00% 6.98% -2.20%
+TMW Wilshire 5000 Ttl Mkt Large Blend 5 3.21% 5.01% 1.80% 9.14% 4.74% -0.93%
+DRF Wisdom Tree Intern. Financial *None 5 5.94% 3.91% 1.22% 8.68% 4.29% -1.81%
+PSJ Dynamic Software Software 5 4.07% 8.02% 1.24% 6.56% 2.62% -2.80%
+FXL 1st Trust Technology AlphaDEX *None 4 3.69% 9.15% 4.18% 0.00% 0.00% 0.00%
+FDV 1st Trust DB Strateg. Value Index *None 4 2.54% 3.01% -1.71% 11.63% 3.94% -4.49%
+DTD Wisdom Tree Total Dividend Large Blend 4 3.06% 4.00% 1.84% 6.44% 3.32% -1.45%
+FXS CurrencyShares Swedish Krona *None 4 5.97% 3.12% 2.81% 4.92% 5.14% -1.39%
+EEW Claymore/Rob Develp. World Equ. *None 4 7.45% 5.98% 1.08% 0.00% 0.00% -0.26%
+FTC 1st Trust Large Cap Growth Opps *None 4 5.08% 6.44% 2.76% 0.00% 0.00% -0.16%
+DTN Wisdom Tree Div. Top 100 Large Blend 4 2.95% 3.21% 1.70% 6.22% 2.19% -2.59%
+FXE CurrencyShares Euro Trust World Bond 4 3.80% 2.70% 2.76% 6.76% 4.77% -1.24%
+GRN Claymore LGA Green *None 4 3.75% 4.43% 1.76% 7.71% 4.89% -0.84%
+BHH B2B Interneat HOLDRs Specialty-Technology 4 4.05% 5.96% -0.86% 6.94% 4.85% -4.94%
+DBR Wisdom Tree Intern. Health Care *None 4 4.40% 3.11% 2.92% 6.49% 3.41% -1.26%
+FDM 1st Trust DJ Select Micro Cap Small Blend 4 3.69% 7.71% -1.81% 4.47% 2.31% -3.70%
+DBA PowerShares DB Agriculture Fd *None 4 3.03% 7.43% 3.83% 0.00% 6.94% -5.78%
+DSI iShares KLD 400 Social Index *None 4 3.43% 4.06% 2.25% 6.61% 3.73% -0.75%
+ELV DJ US LargeCap Value Large Value 4 3.04% 3.99% 1.30% 6.94% 3.64% -1.61%
+GII SPDR Macq. Global Infrastruct. 100 *None 4 4.95% 6.12% 3.82% 0.00% 0.00% -0.82%
+DSC streetTRACKS DJ Wilshire SmCap Small Blend 4 2.53% 5.40% -1.56% 8.05% 2.75% -3.36%
+EMM streetTRACKS DJ Wilshire MC Mid-Cap Blend 4 3.20% 5.11% -1.20% 10.87% 3.39% -3.18%
+CSD Claymore Clear Spin-Off ETF *None 4 0.48% 3.00% -4.71% 17.71% 4.08% -6.44%
+IDU Dow Jones US Utilities Specialty-Utilities 4 2.35% 1.63% 1.68% 9.30% 2.29% -5.86%
+DLN Wisdom Tree LargeCap Div. Large Blend 4 3.17% 3.76% 2.70% 7.27% 3.95% -0.61%
+CH Chile Fund Chile Stock 4 2.12% 2.58% -10.48% 22.22% 4.96% -14.37%
+EFV MSCI EAFE iShares Value Index Foreign Large Blend 4 3.82% 3.43% -0.28% 9.42% 4.44% -2.35%
+MKH Market 2000 HLDRs Large Blend 4 2.99% 3.57% 1.70% 7.65% 4.71% -0.92%
+UNG U.S. Natural Gas Fund *None 4 16.93% 4.33% -3.91% 0.00% 0.00% -23.13%
+XLU Utilities Select Sector Specialty-Utilities 4 2.35% 1.33% 2.38% 10.27% 2.82% -5.33%
+PFM PowerShares Div. Achievers Large Value 4 3.03% 3.68% 2.74% 5.25% 3.60% -0.39%
+SLV iShares Silver Trust Specialty-Precious Met 4 8.57% 1.52% 2.80% 2.85% 1.31% -9.99%
+PJG PowerShares Dyn. MidCap *None 4 3.42% 3.64% -1.80% 10.62% 3.09% -3.79%
+PDP PowerShares DWA Tech. Leaders *None 4 5.87% 7.93% 1.54% 0.00% 0.00% -1.42%
+USD ProShares Ultra Semiconductors *None 4 1.58% 11.70% 2.10% 0.00% 0.00% -7.05%
+RXL ProShares Ultra Healthcare *None 4 5.33% 6.42% 2.88% 0.00% 0.00% -6.10%
+PRFZ PowerShares Small-Mid 1500 Small Blend 4 3.31% 6.89% -1.07% 7.13% 2.77% -3.19%
+PRF PowerShares FTSE RAFI US 1000 Large Blend 4 3.18% 3.98% 0.37% 7.50% 3.27% -2.16%
+XLV Health Care Select SPDR Specialty-Health 4 2.76% 3.45% 1.31% 6.57% 2.22% -2.96%
+XLP Consumer Staples Select Large Blend 4 2.95% 2.23% 2.80% 6.85% 3.38% -0.43%
+IXJ S&P Global Healthcare Specialty-Health 4 3.19% 3.21% 2.34% 5.75% 2.30% -2.56%
+IYH Dow Jones US Healthcare Specialty-Health 4 2.98% 3.80% 2.37% 7.49% 2.97% -1.82%
+IVE S&P 500/BARRA Value Large Value 4 3.04% 4.16% 1.15% 7.69% 3.58% -1.63%
+VPU Vanguard Utilities VIPERS Specialty-Utilities 4 2.17% 1.11% 2.09% 9.52% 2.15% -6.10%
+PWT PowerSharee Dyn. SmCap Growth Small Growth 4 4.09% 5.72% 0.86% 6.80% 3.37% -2.48%
+PTJ PowerShares Dyn. Health Serv's *None 4 2.33% 2.84% 0.28% 12.21% 3.32% -2.39%
+RPG Rydex S&P 500 Pure Growth Large Growth 4 3.40% 3.29% 0.31% 8.39% 3.40% -2.02%
+VYM Vanguard High Div. Yield Index *None 4 2.96% 3.39% 2.22% 6.79% 3.88% -0.65%
+PTF Powershares Dyn Technology *None 4 2.68% 6.25% -1.56% 9.78% 3.76% -4.12%
+IWM Russell 2000 Small Blend 4 3.70% 7.26% -0.79% 5.85% 2.76% -2.79%
+IWR Russell MidCap Index Fs Mid-Cap Blend 4 3.40% 4.58% -0.25% 10.20% 3.42% -2.54%
+VTV Vanguard Value Large Value 4 3.04% 4.00% 0.88% 6.30% 3.14% -2.33%
+PSI PowerShares Dyn. Semiconductors Specialty-Technology 4 1.64% 5.84% -3.08% 11.75% 3.16% -6.75%
+RWR Wilshire REIT Fund Specialty-Real Estate 4 5.41% 10.53% 3.06% -4.27% -2.75% -15.78%
+VEA Vanguard Europe Pacific *None 3 5.43% 5.71% 0.00% 0.00% 0.00% -0.31%
+UYG ProShares Ultra Financials *None 3 7.64% 8.03% -4.52% 0.00% 0.00% -17.73%
+NXT NYSE Arca Tech 100 *None 3 2.97% 6.52% 3.46% 0.00% 0.00% 0.00%
+DBV PowerShares DB G10 Currency *None 3 3.50% 0.10% -1.51% 10.40% 3.85% -3.79%
+FXF CurrencyShares Swiss Franc *None 3 3.00% 1.67% 2.44% 3.57% 3.41% -1.14%
+PEJ PowerShares Dyn. Leisure & Ent. Leisure & Entertainment 3 4.17% 6.87% -2.48% 2.95% 1.26% -4.49%
+KIE streetTracks KBW Insurance Specialty-Financial 3 4.65% 5.50% -0.46% 2.42% 1.22% -5.23%
+FXN 1st Trust Energy AlphaDEX *None 3 5.47% 9.25% -1.13% 0.00% 0.00% -2.96%
+PRFG PowerShares RAFI Consum. Goods Large Blend 3 4.81% 2.58% -1.12% 6.21% 2.06% -2.96%
+PXN Lux Nanotech Nanotechnology 3 4.10% 3.07% 1.66% 3.25% 2.91% -3.79%
+EEN Claymore/Rob Develop. Intern. Equ. *None 3 4.98% 4.61% 0.91% 0.00% 0.00% -0.96%
+EWI iShares Italy Index Europe Stock 3 3.56% 3.43% -0.42% 6.11% 2.85% -3.08%
+PSL PowerShares Dyn. Consum. Stapls *None 3 2.95% 2.61% 0.36% 6.16% 1.69% -3.42%
+RSP Rydex S&P Equal Weight Large Blend 3 2.75% 3.28% -1.34% 7.25% 2.04% -3.68%
+RYU Rydex S&P Equal Wt. Utilities *None 3 2.50% 1.55% 0.44% 7.11% 0.97% -6.83%
+PRFH PowerShares RAFI Healthcare Specialty-Health 3 1.89% 3.41% 0.63% 7.12% 1.91% -3.69%
+DHS Wisdom Tree High-Yield Equity Large Blend 3 2.58% 3.90% 1.92% 3.95% 2.01% -2.42%
+PPH Pharmaceuticals HOLDRs Specialty-Health 3 2.67% 2.35% -0.05% 5.45% 1.10% -5.59%
+RYT Rydex S&P Equal Wt Technology *None 3 1.11% 4.30% -1.19% 8.42% 4.22% -4.45%
+FAD 1st Trust Multi Cap Growth *None 3 4.18% 6.08% 2.38% 0.00% 0.00% -0.29%
+KCE streetTracks KBW Capital Mkts Specialty-Financial 3 6.89% 5.42% -1.54% 1.90% 0.67% -5.82%
+PIQ PowerShares Dyn. Mag. Portfolio *None 3 2.79% 5.18% -2.20% 5.42% 1.32% -4.31%
+DLS Wisdom Tree Intern. SmallCap Div. *None 3 2.25% 0.63% -2.63% 12.44% 2.96% -4.75%
+IJJ S&P MidCap 400/BARRA Mid-Cap Value 3 2.30% 4.50% -1.76% 8.19% 1.48% -5.02%
+JKG Morningstar MidCore Mid-Cap Blend 3 2.30% 3.65% -2.45% 8.62% 2.00% -4.45%
+HHQ HealthShares Composite Index *None 3 3.69% 4.53% 2.60% 0.00% 0.00% -0.11%
+BBH Merrill Lynch Biotech Specialty-Health 3 4.13% 6.38% 4.68% -4.72% -1.64% -11.10%
+IYR Dow Jones US Real Estate Specialty-Real Estate 3 5.49% 10.04% 1.63% -4.96% -3.40% -16.38%
+JKF Morningstar Large Value Large Value 3 2.71% 4.17% 1.04% 5.89% 3.17% -2.18%
+IAK iShares DJ US Insurance Index Specialty-Financial 3 4.18% 6.26% -0.65% 0.74% 0.78% -5.06%
+IAI iShares DJ Broker-Dealers Index Specialty-Financial 3 7.00% 6.22% -1.71% 0.56% 0.12% -6.43%
+HHE HealthShares Cardio Devices *None 3 4.62% 3.81% 1.77% 0.00% 0.00% -0.74%
+IXG S&P Global Financial Sector Specialty-Financial 3 5.10% 4.43% 0.48% 1.98% 1.92% -3.45%
+CZG Claymore/Zacks Growth & Income *None 3 4.97% 6.86% 0.71% 0.00% 0.00% -1.29%
+IWW Russell 3000 Value Large Value 3 3.26% 4.23% 0.17% 5.02% 2.21% -3.20%
+DBE PowerShares DB Energy Fund *None 3 5.07% 6.79% 0.81% 0.00% 8.94% -2.72%
+HYG iShares Lehman Hi-Yield Corp. *None 3 2.16% 6.64% 2.32% 0.00% 0.00% -2.02%
+IWD Russell 1000 Value Large Value 3 3.29% 4.03% 0.47% 5.66% 2.53% -2.82%
+GWL SPDR S&P World-ex. U.S. *None 3 5.23% 6.14% 1.27% 0.00% 0.00% -1.12%
+DBS PowerShares DB Silver Fund *None 3 8.34% 1.56% 3.08% 0.00% 1.08% -9.81%
+IHF iShares DJ US Healthcare Provid's Specialty-Health 3 0.87% 3.91% 0.00% 8.60% 2.08% -3.45%
+BMV Claymore/BIR Leaders MC Value *None 2 4.16% 5.16% -2.06% 0.00% 0.00% -4.50%
+PBJ PowerShares Dynamic Food/Bever. Large Blend 2 2.62% 1.83% -0.75% 4.87% 0.59% -4.60%
+PWP PowerShares Dyn. MidCap Value Mid-Cap Value 2 1.77% 2.14% -3.69% 8.19% 0.93% -5.99%
+EZY Wisdom Tree Low P/E Fund *None 2 3.17% 4.47% -0.91% 0.00% 0.00% -3.61%
+PKW PowerShares Buyback Achievers *None 2 3.12% 4.67% -2.05% 3.17% 0.83% -4.66%
+BST Claymore/BIR Leaders 50 *None 2 3.89% 5.33% -0.11% 0.00% 0.00% -2.47%
+PJP Dynamic Pharmaceuticals Pharmaceuticals 2 2.50% 3.40% -1.57% 3.63% 0.13% -5.42%
+PWC Powershares Dynamic Mkt Large Blend 2 2.57% 4.22% -2.84% 3.99% 0.67% -5.02%
+EXT Wisdom Tree Total Earnings Fd *None 2 3.37% 4.46% 0.65% 0.00% 0.00% -1.98%
+BLV Vanguard Long Term Bond *None 2 1.48% 2.31% 3.33% 0.00% 0.00% -1.09%
+DSV DJ US SmallCap Value Small Value 2 2.53% 6.01% -2.79% 3.46% 0.26% -6.02%
+IEF iShares Lehman 7-10 Yr Treasury Long Government 2 0.24% 2.03% 3.70% 1.71% 1.71% -1.38%
+PUI PowerShares Dyn. Utilities Specialty-Utilities 2 2.82% 2.01% -0.31% 2.11% -0.72% -9.13%
+RWX streetTRACKS DJ Wil Intern. RE *None 2 2.91% 5.75% -0.53% 1.80% -1.26% -9.05%
+IWS Russell MidCap Value Mid-Cap Value 2 2.53% 3.37% -2.79% 5.03% -0.09% -6.39%
+BDH Broadband HOLDRs Specialty-Technology 2 4.28% 5.88% -1.98% 0.83% 0.55% -12.91%
+PSP PowerShares Private Equity Port. *None 2 6.45% 6.06% -3.70% -1.06% -1.71% -10.47%
+IWC iShares Russell MicroCap Index Small Blend 2 3.38% 7.20% -2.34% 1.57% 0.70% -4.23%
+ITF iShares S&P/Topix 150 Index Japan Stock 2 3.74% 2.08% -1.08% 2.13% 1.06% -3.44%
+IHE iShares DJ US Pharmaceuticals Specialty-Health 2 2.11% 2.30% -1.68% 3.84% -0.30% -6.40%
+PVM PowerShares Dyn. Deep Value *None 2 2.64% 5.42% -2.62% 2.88% 0.08% -6.28%
+FXH 1st Trust Health Care AlphaDEX *None 2 2.25% 2.56% 3.08% 0.00% 0.00% -0.87%
+DBT Wisdom Tree Intern. Technology *None 2 0.68% 2.76% -0.04% 5.88% 4.48% -3.08%
+RFV Rydex S&P MidCap 400 Pure Val. Mid-Cap Value 2 2.07% 4.02% -3.70% 3.66% -1.09% -7.46%
+VOE Vanguard Mid Cap Value *None 2 2.74% 4.18% -2.79% 5.10% 0.26% -6.25%
+JKJ Morningstar SmallCore Small Blend 2 1.73% 4.30% -3.92% 3.97% 0.32% -5.87%
+GWX SPDR S&P Intern. SmCap *None 2 3.77% 3.19% -0.64% 0.00% 0.00% -2.65%
+VBR Vanguard SmallCap Value Small Value 2 2.76% 6.11% -2.62% 2.47% 0.09% -5.72%
+RHS Rydex S&P Equ. Wt. *None 2 1.67% 0.86% 0.33% 5.69% 1.55% -2.86%
+FYX 1st Trust Sm.Cap AlphaDEX *None 2 3.49% 6.84% -2.53% 0.00% 0.00% -4.42%
+FXY CurrencyShares Japanese Yes *None 2 0.26% 2.46% 5.02% 0.00% 0.00% -2.13%
+FXU 1st Trust Utilities AlphaDEX *None 2 2.72% 3.27% 1.53% 0.00% 0.00% -5.35%
+IJS S&P SmallCap 600/BARRA Small Value 2 2.38% 6.14% -2.23% 3.46% 0.48% -5.74%
+REZ iShares FTSE NAREIT Residential *None 2 4.04% 8.48% -3.26% 0.00% 0.00% -9.76%
+PBS Dynamic Media Media 2 4.46% 6.78% -5.59% 1.36% -0.25% -7.09%
+UDN PowerShares DB US Dollar Bearish *None 2 3.18% 2.95% 3.61% 0.00% 0.00% -0.77%
+EPS Wisdom Tree Earnings 500 Fd *None 2 3.22% 4.49% 1.46% 0.00% 0.00% -1.33%
+FNX 1st Trust MidCap AlphaDEX *None 2 2.93% 5.29% -2.06% 0.00% 0.00% -4.08%
+TLH iShares Lehman 10-20 Yr Treasury *None 2 0.44% 1.97% 3.88% 0.00% 0.00% -1.71%
+PFI PowerShares Dyn. Financial Portf. *None 2 3.75% 5.95% -2.66% 0.15% 0.00% -6.21%
+UPW ProShares Ultra Utilities *None 2 5.41% 2.11% 1.18% 0.00% 0.00% -14.18%
+FVD 1st Trust Value Line Div. Fd *None 2 1.86% 2.91% 0.18% 1.55% 0.18% -5.82%
+PIC PowerShares Dynamic Insurance Specialty-Financial 2 3.45% 6.52% -2.87% -0.76% -0.29% -6.54%
+FXB CurrencyShares British Pound *None 2 1.40% 0.83% 0.63% 3.93% 2.51% -1.17%
+EEZ Wisdom Tree Earnings Top 100 *None 2 4.29% 5.24% -0.47% 0.00% 0.00% -3.12%
+CZA Claymore/Zacks Mid-Cap Core *None 2 4.09% 4.74% -2.05% 0.00% 0.00% -3.95%
+FXG 1st Trust Consumer Staples *None 2 3.70% 2.37% 0.81% 0.00% 0.00% -2.02%
+UCR Claymore MACROShares Oil Up *None 2 -2.96% 1.21% -3.92% 15.02% 4.37% -4.87%
+EES Wisdom Tree Sm. Cap Earnings *None 1 1.78% 5.45% -5.05% 0.00% 0.00% -7.09%
+SHY iShares Lehman 1-3 Year Treasury Short Government 1 0.24% 0.96% 1.33% 1.34% 0.92% -0.39%
+AGG iShares Lehman Aggregate Bond Intermediate-Term Bon 1 0.38% 1.19% 1.58% -0.05% 0.23% -1.40%
+DXJ Wisdom Tree Japan Total Dividend Japan Stock 1 2.59% 1.43% -1.39% 0.04% -0.34% -5.96%
+BES Claymore/BIR Leaders Sm. Cap *None 1 3.47% 7.00% -4.97% 0.00% 0.00% -7.46%
+BIV Vanguard Intermed. Term Bond *None 1 0.39% 1.75% 2.51% 0.00% 0.00% -0.64%
+RXI iShares S&P Global Consum. Discr. *None 1 2.70% 2.95% -6.98% 4.44% 1.02% -6.98%
+BND Vanguard Total Bond Market *None 1 0.59% 1.45% 2.08% 0.00% 0.00% -0.53%
+BSV Vanguard Short Term Bond *None 1 0.36% 1.00% 1.44% 0.00% 0.00% -0.34%
+STH Claymore Zacks Stealth *None 1 4.26% 6.12% -5.68% -1.72% -1.21% -7.75%
+CFT iShares Lehman Credit Bond Fd. *None 1 0.59% 1.08% 1.19% 0.00% 0.00% -2.49%
+CIU iShares Lehman Intermed. Credit *None 1 0.45% 1.02% 0.85% 0.00% 0.00% -1.95%
+XLF Financial Select Sector Specialty-Financial 1 3.42% 4.03% -1.09% -3.73% -1.71% -6.92%
+XGC Claymore/Great Comp LCap Gr. *None 1 2.94% 2.90% -1.48% 0.00% 0.00% -4.18%
+DES Wisdom Tree SmallCap Div. Small Blend 1 2.06% 6.71% -1.98% -2.37% -1.51% -6.17%
+VFH Vanguard Financials Specialty-Financial 1 3.41% 4.65% -0.98% -4.11% -1.80% -7.09%
+DON Wisdom Tree MidCap Div. Mid-Cap Blend 1 2.17% 4.11% -1.86% 1.23% -0.92% -6.64%
+IWN Russell 2000 Value Small Value 1 2.30% 6.47% -3.68% -0.92% -1.53% -7.22%
+GVI iShares Lehman Interm. Govt/Credit *None 1 0.42% 1.19% 1.69% 0.00% 0.00% -0.55%
+JPP streetTracks Russell Prime Japan *None 1 2.74% 1.79% -1.44% 1.06% 0.32% -4.45%
+IYF Dow Jones US Financial Sector Specialty-Financial 1 3.86% 4.54% -1.04% -3.93% -1.82% -7.24%
+FDL 1st Trust Morningstar Div. Lead's Large Value 1 0.82% 1.29% 0.09% -0.09% -0.70% -6.00%
+FXO 1st Trust Financials AlphaDEX *None 1 3.82% 3.82% -5.13% 0.00% 0.00% -9.31%
+EZM Wisdom Tree Mid-Cap Earnings *None 1 2.32% 5.25% -3.60% 0.00% 0.00% -5.91%
+HHM HealthShares Metabolic Disorders *None 1 2.52% 3.31% -1.15% 0.00% 0.00% -11.73%
+PHJ PowerShares Hi Gr. Div. Achiev's Large Blend 1 2.05% 2.43% 0.18% 0.24% 0.63% -3.21%
+PRFU PowerShares Utilities Specialty-Utilities 1 1.20% -0.35% -0.26% 4.98% -0.35% -8.28%
+FXR 1st Trust Industrials AlphaDEX *None 1 3.10% 2.28% -2.53% 0.00% 0.00% -7.03%
+IEI iShares Lehman 3-7 Yr. Tresury *None 1 0.47% 1.84% 2.95% 0.00% 0.00% -0.77%
+PZI Zacks Micro Cap Micro Cap 1 3.75% 7.27% -5.85% -0.84% -1.80% -7.42%
+IIH Internet Infrastructure HOLDRs Specialty-Technology 1 4.60% 11.04% -8.25% -4.21% -0.88% -11.36%
+EWK iShares Belgium Index Europe Stock 1 1.79% 1.52% -4.02% 4.45% 0.08% -6.57%
+GBF iShares Lehman Gov/Credit Bond *None 1 0.58% 1.53% 2.24% 0.00% 0.00% -0.76%
+EWJ iShares Japan Index Japan Stock 1 3.29% 1.26% -1.09% 1.76% 0.72% -4.49%
+PWY PowerShares Dyn. SmCap Value Small Value 1 1.43% 6.42% -4.86% 1.66% -0.50% -7.35%
+EMV streetTRACKS DJ Wilshire MC Val. Mid-Cap Value 1 1.87% 3.23% -4.38% 3.00% -1.39% -8.25%
+MBB iShares Lehman MBS Fix.Rate Bd *None 1 0.67% 0.95% 1.76% 0.00% 0.00% -0.80%
+JKL Morningstar Small Value Small Value 1 2.09% 7.20% -3.82% -1.45% -2.18% -8.68%
+HHB HealthShares Patient Care Serv's *None 1 3.71% 5.14% -5.22% 0.00% 0.00% -7.68%
+HRJ HealthShares European Drugs *None 0 2.88% 1.79% -3.88% 0.00% 0.00% -6.07%
+HRD HealthShares Cardiology Index *None 0 0.42% 3.72% -2.91% 0.00% 0.00% -10.62%
+JKI Morningstar MidValue Mid-Cap Value 0 1.66% 2.43% -5.04% 1.50% -2.34% -8.76%
+PEY PowerShares Hi Yields Div. Achiev's Mid-Cap Value 0 1.39% 4.94% 0.92% -6.88% -1.93% -8.17%
+IYT Dow Jones Transportation Mid-Cap Blend 0 0.06% -1.57% -5.14% 7.87% -1.41% -9.68%
+CSJ iShares Lehman 1-3 Yr Credit Bd *None 0 0.37% 0.45% 0.40% 0.00% 0.00% -0.57%
+DBB PowerShares DB Base Metals Fd *None 0 5.83% -1.81% -3.46% 0.00% 2.66% -9.92%
+VCR Vanguard Consumer Discretionary Large Growth 0 1.48% 1.90% -3.78% 0.53% -1.41% -6.11%
+RYF Rydex S&P Equal Weight Financ. *None 0 3.68% 4.49% -3.47% -4.12% -3.16% -9.03%
+XPH SPDR Pharmaceuticals Specialty-Health 0 2.73% 2.33% -4.35% -0.35% -2.49% -8.48%
+PXI PowerShares Dynamic Energy *None 0 0.00% 0.00% 0.00% 0.00% 0.00% 0.00%
+RPV Rydex S&P 500 Pure Value Large Value 0 1.26% 0.73% -4.41% 2.57% -1.60% -7.35%
+DVY DJ Select Dividend Index Mid-Cap Value 0 0.95% 1.56% -1.50% -0.57% -1.71% -6.93%
+PJM PowerShares Dyn. Small Cap *None 0 0.11% 3.73% -4.94% 1.75% -0.88% -6.90%
+IYC Dow Jones US Consumer Large Blend 0 0.90% 1.23% -2.85% 1.20% -1.29% -5.73%
+KRE streetTracks KBW Region.Banking Specialty-Financial 0 1.40% 6.55% 1.36% -9.12% -2.95% -10.67%
+FEX 1st Trust Large Cap AlphaDEX *None 0 0.00% 0.00% 0.00% 0.00% 0.00% 0.00%
+SHV iShares Lehman Short Treasury Bd *None 0 0.03% 0.20% 0.18% 0.00% 0.00% -0.38%
+FXM CurrencyShares Mexican Peso *None 0 1.07% 0.26% -1.18% -1.57% 0.10% -2.19%
+FAB 1st Trust Multi Cap Value *None 0 1.21% 2.40% -5.43% 0.00% 0.00% -7.49%
+SDY SPDR Dividend ETF Large Value 0 -0.02% 0.21% -1.08% -0.55% -1.78% -6.65%
+HHR HealthShares Respirat/Pulmon. Ind. *None 0 0.34% 0.42% -2.69% 0.00% 0.00% -10.33%
+PRFF PowerShares RAFI Financial Specialty-Financial 0 2.82% 4.18% -2.06% -5.16% -2.60% -7.81%
+RKH Regional Bank HOLDRs Specialty-Financial 0 2.27% 2.51% -0.27% -5.75% -2.82% -8.76%
+FTA 1st Trust Large Cap Value Opps *None 0 1.94% 2.45% -4.40% 0.00% 0.00% -6.39%
+LQD iShares iBoxx $ Liquid Invest. Gr. Long-Term Bond 0 -0.16% 0.92% 0.38% -2.21% -1.28% -3.99%
+CVY Claymore Zacks Yield Hog *None 0 0.34% 2.20% -4.17% 0.11% -1.68% -7.45%
+HHA HealthShares Autoimmune-Inflam. *None -1 1.52% 4.74% -8.44% 0.00% 0.00% -16.46%
+HHU HealthShares GI/Gender Health *None -1 -1.08% -0.40% -1.20% 0.00% 0.00% -9.55%
+HHZ HealthShares Ophtalmology Index *None -1 1.47% -0.12% -6.67% 0.00% 0.00% -12.63%
+IYG Dow Jones US Financial Serv's Specialty-Financial -1 2.63% 2.61% -2.23% -6.05% -3.12% -8.61%
+XRT SPDR Retail Large Blend -1 1.34% 0.65% -6.45% -1.13% -4.45% -11.39%
+HRW HealthShares Derma/Wound Care *None -1 -0.04% 1.56% -5.56% 0.00% 0.00% -7.09%
+FXD 1st Trust Consumer Discretionay *None -1 0.11% 1.40% -6.91% 0.00% 0.00% -8.45%
+PJB PowerShares Dyn. Banking Portf. *None -1 1.26% 4.06% 0.09% -9.76% -4.01% -11.36%
+DNL Wisdom Tree Japan High-Yield Japan Stock -1 1.41% 0.02% -2.38% -2.46% -2.17% -8.81%
+DFE Wisdom Tree Europe SmCap Div. Europe Stock -1 -1.34% -2.73% -5.83% 6.93% -1.35% -8.65%
+EWO iShares Austria Index Europe Stock -1 -0.50% -0.24% -6.04% 3.38% -0.88% -8.79%
+PFF iShares S&P Preferred Stock *None -1 -0.51% -0.19% -5.27% 0.00% 0.00% -6.99%
+PEZ PowerShares Dyn. Consum. Discr. *None -1 0.75% 0.00% -6.61% 0.41% -3.57% -9.38%
+UCC ProShares Ultra Consum. Serv's *None -1 1.92% 1.63% -6.99% 0.00% 0.00% -13.63%
+UUP PowerShares DB US Dollar Bullish *None -1 -2.42% -1.46% -1.58% 0.00% 0.00% -3.96%
+DFJ Wisdom Tree Japan SmCap Div. Japan Stock -1 0.76% -0.71% -2.92% -1.20% -1.67% -6.95%
+XLY Consumer Discretionary Sec. Large Blend -2 0.57% 0.46% -5.11% -2.76% -3.26% -7.74%
+HHJ HealthShares Emerging Cancer *None -2 -5.36% 5.10% -6.09% 0.00% 0.00% -27.93%
+RTH Retail HOLDRs Large Blend -2 -0.48% -2.46% -4.38% 0.00% -2.27% -7.18%
+PRFS PowerShares RAFI Consum. Serv's Large Blend -2 0.26% -0.26% -5.75% -1.61% -3.96% -9.10%
+KBE streetTracks KBW Bank ETF Specialty-Financial -2 1.29% 0.15% -2.33% -8.07% -4.91% -11.36%
+RCD Rydex S&P Equ. Wt Consum.Discr. *None -3 0.42% -0.42% -7.62% -3.34% -5.08% -11.33%
+JSC streetTracks Russ. SmCap Japan *None -3 1.12% -2.40% -4.95% -5.17% -4.18% -11.51%
+IAT iShares DJ US Regional Banks Ind. Specialty-Financial -3 0.60% 1.60% -3.47% -9.54% -5.41% -12.23%
+HHN HealthShares Neuroscience Index *None -3 1.06% -3.77% -11.17% 0.00% 0.00% -17.83%
+DCR Claymore MACROShares Oil Down *None -4 2.68% -3.13% 4.27% -18.48% -7.71% -28.47%
+RZV Rydex S&P SmCap 600 Pure Val. Small Value -4 -1.32% 3.22% -10.94% -7.52% -7.80% -14.39%
+PMR PowerShares Dynamic Retail Large Blend -4 -0.55% -1.63% -7.20% -7.25% -7.58% -14.26%
+REM iShares FTSE NAREIT Mortgage *None -5 3.34% 2.65% -27.81% 0.00% 0.00% -36.88%
+PGF PowerShares Fin. Preferred Portf. *None -5 -1.61% -2.88% -6.62% -9.68% -6.97% -10.82%
+HHG HealthShares Infectious Disease *None -5 -4.37% -4.29% -10.44% 0.00% 0.00% -18.76%
+TBH Merril Lynch Telecom Brasil ADR *None -13 3.18% 12.52% -45.77% -21.80% -19.45% -46.25%
+XHB State Street SPDR Home Builders Large Blend -20 -8.85% -12.38% -21.69% -38.30% -27.87% -41.89%
+ITB iShares DJ US Home Construction *None -26 -9.48% -17.70% -27.33% -48.41% -34.79% -50.83%
+IFN India Fund India -100 -100.00% -100.00% -100.00% -100.00% -100.00% -100.00%
+EKH Europe 2001 HOLDRs Europe Stock -100 -100.00% -100.00% -100.00% -100.00% -100.00% -100.00%

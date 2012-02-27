@@ -26,98 +26,101 @@
 # but looking at the documentation I am not sure about reading row blocks.  I
 # have used the csv.writerows() method as a very fast writer of row blocks.
 
-import re;
-import getopt;
-import sys;
+import re
+import getopt
+import sys
 
-usage = "Usage: convert.py -i filepath -o filepath\n";
+usage = "Usage: convert.py -i filepath -o filepath\n"
 
-inputFilePath = "";
-outputFilePath = "";
+inputFilePath = ""
+outputFilePath = ""
 try:
-	opts, args = getopt.getopt(sys.argv[1:], "i:o:");
+	opts, args = getopt.getopt(sys.argv[1:], "i:o:")
 	for opt, arg in opts:
 		if opt == "-i":
-			inputFilePath = arg;
+			inputFilePath = arg
 		elif opt == "-o":
-			outputFilePath = arg;
+			outputFilePath = arg
 except getopt.GetoptError:
-	print usage;
+	print usage
 	
 if inputFilePath == "" or outputFilePath == "":
-	print usage;
+	print usage
 
-inputFile = None;
+inputFile = None
 try:
-	inputFile = open(inputFilePath, "r");
+	inputFile = open(inputFilePath, "r")
 except IOError, (errno, strerror):
-	print "I/O error(%s) attempting to open %s: %s" % (errno, inputFilePath, strerror);
-	exit(0);
+	print "I/O error(%s) attempting to open %s: %s" % (errno, inputFilePath, strerror)
+	exit(0)
 
-map = {};
-fields = inputFile.readline().split(",");
+map = {}
+fields = inputFile.readline().split(",")
 for i in range(len(fields)):
-	field = fields[i].replace("\n", "");
-	key = "";
+	field = fields[i].replace("\n", "")
+	key = ""
 	if field == "DATE":
-		key = "DATE";
+		key = "DATE"
 	elif field == "TICKER":
-		key = "TICKER";
+		key = "TICKER"
 	elif field == "RET":
-		key = "RET";
+		key = "RET"
 	if key != "":
-		map[key] = i;
+		map[key] = i
 		
 if not "DATE" in map or not "TICKER" in map or not "RET" in map:
 	print inputFilePath, "is missing at least one of DATE, TICKER and RET."
-	exit(0);
+	exit(0)
 
-database = {};
+database = {}
+count = 0
 for line in inputFile:
-	values = line.split(",");
-
-	date = values[map["DATE"]].replace("\n", "");
-	ticker = values[map["TICKER"]].replace("\n", "");
-	ret = values[map["RET"]].replace("\n", "");
+	values = line.split(",")
+	count += 1
+	if count % 100000 == 0:
+		print "read in %d lines" % count
+	date = values[map["DATE"]].replace("\n", "")
+	ticker = values[map["TICKER"]].replace("\n", "")
+	ret = values[map["RET"]].replace("\n", "")
 
 	# if re.compile("-?\d+(\.\d+)?").match(values[3]): #as per comments above:
 	if ticker and re.compile("-?\d+(\.\d+)?").match(ret): 
 		if not date in database:
-			database[date] = {};
-		database[date][ticker] = ret;
+			database[date] = {}
+		database[date][ticker] = ret
 
-inputFile.close();
-
-dates = database.keys();
-dates.sort();
+inputFile.close()
+print "read in all the input"
+dates = database.keys()
+dates.sort()
 
 tickers = [];	
 for date in dates:
-	tickers = tickers + database[date].keys();
-tickers = list(set(tickers));
-tickers.sort();
+	tickers = tickers + database[date].keys()
+tickers = list(set(tickers))
+tickers.sort()
 
-outputFile = None;
+outputFile = None
 try:
-	outputFile = open(outputFilePath, "w");
+	outputFile = open(outputFilePath, "w")
 except IOError, (errno, strerror):
-	print "I/O error(%s) attempting to open %s: %s" % (errno, outputFilePath, strerror);
-	exit(0);
+	print "I/O error(%s) attempting to open %s: %s" % (errno, outputFilePath, strerror)
+	exit(0)
 
-firstLine = "DATE";
+firstLine = "DATE"
 for ticker in tickers:
-	firstLine = firstLine + "," + ticker;
-firstLine = firstLine + "\n";
-outputFile.write(firstLine);
+	firstLine = firstLine + "," + ticker
+firstLine = firstLine + "\n"
+outputFile.write(firstLine)
 
 for date in dates:
-	currentLine = date;
+	currentLine = date
 	for ticker in tickers:
 		if not ticker in database[date]:
-			currentLine = currentLine + "," + "NA";
+			currentLine = currentLine + "," + "NA"
 		else:
-			currentLine = currentLine + "," + database[date][ticker];
-	currentLine = currentLine + "\n";
-	outputFile.write(currentLine);
+			currentLine = currentLine + "," + database[date][ticker]
+	currentLine = currentLine + "\n"
+	outputFile.write(currentLine)
 
-outputFile.close();
+outputFile.close()

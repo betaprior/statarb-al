@@ -1,9 +1,9 @@
 ## test pair trading on financial stocks vs xlf
-setwd("/home/leo/projects/finance/research/statarb-al/")
-source("functions.r")
-source("f_trading_sim.r") ## for the trading simulation
-source("f_trading_sim_cpp.r") ## for the trading simulation
-source("tr_signals_processing_fns.r")  ## for (at least) the following:
+setwd("/home/leo/projects/finance/research/statarb-al/src/")
+source("functions.R")
+source("f_trading_sim.R") ## for the trading simulation
+source("f_trading_sim_cpp.R") ## for the trading simulation
+source("tr_signals_processing_fns.R")  ## for (at least) the following:
        ## position.signal, interval.lengths, action.times, get.signal.returns
        ## ret.to.prices, mn.returns (actual returns of b-neutral portf.), mn.returns.periods
 

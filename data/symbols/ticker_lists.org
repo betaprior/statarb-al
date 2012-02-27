@@ -1,0 +1,102 @@
+Current ticker universe:
+spx_tickers_20081107.txt
+SPX symbols as of 20081107
+Russell tickers are derived from Russell 3000 index constituents as of
+06/2001 (freshest I could find);
+R1Khalf2K-0106.txt takes R1000 tickers and concatenates with the first 1000
+of the R2000 tickers (individually sorted by market cap in descending order),
+i.e. it captures large and mid-caps
+There are 79 symbols that are in the Nov 2008 SPX set but aren't captured in
+the Jun 2001 Russell set, including e.g. GOOG that had its IPO after 2001 and
+JAVA that changed the ticker.  They are listed below:
+:DETAILS:
+ABC
+AIZ
+AMP
+BFB
+BIG
+BIIB
+CBG
+CBS
+CCL
+CIT
+CMCSA
+CME
+CMI
+CNP
+COL
+COP
+CRM
+CVX
+DFS
+DPS
+DTV
+EP
+EQ
+ETFC
+FHN
+FIS
+FTR
+GME
+GNW
+GOOG
+HES
+HOG
+HPQ
+HST
+ICE
+IVZ
+JAVA
+JNS
+KFT
+LO
+M
+MA
+MHS
+MS
+MWV
+MWW
+NDAQ
+NOV
+NWSA
+NYX
+PFG
+PM
+PRU
+RAI
+RF
+RIG
+RRC
+RRD
+SCHW
+SHLD
+SLB
+SNI
+SOV
+SWN
+TAP
+TDC
+TEG
+TEL
+TIE
+TRV
+TSO
+TWX
+TYC
+VIAB
+WU
+WYE
+WYN
+XL
+ZMH
+:END:
+
+
+* Code for set intersections/unions:
+sort spx_tickers_20081107.txt > sspx
+sort R1Khalf2K-0106.txt > sr2k
+comm -12 sspx sr2k > srint #spx that are in russell
+comm -23 sspx sr2k > srint2 #79 stocks that aren't in russell
+sort -m sspx sr2k |uniq > spx_r1kh2_union #generate union
+wc -l spx_r1kh2_union 
+##> 2079 spx_r1kh2_union

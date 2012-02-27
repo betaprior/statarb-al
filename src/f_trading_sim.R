@@ -3,6 +3,7 @@
 
 
 
+
 ## the signals object here is assumed to be a list of dates
 ## positions matrix is a matrix of instruments / pairs
 ## rows ("P") indicate instruments for which signals are generated

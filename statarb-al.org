@@ -1,7 +1,49 @@
 #+TITLE: Statistical arbitrage with pairs trading
 #+AUTHOR: Leo Alekseyev
+#+property: session *R-babel*
 
 * Introduction
+
+Back when I was still in grad school on the East Coast, I couldn't help
+noticing a steady stream of freshly-minted PhDs (or even ABDs) in physics,
+math, CS, and engineering taking
+residence 1.5 hours up north on the train line, and converting their
+knowledge of applied probability theory into cold, hard cash.  Before getting
+acquainted with the field of financial engineering first-hand, I had a rather
+distorted view of the /who/s and the /what/s of capital markets (shaped, in part,
+by growing up in Soviet Russia and doing undergrad in California).  To be
+sure, the finance industry can seem complex and alienating. A significant
+part of the field, however, is, essentially, comprised by our fellow geeks
+crunching numbers on beefy servers using the open source tools we know and
+love.  
+
+One fun side project I've worked on a couple of years ago involved
+reproducing a trading strategy described in a [[http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1153505][paper by Marco Avellaneda and
+Jeong-Hyun Lee]].  This paper is cool for several reasons:
+- the math is interesting without being overly arcane
+- it's fairly easy to implement in R
+- there are many interesting things to explore both in terms of optimizing
+  the trading strategy and in studying some fundamental aspects of financial
+  time series
+- if you had a time machine, you could make a killing with this strategy 5-10
+  years ago!  (Yeah, Gray's Sports Almanac is for those /amateur/ time
+  travelers.)
+
+I recently stumbled upon the project source tree when cleaning up some git
+repositories. After looking at the code, I had a couple of realizations:
+- my coding style in both R and C++ has evolved quite a bit over the last
+  couple of years
+- this would be an awesome project to share with the public using org-mode's
+  reproducible research/literate programming features  
+  
+As a result, I've started putting together a public version of this project.
+My goal is to enable interested readers to follow the implementation
+details step by step, and be able to experiment with the code freely. The
+code itself, currently, is not far from its starting point as a one-off
+scrappy personal project (this means I am not using =package.skeleton= or
+ROxygen). The current focus is on getting everything to run smoothly under
+org-babel. So far, the signal generation routines work well; the trading
+simulation should be up shortly.
 
 Statistical arbitrage comes in many varieties and flavors. Among these,
 long/short market neutral strategies comprise a popular set of
@@ -43,7 +85,125 @@ My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
 ** Price process simulation: parameters estimated from XLF data
    GARCH(1,1): [[file:plots/XLF_sim_garch_ar-t.png]]
    AR(2)/GARCH(1,1): [[file:plots/XLF_sim_garch_ar-garch.png]]
-* Source data:
+* Project metadata / code organization 				   :noexport:	
+Project [[file:src][source tree]]  
+Note that sources live in a separate location from the [[file:workspace][workspace]]
+
+Most of the project code is written in R; trading simulation is done in C++
+using RCpp; small data munging pieces are written in Perl and Python; simple
+shell commands (e.g. =cut=) are used in some places for extracting fields in
+CSV files.
+
+One problem that's endemic to most R-based projects is code organization.
+=source= statements are rather inconvenient for several reasons; one reason
+becomes obvious when the workspace is separate from the source tree, since
+the =source= command now requires a fully-qualified path.  To avoid
+hard-coding a full path to project files in every =source= statement, we
+choose the following compromise: every script that depends on sourcing must
+look for =statarb-al.proj= file in the current workspace, like so:
+#+begin_src R
+  if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
+#+end_src
+
+In turn =statarb-al.proj= must be a list containing the variable =src.path=
+(and, optionally, =workspace.path=).
+
+#+name: setup_env
+#+begin_src R
+  statarb.al.proj <-
+    list(src.path="/home/leo/projects/finance/research/statarb-al/src/",
+         workspace.path="/home/leo/projects/finance/research/statarb-al/workspace/")
+#+end_src
+
+This code can be evaluated in the relevant R session; we also put it inside
+the workspace directory as =setup_env.R=.
+
+* Tools and software used
+
+Most of the analysis code used in the project is written in R.  The following
+packages are required:
+: timeSeries, xts, abind, foreach, doMC, stinepack
+
+These packages aren't crucial to the analysis itself, but time series
+libraries make the presentation/handling of price data somewhat more
+convenient, while =foreach= and =doMC= are used to parallelize computations on a
+multicore workstation. All of the above packages can be installed
+automatically using
+#+begin_src R
+  install.packages(c("timeSeries", "xts", "abind", "foreach", "doMC", "stinepack"))
+#+end_src
+
+The trading simulation is done in C++ using the [[http://cran.r-project.org/web/packages/Rcpp/index.html][RCpp framework]]; small data
+munging pieces are written in Perl and Python; simple shell commands
+(e.g. =cut=) are used in some places for extracting fields in CSV files.
+
+The code was developed on a Linux workstation and should be reproducible in
+all Linux environments, as well as in MacOS.
+
+* Source data
+** Data organization  
+    
+Link: [[file:data][project data directory]]
+
+Data directory is organized as follows:
+ - [[file:data/symbols][symbols]] contains information about the instrument universe and their stock
+   ticker symbols
+ - [[file:data/misc_info][misc_info]] contains various useful information (e.g. about trading hours)
+ - [[file:data/sources][sources]] has symlinks to archived historical price data for analysis
+
+** Data sources  
+    
+For historical data, we use daily closing prices from the CRSP dataset.
+
+See CRSP documentation (quick intro [[file:data/documentation/CRSP_intro.pdf][here]]) for the explanation of the fields.
+
+The CRSP data for this project contains ~2000 stocks and ~600 ETFs.
+
+Stock universe is composed of stocks listed on S&P 500 as of November 2008,
+as well as the Jun 2001 Russell 1000 and the first half[fn:1] of Jun 2001 Russell 2000
+lists for a grand total of 2079 ticker symbols[fn:2].  
+
+[fn:1] We pick the half with the higher market cap.
+[fn:2] The total is less than 2500 because we keep only the tickers that
+exist throughout the time range of interest, i.e. ~ 1997 - 2009.
+
+*** Preparing the current dataset 				   :noexport:
+    
+All the original CRSP data is in
+[[file:data/sources/CSRP][file:~/projects/finance/research/statarb-al/data/sources/CSRP]]
+
+We use the CRSP-0796-0609_spx_r21.csv.gz file, primarily.
+Alias it to univ1_data_full.csv:
+# ln -s ../data/sources/CRSP/CRSP-0796-0609_spx_r21.csv.gz workspace/univ1_data_full.csv.gz
+
+Get field numbers via:
+
+[[shell:zcat%20workspace/univ1_data_full.csv.gz|head%20-n1|tr%20','%20'\n'|nl][shell:zcat workspace/univ1_data_full.csv.gz|head -n1|tr ',' '\n'|nl]]
+
+Important fields are:
+1-DATE; 9-TICKER; 28-RET; 29-BID; 30-ASK; 10-PERMNO; 27-VOL
+
+NOTE: extra fields might be needed; see detailed notes for the details of the
+"all fields" set
+
+Unzip the data, keeping the DATE, TICKER, RET fields:
+
+[[shell:zcat%20workspace/univ1_data_full.csv.gz%20|%20cut%20-d%20','%20-f%201,9,28%20>%20workspace/univ1_data_ret.csv][shell:zcat workspace/univ1_data_full.csv.gz | cut -d ',' -f 1,9,28 > workspace/univ1_data_ret.csv]]
+
+
+Similarly, to get the ETF data, run this to get the CSV field numbers:
+[[shell:zcat%20data/sources/CRSP/CRSP-0796-0609_etf1.csv.gz|head%20-n1|tr%20','%20'\n'|nl][shell:zcat data/sources/CRSP/CRSP-0796-0609_etf1.csv.gz|head -n1|tr ',' '\n'|nl]]
+
+The important ones are:
+1-DATE; 9-TICKER; 28-RET; 10-PERMNO; 27-VOL
+
+Once again, we unzip keeping the DATE, TICKER, RET fields:
+
+[[shell:zcat%20data/sources/CRSP/CRSP-0796-0609_etf1.csv.gz%20|%20cut%20-d%20','%20-f%201,9,28%20>%20workspace/etf_data_ret.csv][shell:zcat data/sources/CRSP/CRSP-0796-0609_etf1.csv.gz | cut -d ',' -f 1,9,28 > workspace/etf_data_ret.csv]]
+
+
+*** Data generation details (old notes) 			   :noexport:
+
   CRSP-97-08.csv.gz  CRSP-97-08_etf.csv.gz  CRSP-97-08_etf_shrt.csv.gz
   Obtained from WRDS CRSP database using my reference universe (SPX tickers
   as of Nov 2008 plus a list of ETFs).
@@ -55,7 +215,7 @@ My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
   Ticker list: [[file:~/projects/finance/spx_tickers_20081107.txt][SPX 20081107]] (~/projects/finance/spx_tickers_20081107.txt)
   ETF list: (file:~/projects/finance/ETF_master_tkrs.txt)
 
-** Data generation: 100108
+**** Data generation: 100108
   Variables Selected:
   DATE,CUSIP,DCLRDT,PAYDT,RCRDDT,SHRFLG,TICKER,PERMNO,EXCHCD,NAICS,PRIMEXCH,TRDSTAT,SECSTAT,DISTCD,DIVAMT,FACPR,FACSHR,ACPERM,ACCOMP,SHROUT,BIDLO,ASKHI,PRC,VOL,RET,BID,ASK,CFACPR,CFACSHR,OPENPRC,SXRET,BXRET,NUMTRD,RETX,vwretd,vwretx,ewretd,ewretx,sprtrn
   Here we number them in emacs (via number-lines-region); 1-DATE; 7-TICKER; 25-RET; 
@@ -107,63 +267,63 @@ My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
   # 1669379 spx_data_ret.csv # num recs
   # 655064 etf_data_ret.csv  # num recs
 
-** Data generation: "universe 1" (10/01/09)
-   Decided to expand the stock universe by merging the Nov 2008 SPX ticker
-   list with the Jun 2001 Russell 1000 and first half of Jun 2001 Russell
-   2000 lists for a grand total of 2079 ticker symbols.  Also selected
-   additional variables, among which is PERMCO to keep track of ticker
-   renamings, etc
-   Number them in emacs (via number-lines-region): 
-   1-DATE; 9-TICKER; 28-RET; 29-BID; 30-ASK
-   10-PERMNO; 27-VOL
-   Call the dataset "universe 1"
-   :DETAILS:
- 1. DATE
- 2. HSICMG
- 3. HSICIG
- 4. CUSIP
- 5. DCLRDT
- 6. PAYDT
- 7. RCRDDT
- 8. SHRFLG
- 9. TICKER
- 10. PERMNO
- 11. EXCHCD
- 12. NAICS
- 13. PRIMEXCH
- 14. TRDSTAT
- 15. SECSTAT
- 16. PERMCO
- 17. DISTCD
- 18. DIVAMT
- 19. FACPR
- 20. FACSHR
- 21. ACPERM
- 22. ACCOMP
- 23. SHROUT
- 24. BIDLO
- 25. ASKHI
- 26. PRC
- 27. VOL
- 28. RET
- 29. BID
- 30. ASK
- 31. CFACPR
- 32. CFACSHR
- 33. OPENPRC
- 34. SXRET
- 35. BXRET
- 36. NUMTRD
- 37. RETX
- 38. vwretd
- 39. vwretx
- 40. ewretd
- 41. ewretx
- 42. sprtrn
-   :END:
-   #  Isolate the DATE, TICKER, RET fields via
-   cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
-** Data generation: all fields (10/01/11)
+**** Data generation: "universe 1" (10/01/09)
+     Decided to expand the stock universe by merging the Nov 2008 SPX ticker
+     list with the Jun 2001 Russell 1000 and first half of Jun 2001 Russell
+     2000 lists for a grand total of 2079 ticker symbols.  Also selected
+     additional variables, among which is PERMCO to keep track of ticker
+     renamings, etc
+     Number them in emacs (via number-lines-region): 
+     1-DATE; 9-TICKER; 28-RET; 29-BID; 30-ASK
+     10-PERMNO; 27-VOL
+     Call the dataset "universe 1"
+     :DETAILS:
+   1. DATE
+   2. HSICMG
+   3. HSICIG
+   4. CUSIP
+   5. DCLRDT
+   6. PAYDT
+   7. RCRDDT
+   8. SHRFLG
+   9. TICKER
+   10. PERMNO
+   11. EXCHCD
+   12. NAICS
+   13. PRIMEXCH
+   14. TRDSTAT
+   15. SECSTAT
+   16. PERMCO
+   17. DISTCD
+   18. DIVAMT
+   19. FACPR
+   20. FACSHR
+   21. ACPERM
+   22. ACCOMP
+   23. SHROUT
+   24. BIDLO
+   25. ASKHI
+   26. PRC
+   27. VOL
+   28. RET
+   29. BID
+   30. ASK
+   31. CFACPR
+   32. CFACSHR
+   33. OPENPRC
+   34. SXRET
+   35. BXRET
+   36. NUMTRD
+   37. RETX
+   38. vwretd
+   39. vwretx
+   40. ewretd
+   41. ewretx
+   42. sprtrn
+     :END:
+     #  Isolate the DATE, TICKER, RET fields via
+     cut -d ',' -f 1,9,28 univ1_data_full.csv > univ1_data_ret.csv
+**** Data generation: all fields (10/01/11)
    Realized needed the full GICS code field which wasn't selected, so reran
    query for universe1 stocks with all fields selected.  All fields are
    1-DATE; 18-TICKER; 50-RET; 
@@ -239,7 +399,7 @@ My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
 64. sprtrn
 :END:
 
-*** ETF data as of 100109:
+**** ETF data as of 100109:
     Discovered that ETF data hasn't been regenerated using the latest set of
     fields/time periods; for now will stick to using it with the fields:
     1-DATE; 2-TICKER; 16-RET
@@ -268,16 +428,16 @@ My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
 20. NUMTRD
 21. RETX
     :END:
-*** ETF data as of 100110:
-    Regenerated the ETF data, fields are (like in the latest stock data)
-     1-DATE; 9-TICKER; 28-RET; 
-    10-PERMNO; 27-VOL
-    cut -d ',' -f 1,9,28 etf1_data_full.csv > etf_data_ret.csv
-*** List of dates available in file dates_vec_090630
-    when the full spx matrix was still loaded, did
-    dates.vector <- as.numeric(row.names(spx.ret.mtx.full))
-    write.csv(dates.vector,file="dates_vec_090630",row.names=F)
-*** 15 ETFs from Table 3 and Table 4 of the paper:
+**** ETF data as of 100110:
+     Regenerated the ETF data, fields are (like in the latest stock data)
+      1-DATE; 9-TICKER; 28-RET; 
+     10-PERMNO; 27-VOL
+     cut -d ',' -f 1,9,28 etf1_data_full.csv > etf_data_ret.csv
+**** List of dates available in file dates_vec_090630
+     when the full spx matrix was still loaded, did
+     dates.vector <- as.numeric(row.names(spx.ret.mtx.full))
+     write.csv(dates.vector,file="dates_vec_090630",row.names=F)
+**** 15 ETFs from Table 3 and Table 4 of the paper:
     :DETAILS:
 HHH
 IYR
@@ -296,89 +456,172 @@ XLV
 XLY
     :END:
 
-*** Industry sectors / determining ETF correspondence:
-NB: materials (15) will lump with industrials (20); telecom (50) with technology (45)
-HHH, Internet:
-451010
-IYR, RE:
-4040
-IYT, transportation:
-2030
-OIH, oil expl:
-101020
-RKH, regional banks:
-40101015
-RTH, retail:
-2550
-SMH, semi:
-4530
-UTH, utils:
-55
-XLE, energy:
-10 excl 101020
-XLF, financials:
-40 excl 4040 and 40101015
-XLI, industrials:
-20 excl 2030
-15 (materials)
-XLK, technology:
-45 excl 451010 and 4530
-50 (telecom)
-XLP, consumer staples:
-30
-XLV, healthcare:
-35
-XLY, consumer discretionary:
-25 excl 2550
+** Data preprocessing     
+*** Assign sector ETFs to stocks 
+ 
+In the first part of this project, we explore mean-reverting pair trading
+between a stock and an ETF from the same sector. Following Avellaneda and
+Lee, we pick 15 sector ETFs and associate each stock with an ETF using its
+[[http://en.wikipedia.org/wiki/Global_Industry_Classification_Standard][GICS]] classification number.
+
+We use the following correspondence between the GICS numbers and our list of
+sector ETFs:
+
+| ETF | Sector                 |          GICS information |
+|-----+------------------------+---------------------------|
+| HHH | Internet               |                    451010 |
+| IYR | Real Estate            |                      4040 |
+| IYT | Transportation         |                      2030 |
+| OIH | Oil Exploration        |                    101020 |
+| RKH | Regional Banks         |                  40101015 |
+| RTH | Retail                 |                      2550 |
+| SMH | Semi                   |                      4530 |
+| UTH | Utilities              |                        55 |
+| XLE | Energy                 |            10 excl 101020 |
+| XLF | Financials             | 40 excl 4040 and 40101015 |
+| XLI | Industrials            |              20 excl 2030 |
+| XLI | Materials              |                        15 |
+| XLK | Technology             |   45 excl 451010 and 4530 |
+| XLK | Telecom                |                        50 |
+| XLP | Consumer Staples       |                        30 |
+| XLV | Healthcare             |                        35 |
+| XLY | Consumer Discretionary |              25 excl 2550 |
+
+Note: we combine materials (15) with industrials (20); telecom (50) with
+technology (45), assigning both of the former to XLI and the latter to XLK
+
+In the CRSP data, the GICS numbers are given by the following fields:
+=GSECTOR, GGROUP, GIND, GSUBIND=
     
-*** industry sectors/etf correspondence: code and results
-    ./get_sector_etfs.pl < ticker_to_classifiations.csv |uniq > ticker_to_sec_etf.csv
-    for etf in HHH IYR IYT OIH RKH RTH SMH UTH XLE XLF XLI XLK XLP XLV XLY; do grep $etf ticker_to_sec_etf.csv |wc -l; done
-    # NB: get raw ticker/ETF pairing via:
-    # cut -d',' -f1,8 ticker_to_sec_etf.csv 
-    ## save tickers only in tickers_classified:
-    cut -d',' -f1 ticker_to_sec_etf.csv|sed '1d' > tickers_classified
-    wc -l tickers_classified 
-    ## 1696 tickers_classified
+These give classifications of increasing specificity.  For instance, a
+security might have a classification of 40101015, where the numbers 40, 4010,
+401010, and 40101015 give the =GSECTOR, GGROUP, GIND, GSUBIND= fields, respectively.
 
-    My equivalent of table 3 is given below:
-    :DETAILS:
-HHH  37   
-IYR  76 
-IYT  37 
-OIH  49 
-RKH  76 
-RTH  71 
-SMH  83 
-UTH  78 
-XLE  38 
-XLF  158
-XLI  244
-XLK  273
-XLP  75 
-XLV  216
-XLY  185
-    :END:
-** Data processing:
-   Convert to a returns matrix sorted by date, ticker:
-   # ./convert.py -i etf_data_ret.csv -o etf_old_ret_mtx
-   ./convert.py -i etf_data_ret.csv -o etf_ret_mtx
-   ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
-   ./convert.py -i univ1_data_ret.csv -o univ1_ret_mtx
-   
-   Correlation matrix: get rid of the tickers that have too many NAs
-   proc_corr.r
-   
-   Issues with NAs: filtering out the spx_ret_mtx to the point where we have
-   no NAs brings us down from 682 to 412 names.  Most NAs seem to come from
-   things like ticker change due to mergers, etc -- so a better solution is,
-   perhaps, to use the PERMNO (not TICKER).  Raising "no NA" threshold from 0
-   to something small (a few percent) doesn't result in a substantial
-   increase in ticker symbols (10% cutoff gets us 440, 30 extra names), so
-   for simplicity it might be worth keeping it at zero.
+To determine the industry information, we retrieve these fields from CRSP for
+each symbol in our stock universe. 
+:DETAILS:
+The results are stored in [[file+emacs:data/symbols/ticker_to_classifiations.csv][ticker_to_classification.csv]]
+The fields retrieved are:
+gvkey,conm,tic,sic,naics,linkprim,liid,linktype,linkid,lpermno,lpermco,USEDFLAG,linkdt,linkenddt,GSECTOR,GGROUP,GIND,GSUBIND,SPCINDCD,SPCSECCD
+To assign the stock/ETF correspondence based on this table above, we use the
+following quick-and-dirty Perl script:
+[[file:src/get_sector_etfs.pl][get_sector_etfs.pl]]
+:END:
 
-* Signal generation
-** Current format: list with 
+The following gives us the stock/ETF correspondence, as well as a quick tally
+of the stocks assigned to a particular ETF.  At the end, about 3/4 of the
+stocks in our universe end up paired with an ETF.
+
+#+begin_src sh :exports both
+  src/get_sector_etfs.pl < data/symbols/ticker_to_classifiations.csv | uniq > workspace/ticker_to_sec_etf.csv
+  cd workspace
+  for etf in HHH IYR IYT OIH RKH RTH SMH UTH XLE XLF XLI XLK XLP XLV XLY; do 
+      echo $(grep $etf ticker_to_sec_etf.csv |wc -l) $etf;
+  done
+  cut -d',' -f1 ticker_to_sec_etf.csv|sed '1d' > tickers_classified
+  wc -l tickers_classified 
+#+end_src
+
+#+results:
+|   37 | HHH                |
+|   76 | IYR                |
+|   37 | IYT                |
+|   49 | OIH                |
+|   76 | RKH                |
+|   71 | RTH                |
+|   83 | SMH                |
+|   78 | UTH                |
+|   38 | XLE                |
+|  158 | XLF                |
+|  244 | XLI                |
+|  273 | XLK                |
+|   75 | XLP                |
+|  216 | XLV                |
+|  185 | XLY                |
+| 1696 | tickers_classified |
+
+*** Generate returns matrices
+
+The DATE, TICKER, and RET fields were pulled out of the original CRSP
+datasets for the stocks and ETFs.  To convert them to returns matrices sorted
+by date and ticker, we run a python script =convert.py= (originally due to
+J. Michael Steele at Wharton).  This script takes the DATE, TICKER, and RET
+lines and puts returns in a matrix form; the output is a csv file with fields
+DATE,TICKER1,TICKER2,...,TICKERn, with lines giving returns grouped by date.
+
+#+name: ret_mtx_etfs
+: etf_ret_mtx
+
+#+name: ret_mtx_stocks
+: univ1_ret_mtx
+
+#+begin_src sh :exports code :noweb yes
+  # this shold take about 5 minutes to run
+  cd workspace
+  ../src/lib/convert.py -i etf_data_ret.csv -o <<ret_mtx_etfs>>
+  ../src/lib/convert.py -i univ1_data_ret.csv -o <<ret_mtx_stocks>>
+#+end_src
+
+*** Old notes 							   :noexport:
+    Convert to a returns matrix sorted by date, ticker:
+    # ./convert.py -i etf_data_ret.csv -o etf_old_ret_mtx
+    ./convert.py -i etf_data_ret.csv -o etf_ret_mtx
+    ./convert.py -i spx_data_ret.csv -o spx_ret_mtx
+    ./convert.py -i univ1_data_ret.csv -o univ1_ret_mtx
+    
+    Correlation matrix: get rid of the tickers that have too many NAs
+    proc_corr.R
+    
+    Issues with NAs: filtering out the spx_ret_mtx to the point where we have
+    no NAs brings us down from 682 to 412 names.  Most NAs seem to come from
+    things like ticker change due to mergers, etc -- so a better solution is,
+    perhaps, to use the PERMNO (not TICKER).  Raising "no NA" threshold from 0
+    to something small (a few percent) doesn't result in a substantial
+    increase in ticker symbols (10% cutoff gets us 440, 30 extra names), so
+    for simplicity it might be worth keeping it at zero.
+
+* Mean-reversion trading signals
+** Signal generation test: JPM vs XLF
+
+To illustrate the general analysis workflow, we first compute the s-score for
+a simple stock/ETF pair. We pick JPM and XLF as the stock and ETF so that we
+can compare the results to Avellaneda & Lee's (see their Figure 7).
+
+This code also illustrates the boilerplate environment setup and data
+loading. To run it, make sure the project metadata variable =statarb.al.proj=
+exists in the workspace and source [[file:src/jpm_xlf_s_score.R]]
+
+To run this from within org-mode, do:
+
+#+call: setup_env[:session *R-jpm-test*]() :results silent
+
+#+begin_src R :session *R-jpm-test*  :results silent
+  source(paste(statarb.al.proj$src.path, "jpm_xlf_s_score.R", sep=""))
+#+end_src
+
+** Run the signal generation for all financials
+
+The code that we wrote to test the JPM vs XLF signal was very general; the
+only difference is that we now want to subset =ret.s= by all of the financial
+tickers (which are given by =tc.xlf$TIC=).  Also, now that we are running the
+signal generation over multiple stocks, it's a good idea to set
+=subtract.average= to =T= (since this is reported to produce better
+results). (In the future, it might be worth exploring whether or not that
+claim is true, and to what extent.)
+
+#+begin_src R :session *R-jpm-test*  :results silent
+  ret.s.fin <- ret.s[, tc.xlf$TIC, drop=F]
+  system.time(sig.fin <-
+              stock.etf.signals(ret.s.fin, ret.e, tc.xlf,
+                                num.days=N-est.win+1, compact.output=T, subtract.average=T))
+#+end_src
+
+This took just under a minute to run on a quad-core machine.
+
+Now that we have the signals, let's simulate the trades!
+
+** Old sig.gen notes 						   :noexport:
+*** Current format: list with 
    (1) list of dates and 
    (2) list of dates with a signal matrix attached
    Signal generation is performed via a command like
@@ -392,20 +635,19 @@ XLY  185
   ## c("model.valid", "bto", "sto", "close.short", "close.long")
   ## A[2:8] are mr.params, names c("s","k","m","mbar","a","b","varz")
   ## A[9...] are betas (determined from stock names)
-  For date i and ticker j, extract parameters from the matrix via something
-  like
+  ## For date i and ticker j, extract parameters from the matrix via something like
   sig <- decode.signals(signals[[i]][j,])
   params <- decode.params(signals[[i]][j,])
   betas <- decode.betas(signals[[i]][j,])
-#+END_SRC scheme
+#+END_SRC 
 
-** batch-mode signal generation:
-   see tr_test_spx1_batch.r
-   Can call from the command line using
-   RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
-   use -offsetYear 2005 -yearsBack 3 switch to generate selectively
+*** batch-mode signal generation:
+    see tr_test_spx1_batch.R
+    Can call from the command line using
+    RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
+    use -offsetYear 2005 -yearsBack 3 switch to generate selectively
 * Backtesting
-  Trading simulation: 
+** Trading simulation flow 					   :noexport:
   select stocks to trade against ETFs/synthetic ETFs
   pre-generate signals
   go through dates in chronological order
@@ -413,7 +655,8 @@ XLY  185
   Note that because the short-to-open/buy-to-close and
   buy-to-open/sell-to-close signals form bands above and below zero
   respectively, we are either short or long, never both.
-** We also need to filter the beta-portfolio:
+
+  *We also need to filter the beta-portfolio:*
    - eliminate values that are less than B.THR percent of that maximum
      component in absolute value
    - eliminate negative values
@@ -546,7 +789,7 @@ time ./sigGen.sh univ1_ret_mtx sig.univ1.RObj
 # 1: In log(x$ar) : NaNs produced
 # ...
 # real    180m17.269s
-  analysis in tr_test_univ1.r
+  analysis in tr_test_univ1.R
 
 Check for data NA runs that could be problematic in a simulation:
 ## study if we have any abnormally long NA runs other than the initial "instrument doesn't exist" scenario
@@ -724,4 +967,4 @@ all.equal(sim.list.eq, sim.par1.eq, sim.par0.eq)
   Note that after 2004 I don't get any negative weights in the market
   eigenportfolio; have 1 (sometimes 0) in '04, have 1-4 in '02.
 
-  All this analysis is in pca_test_fig3.r
+  All this analysis is in pca_test_fig3.R

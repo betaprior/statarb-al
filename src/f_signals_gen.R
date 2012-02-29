@@ -84,15 +84,15 @@ gen.signals <- function(beta.fit.mtx, ar.fit.mtx, subtract.average, avg.mod=0
   ## return(sig.mtx)
 }
 
-decode.signals <- function(y) {
+decode.signals <- function(y, names=c("model.valid", "bto", "sto", "close.short", "close.long")) {
   x <- int2logical(y[1],5)
-  names(x) <- c("model.valid", "bto", "sto", "close.short", "close.long")
+  names(x) <- names
   x
 }
 
-decode.params <- function(y) {
+decode.params <- function(y, names=c("s","k","m","mbar","a","b","varz")) {
   x <- y[2:8]
-  names(x) <- c("s","k","m","mbar","a","b","varz")
+  names(x) <- names
   x
 }
 

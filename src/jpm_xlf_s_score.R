@@ -56,14 +56,20 @@ tc.xlf <- subset(tc.xlf, TIC %in% intersect(tc.xlf$TIC, names(ret.s)))
                                         # ensure that we have the data for those stocks
 
 ret.s.fin <- ret.s[, "JPM", drop=F]
-N <- nrow(ret.s.fin)
-est.win <- 60
-system.time(sig.jpm <-
-            stock.etf.signals(ret.s.fin, ret.e, tc.xlf,
-                              num.days=N-est.win+1, compact.output=T, subtract.average=F))
 
-s.jpm.inv.ts <- as.timeSeries(-sig.jpm[, "s", 1, drop=T])
+system.time(sig.jpm <-
+            stock.etf.signals(ret.s.fin, ret.e, tc.xlf, subtract.average=F))
+
+s.jpm.inv.ts <- as.timeSeries(sig.jpm[, "s", 1, drop=T])
+
+tmp <- NULL      # avoid setting large .Last.value that needs to be communicated to Emacs
+
+
+
 ## plot.xts(as.xts(s.jpm.inv.ts), main="JPM vs XLF s-signal")
 
 ## X11()
 ## plot.xts(as.xts(s.jpm.inv.ts)["2006/2007"], main="JPM vs XLF s-signal")
+
+## for (s in seq_along(sig.thresholds)) abline(h=sig.thresholds[s],lty=2)
+

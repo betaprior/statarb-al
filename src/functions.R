@@ -82,7 +82,9 @@ get.classified.tickers <- function(fname){
 }
 
 get.dates.vec <- function(fname){
-  read.csv(fname, skip=1)[1]
+  tmp <- read.csv(fname, skip=1)[1]
+  ## as.numeric(unlist(tmp))
+  unlist(tmp)
 }
 
 ## returns POSIXt output

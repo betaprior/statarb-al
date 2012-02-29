@@ -144,7 +144,7 @@ plots. For the data, we provide daily returns on a small group of stocks
     rets.betas <- RollingBetaFit(rets[pair])
     oldpar <- par(no.readonly=T)
     par(mfrow=c(length(periods), 1))
-    for(p in periods)
+    for (p in periods)
       plot(MarketNeutralReturns(rets.betas, holding.period=p, timespec=timeframe),
            main=paste("Market-neutral returns:", paste(pair, collapse="/"), "held for", p, "day(s)"))
     par(oldpar)
@@ -216,7 +216,7 @@ We then define =statarb-al.proj= as follows:
 
 #+name: setup_env
 #+begin_src R :exports code
-  statarb.al.projectroot <- "~/finance/research/statarb-al/"
+  statarb.al.projectroot <- "~/projects/finance/research/statarb-al-public/"
   statarb.al.proj <-
     list(src.path=paste(statarb.al.projectroot, "src/", sep=""),
          workspace.path=paste(statarb.al.projectroot, "workspace/", sep=""))
@@ -229,7 +229,7 @@ the work directory then becomes something like
 #+begin_src R :exports code
   if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
   source.files <- c("functions.R")
-  source(paste(statarb.al.proj$src.path, source.files, sep=""))
+  for (f in paste(statarb.al.proj$src.path, source.files, sep="")) source(f)
   setwd(statarb.al.proj$workspace.path)
 #+end_src
 
@@ -256,12 +256,19 @@ convenient, while =foreach= and =doMC= are used to parallelize computations on a
 multicore workstation. All of the above packages can be installed
 automatically using
 
-#+begin_src R :exports code
-  needs.packages(c("timeSeries", "xts", "abind", "foreach", "doMC", "stinepack"))
+#+begin_src R :exports code :output silent
+  need.packages <- c("timeSeries", "xts", "abind", "foreach", "doMC", "stinepack")
   for (p in need.packages)
     if (!is.element(p, installed.packages()[, 1]))  install.packages(p)
 #+end_src
- 
+
+#+results:
+| timeSeries |
+| xts        |
+| abind      |
+| foreach    |
+| doMC       |
+| stinepack  |
 
 ** Signal generation test: JPM vs XLF
 
@@ -279,6 +286,18 @@ To run this from within org-mode, do:
 #+begin_src R :session *R-jpm-test*  :results silent
   source(paste(statarb.al.proj$src.path, "jpm_xlf_s_score.R", sep=""))
 #+end_src
+
+We can now plot the /s/-score as follows:
+
+#+name: plot_s_score
+#+header: :width 800 :height 800 :units="px"
+#+begin_src R :session *R-jpm-test*  :exports both :results graphics :file jpm_s_score.png 
+  plot.xts(as.xts(s.jpm.inv.ts)["2006/2007"], main="JPM vs XLF s-signal")
+#+end_src
+
+#+results: plot_s_score
+[[file:jpm_s_score.png]]
+
 
 ** Run the signal generation for all financials
 
@@ -330,7 +349,6 @@ to use PCA analysis in constructing mean-reverting portfolios.  Stay tuned!
     Can call from the command line using
     RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
     use -offsetYear 2005 -yearsBack 3 switch to generate selectively
-
 
 * Results synopsis:
   "universe" data set (SPX + Russell 1000 + half R2K)

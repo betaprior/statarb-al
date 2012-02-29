@@ -1,7 +1,7 @@
 if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
 source.files <- c("f_signals_gen.R")    # signal generation (some signals post-processing fns
                                         # are in this file though)
-source(paste(statarb.al.proj$src.path, source.files, sep=""))
+for (f in paste(statarb.al.proj$src.path, source.files, sep="")) source(f)
 options(stringsAsFactors = FALSE)
 
 ##~ -----------
@@ -77,16 +77,12 @@ get.emp.corr <- function(ret.mtx, M=252, ...) {
   rho / (M - 1)
 }
 
-
-
 get.classified.tickers <- function(fname){
-  con <- pipe(paste("cut -d',' -f1,8 ",fname,sep=""))
-  read.csv(con,as.is=TRUE)
+  read.csv(fname, as.is=T)[c(1,8)]
 }
 
 get.dates.vec <- function(fname){
-  con <- pipe(paste("cut -d',' -f1 ",fname,sep=""))
-  vec <- scan(con,skip=1);  close(con); return(vec)
+  read.csv(fname, skip=1)[1]
 }
 
 ## returns POSIXt output

@@ -1,6 +1,6 @@
 if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
-source.files <- c("functions.R")
-source(paste(statarb.al.proj$src.path, source.files, sep=""))
+source.files <- c("utils.R", "functions.R")
+for (f in paste(statarb.al.proj$src.path, source.files, sep="")) source(f)
 setwd(statarb.al.proj$workspace.path)
 require("timeSeries")
 require("xts")
@@ -12,7 +12,7 @@ require("xts")
 filenames.default <-
   list(stock.ret.mtx="univ1_ret_mtx.gz",
        etf.ret.mtx="etf_ret_mtx.gz",
-       tic.classified="ticker_to_sec_etf.csv",
+       tic.classified="ticker_to_sec_etf.csv.gz",
        save.sig="sig.file.RObj")
                           
 filenames <- filenames.default
@@ -63,7 +63,7 @@ system.time(sig.jpm <-
                               num.days=N-est.win+1, compact.output=T, subtract.average=F))
 
 s.jpm.inv.ts <- as.timeSeries(-sig.jpm[, "s", 1, drop=T])
-plot.xts(as.xts(s.jpm.inv.ts), main="JPM vs XLF s-signal")
+## plot.xts(as.xts(s.jpm.inv.ts), main="JPM vs XLF s-signal")
 
-X11()
-plot.xts(as.xts(s.jpm.inv.ts)["2006/2007"], main="JPM vs XLF s-signal")
+## X11()
+## plot.xts(as.xts(s.jpm.inv.ts)["2006/2007"], main="JPM vs XLF s-signal")

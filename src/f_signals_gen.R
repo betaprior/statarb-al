@@ -110,11 +110,12 @@ decode.betas <- function(y) y[9:length(y)]
 ## input parameters: ret.s and ret.e must be dataframes
 ## reverse-chron. sorted with dates as row.names
 stock.etf.signals <-
-  function(ret.s, ret.e, classified.stocks.list, num.days, win=60
+  function(ret.s, ret.e, classified.stocks.list, num.days=NULL, win=60
            , compact.output=TRUE, subtract.average=TRUE
            , ar.method="yw", factor.names=c("beta"), select.factors=TRUE) {
     ## -- sanity checks and data cleanup: -------------------------
-    stopifnot(num.days > 1 && win>10)
+    if (is.null(num.days)) num.days <- nrow(ret.s) - win + 1
+    stopifnot(num.days > 1 && win > 10)
     stopifnot(all(row.names(ret.e)==row.names(ret.s)))
     stopifnot(nrow(ret.s)==nrow(ret.e) && nrow(ret.s) >= num.days + win - 1)
     dates.range <- row.names(ret.s)[1:num.days]
@@ -130,7 +131,7 @@ stock.etf.signals <-
     stock.names <- colnames(ret.s)
     omitted.stocks <- stocks.list %w/o% colnames(ret.s)
     if (length(omitted.stocks) > 0)
-      warning(paste(length(omitted.stocks),"stocks omitted from the provided list (bad data?)"))
+      warning(paste(length(omitted.stocks),"stocks omitted from the provided list"))
 
     ## -- preallocations for fit coeff matrices: ------------------
     num.beta.fit.coefs <- length(factor.names) + 1

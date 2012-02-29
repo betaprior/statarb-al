@@ -6,20 +6,19 @@
 
 Back when I was still in grad school on the East Coast, I couldn't help
 noticing a steady stream of freshly-minted PhDs (or even ABDs) in physics,
-math, CS, and engineering taking
-residence 1.5 hours up north on the train line, and converting their
-knowledge of applied probability theory into cold, hard cash.  Before getting
-acquainted with the field of financial engineering first-hand, I had a rather
-distorted view of the /who/s and the /what/s of capital markets (shaped, in part,
-by growing up in Soviet Russia and doing undergrad in California).  To be
-sure, the finance industry can seem complex and alienating. A significant
-part of the field, however, is, essentially, comprised by our fellow geeks
-crunching numbers on beefy servers using the open source tools we know and
-love.  
+math, CS, and engineering taking residence 1.5 hours up north on the train
+line, and converting their knowledge of applied probability theory into cold,
+hard cash.  Before getting acquainted with the field of financial engineering
+first-hand, I had a rather distorted view of the /who/s and the /what/s of
+capital markets (shaped, in part, by growing up in Soviet Russia and doing
+undergrad in California).  To be sure, the finance industry can seem complex
+and alienating. A significant part of the field, however, is, essentially,
+comprised by our fellow geeks crunching numbers on beefy servers using the
+open source tools we know and love.
 
 One fun side project I've worked on a couple of years ago involved
-reproducing a trading strategy described in a [[http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1153505][paper by Marco Avellaneda and
-Jeong-Hyun Lee]].  This paper is cool for several reasons:
+reproducing a trading strategy described in a 
+[[http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1153505][paper by Marco Avellaneda and Jeong-Hyun Lee]].  This paper is cool for several reasons:
 - the math is interesting without being overly arcane
 - it's fairly easy to implement in R
 - there are many interesting things to explore both in terms of optimizing
@@ -33,7 +32,7 @@ I recently stumbled upon the project source tree when cleaning up some git
 repositories. After looking at the code, I had a couple of realizations:
 - my coding style in both R and C++ has evolved quite a bit over the last
   couple of years
-- this would be an awesome project to share with the public using org-mode's
+- this would be an awesome project to share with the world using org-mode's
   reproducible research/literate programming features  
   
 As a result, I've started putting together a public version of this project.
@@ -43,28 +42,295 @@ code itself, currently, is not far from its starting point as a one-off
 scrappy personal project (this means I am not using =package.skeleton= or
 ROxygen). The current focus is on getting everything to run smoothly under
 org-babel. So far, the signal generation routines work well; the trading
-simulation should be up shortly.
+simulation should be up shortly.  So if you want to get the flavor of the
+sorts of things Wall Street quants do, grab a fresh version of org-mode,
+clone this project from Github, grab the data files, load =statarb-al.org=
+into Emacs, and continue following along in an org-mode buffer!
 
-Statistical arbitrage comes in many varieties and flavors. Among these,
-long/short market neutral strategies comprise a popular set of
-approaches. The simplest of such strategies are relatively easy to understand
-and model. Even though these days, such simple setups aren't expected to
-generate substantial (if any) returns, they are very useful for obtaining
-insight into the general mechanics of trading and statistical arbitrage.
+A quick note on where to get the tools used here: if you are on Windows or OS
+X, and don't already use Emacs and/or Org, Vincent Goulet [[http://vgoulet.act.ulaval.ca/en/emacs/windows/][maintains a version]]
+of Emacs with Org, AUCTeX, and ESS integrated. R is available from
+[[http://r-project.org]]. Under Ubuntu, of course, you can get everything from
+Synaptic (search for /r-base/ to get R; also, if the org-mode version in the
+repository is < 7.8, you might want to get a more up-to-date version from
+[[http://orgmode.org]]).
 
-In this project, we explore a 2009 paper by Avellaneda and Lee that describes a
-particular trading strategy -- a variation on a pairs trading scheme.
+* Pairs trading and mean reversion: a preview
+** What is pairs trading?
+  
+Winning in the stock market is easy. Buy low, sell high. Of course, to do
+this reliably we need to be reasonably sure that when the stock is low, it
+will actually rise. Making accurate predictions of this sort is difficult and
+notoriously error-prone. What we can do instead, however, is make some
+predictions about the behavior of /pairs/ of stocks (or, in general, stock
+portfolios). The key idea here is that certain groups of stocks will usually
+be very strongly correlated, and deviations from the long-term correlation
+are temporary and /mean-reverting/.  For instance, consider a pair of stocks
+from the same industry, e.g. Intel and Microsoft, or Ford and GM. Both pairs
+will generally trend with the overall market, and with the market sector.
+Within the pairs, the
+correlation is not perfect: on a particular day, stock A might, relatively
+speaking, outperform stock B and vice versa. We assume that /on average/,
+though, the returns on these stocks are going to be linearly related.  
 
-Our objective is to implement the trading algorithms and reproduce the results
-(specifically, Figures 8, 9, 10, 11, and 17) of the paper. The backtesting is
-done on the daily closing prices using WRDS CRSP database from Jul 01 1996 -
-Jun 30 2009.
+How do we use this to trade?  Suppose that we somehow knew that over a 30 day
+period, the two stocks will generate exactly the same returns, regardless of
+what the overall market is doing. Let's say that they start at the same price
+(and, by assumption, they will end at the same price) -- but, by day 15,
+A is trading way higher than B. If we believe in the
+assumption that the returns will equilibrate by day 30, we are going to /buy/
+stock B and /short/ stock A. If the assumption is correct, we will have
+netted a profit of ~(F-B)+(A-F)=A-B~, where =F= gives the (identical) final
+price of the two stocks, and =A= and =B= are the prices when we open our
+position. Note that it doesn't matter which direction the market has moved,
+nor whether our stocks rose or fell. We just had to be correct about the
+returns converging. 
 
-Links:
+This strategy is known as [[http://en.wikipedia.org/wiki/Pairs_trade][pairs trading]], and the general approach of using
+statistics for placing (almost) sure bets on the market goes by the name
+/statistical arbitrage/. 
 
-[[file:literature/AvellanedaLeeStatArb20090616.pdf][M. Avellaneda and J.-H. Lee. Statistical Arbitrage in the U.S. Equities Market]]
+So this is all fine and well, but do stocks really behave like that?
+Let's find out! The simplest way to do so is to pick a correlated pair and
+use it go construct a "market neutral" portfolio, i.e. one with expected zero
+return. We then hold this portfolio over /n/ days, and look at our /actual/
+returns.  This brings us to our first code block which we will evaluate in an
+R session.
 
-My notes on the paper: [[file:notes/avellaneda-lee-paper-notes.pdf][(PDF)]]
+** Eyeballing mean reversion: the code
+
+First, we have to prepare the workspace, load the data, and make sure we have
+the available packages installed in R.  Here, we use some time series
+libraries that give us convenient rolling-window filtering, as well as pretty
+plots. For the data, we provide daily returns on a small group of stocks 
+(contained in =workspace/sample_returns.csv.gz=). 
+
+#+name: explore_mean_reversion
+#+header: :width 800 :height 800 :units="px"
+#+begin_src R :session *R-mnr* :exports both :results graphics :file mnr.png 
+  need.packages <- c("zoo", "timeSeries", "xts")
+  for (p in need.packages)
+    if (!is.element(p, installed.packages()[, 1]))  install.packages(p)
+  require("xts", quiet=T)
+  require("timeSeries", quiet=T)
+
+  rets <- read.csv(file="workspace/sample_returns.csv.gz", row.names=1)
+  
+  RollingBetaFit <- function(data, win=60) {
+    WindowFit <- function(data.win) {
+      beta.fit <- lm.fit(cbind(rep(1, win), data.win[, 2]), data.win[, 1])
+      beta.fit$coefficients[2]
+    }
+    betas <- rollapply(data, win, WindowFit, by.column=F)
+    length(betas) <- nrow(data)
+    cbind(data, beta=betas)
+  }
+  
+  MarketNeutralReturns <- function(data, holding.period=1, timespec="/") {
+    data <- data[complete.cases(data), ]
+    data <- as.xts(as.timeSeries(data))[timespec]   # automatically sorts
+    dates.seq <- holding.period:nrow(data)
+    CompoundReturns <- function(x) exp(sum(log(1 + x))) - 1
+    comp.rets <- rollapply(data[, 1:2], holding.period, CompoundReturns, by.column=T, align="left")
+    mn.rets <- as.xts(timeSeries(rep(NA, nrow(comp.rets)), index(comp.rets)))
+    for (i in 1:length(mn.rets))
+      mn.rets[i] <- sum(comp.rets[i] * c(1, -data[i, "beta"]))
+    names(mn.rets) <- paste(holding.period,"-day ret",sep="")
+    mn.rets
+  }
+  
+  PlotMNReturns <- function(rets, pair=c("JPM", "XLF"),
+                            periods=c(1, 5, 15, 30), timeframe="2006/2007") {
+    rets.betas <- RollingBetaFit(rets[pair])
+    oldpar <- par(no.readonly=T)
+    par(mfrow=c(length(periods), 1))
+    for(p in periods)
+      plot(MarketNeutralReturns(rets.betas, holding.period=p, timespec=timeframe),
+           main=paste("Market-neutral returns:", paste(pair, collapse="/"), "held for", p, "day(s)"))
+    par(oldpar)
+  }
+  
+  PlotMNReturns(rets)
+#+end_src  
+
+#+results: explore_mean_reversion
+[[file:mnr.png]]
+
+What's happening here is the following: we pick daily returns on a pair of
+stocks, and for every day look back over a 60 day window and use =lm.fit= to
+get the correlation coefficient \beta.  We then construct a portfolio where
+we allocate $1 to the first stock of the pair, and -$\beta to the second
+stock (i.e. we are long the first stock, short the second). We then hold that
+portfolio over =p= days and see what returns we generate.  At the end, we
+examine a plot of these returns for the pair -- in this case, we pick JPM and
+its corresponding sector ETF (XLF).
+
+Indeed, we see a random signal that seems to oscillate around 0, and the
+characteristic oscillation period increases as we increase the holding period
+of the portfolio. You might be curious to know whether this mean-reverting
+behavior persists if we pick a pair of stocks that we don't expect to be very
+strongly correlated, e.g. JPM and MSFT, or JPM and INTC, or JPM and AA.  If
+you are running this code interactively, it is worth re-running
+=PlotMNReturns= with these stocks as the pair.
+
+What you might find is that the empirical behavior that we glean from the
+plots is not very consistent.  Mean reversion seems to be much better defined
+for some stocks than for others, but as with all stochastic signals,
+eyeballing their behavior does not get us very far. Instead, we need a more
+thorough mathematical framework in which to treat the mean reversion.
+
+* Mean-reversion mathematics
+
+Analyzing financial time series can quickly degenerate into impenetrable
+stochastic calculus and an alphabet soup denoting the various flavors of
+autoregressive models. Fortunately, what we are doing here is quite simple,
+and the basic model can be treated as a black-box abstraction. 
+
+Here are a [[notes/avellaneda-lee-paper-notes.pdf][few pages of my notes]] summarizing the basic model we use for
+pairs trading. The key ideas are the following:
+
+- [[http://quantivity.wordpress.com/2011/02/21/why-log-returns/][log-returns]] for the two instruments are linearly related, with an
+  additional term given by the stationary and mean-reverting process X_t
+- X_t is modeled as an [[http://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process][Ornstein–Uhlenbeck process]]
+- the solution to the O-U stochastic differential equation is exactly the   
+  [[http://en.wikipedia.org/wiki/Autoregressive_model][AR(1)]] time series model (which we can easily fit with R)
+- O-U process is characterized by a few parameters, including the speed of
+  mean reversion, its mean, and the stationary (long-term) variance. We can
+  extract those parameters from the AR(1) model fit.
+
+Finally, the trading signal /s/ is just the normalized deviation of the
+estimated O-U process X_t from its estimated mean, where we use the long-term
+variance for normalization.  Generating the signal appears straightforward
+and, indeed, it is!
+
+* Generating the trading signals
+** Working with the supplied code / preparing the environment
+
+To manage project paths, we rely on the global variable =statarb-al.proj=,
+which is must be a list containing the elements =src.path= and
+=workspace.path=.  We define it as follows: suppose your project root is
+
+: "~/finance/research/statarb-al/"
+
+We then define =statarb-al.proj= as follows:
+
+#+name: setup_env
+#+begin_src R :exports code
+  statarb.al.projectroot <- "~/finance/research/statarb-al/"
+  statarb.al.proj <-
+    list(src.path=paste(statarb.al.projectroot, "src/", sep=""),
+         workspace.path=paste(statarb.al.projectroot, "workspace/", sep=""))
+#+end_src
+
+This bit of code must be sourced into every R session for the project. The
+boilerplate code for sourcing the necessary function definitions and setting
+the work directory then becomes something like
+
+#+begin_src R :exports code
+  if (!exists("statarb.al.proj")) stop("Need project metadata file to proceed")
+  source.files <- c("functions.R")
+  source(paste(statarb.al.proj$src.path, source.files, sep=""))
+  setwd(statarb.al.proj$workspace.path)
+#+end_src
+
+We provide the following data files:
+
+- univ1_ret_mtx.gz ([[http://dnquark.com/org/statarb/files/univ1_ret_mtx.gz][link]], 20 MB)
+- etf_ret_mtx.gz ([[http://dnquark.com/org/statarb/files/etf_ret_mtx.gz][link]], 2 MB)
+- ticker_to_sec_etf.csv (in the git repository)
+
+The returns data files should be placed in the /workspace/ directory of the
+project tree.  The /univ1/ file contains daily returns for several hundred
+stocks; the /etf/ file contains daily returns for sector ETFs, and
+/ticker_to_sec_etf.csv/ is used to associate stocks with sector ETFs using
+the GICS industry classification.
+
+Finally, now is a good time to install all the packages that this project
+depends on.  They include:
+
+: timeSeries, xts, abind, foreach, doMC, stinepack
+
+These packages aren't crucial for the analysis itself, but time series
+libraries make the presentation/handling of price data somewhat more
+convenient, while =foreach= and =doMC= are used to parallelize computations on a
+multicore workstation. All of the above packages can be installed
+automatically using
+
+#+begin_src R :exports code
+  needs.packages(c("timeSeries", "xts", "abind", "foreach", "doMC", "stinepack"))
+  for (p in need.packages)
+    if (!is.element(p, installed.packages()[, 1]))  install.packages(p)
+#+end_src
+ 
+
+** Signal generation test: JPM vs XLF
+
+To illustrate the general analysis workflow, we first compute the s-score for
+a simple stock/ETF pair. We pick JPM and XLF as the stock and ETF.
+
+This code also illustrates the boilerplate environment setup and data
+loading. To run it, make sure the project metadata variable =statarb.al.proj=
+exists in the workspace and source [[file:src/jpm_xlf_s_score.R]]
+
+To run this from within org-mode, do:
+
+#+call: setup_env[:session *R-jpm-test*]() :results silent
+
+#+begin_src R :session *R-jpm-test*  :results silent
+  source(paste(statarb.al.proj$src.path, "jpm_xlf_s_score.R", sep=""))
+#+end_src
+
+** Run the signal generation for all financials
+
+The code that we wrote to test the JPM vs XLF signal was very general; the
+only difference is that we now want to subset =ret.s= by all of the financial
+tickers (which are given by =tc.xlf$TIC=).  Also, now that we are running the
+signal generation over multiple stocks, it's a good idea to set
+=subtract.average= to =T= (since this is reported to produce better
+results). (In the future, it might be worth exploring whether or not that
+claim is true, and to what extent.)
+
+#+begin_src R :session *R-jpm-test*  :results silent
+  ret.s.fin <- ret.s[, tc.xlf$TIC, drop=F]
+  system.time(sig.fin <-
+              stock.etf.signals(ret.s.fin, ret.e, tc.xlf,
+                                num.days=N-est.win+1, compact.output=T, subtract.average=T))
+#+end_src
+
+This took just under a minute to run on a quad-core machine.
+
+So this is it! If you so desire, you can generate the trading signals for all
+the stocks in the dataset.  In parts 2 and 3 of this write-up, we will be
+simulating the trades using the beautiful Rcpp framework, and exploring how
+to use PCA analysis in constructing mean-reverting portfolios.  Stay tuned!
+
+** Old sig.gen notes 						   :noexport:
+*** Current format: list with 
+   (1) list of dates and 
+   (2) list of dates with a signal matrix attached
+   Signal generation is performed via a command like
+   sig.list.04.05 <- stock.etf.signals(ret.s,ret.e,tickers.classified,num.days=num.days,compact.output=TRUE)
+   the compact.output=T is necessary to avoid a (giant) overhead of named
+   attributes
+#+BEGIN_SRC R
+  ## compact output format:
+  ## matrix with rows corresponding to stocks; each row is an unnamed numeric array A
+  ## int2logical(A[1],5) gives logical w/ names corr to
+  ## c("model.valid", "bto", "sto", "close.short", "close.long")
+  ## A[2:8] are mr.params, names c("s","k","m","mbar","a","b","varz")
+  ## A[9...] are betas (determined from stock names)
+  ## For date i and ticker j, extract parameters from the matrix via something like
+  sig <- decode.signals(signals[[i]][j,])
+  params <- decode.params(signals[[i]][j,])
+  betas <- decode.betas(signals[[i]][j,])
+#+END_SRC 
+
+*** batch-mode signal generation:
+    see tr_test_spx1_batch.R
+    Can call from the command line using
+    RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
+    use -offsetYear 2005 -yearsBack 3 switch to generate selectively
+
 
 * Results synopsis:
   "universe" data set (SPX + Russell 1000 + half R2K)
@@ -579,73 +845,6 @@ DATE,TICKER1,TICKER2,...,TICKERn, with lines giving returns grouped by date.
     to something small (a few percent) doesn't result in a substantial
     increase in ticker symbols (10% cutoff gets us 440, 30 extra names), so
     for simplicity it might be worth keeping it at zero.
-
-* Mean-reversion trading signals
-** Signal generation test: JPM vs XLF
-
-To illustrate the general analysis workflow, we first compute the s-score for
-a simple stock/ETF pair. We pick JPM and XLF as the stock and ETF so that we
-can compare the results to Avellaneda & Lee's (see their Figure 7).
-
-This code also illustrates the boilerplate environment setup and data
-loading. To run it, make sure the project metadata variable =statarb.al.proj=
-exists in the workspace and source [[file:src/jpm_xlf_s_score.R]]
-
-To run this from within org-mode, do:
-
-#+call: setup_env[:session *R-jpm-test*]() :results silent
-
-#+begin_src R :session *R-jpm-test*  :results silent
-  source(paste(statarb.al.proj$src.path, "jpm_xlf_s_score.R", sep=""))
-#+end_src
-
-** Run the signal generation for all financials
-
-The code that we wrote to test the JPM vs XLF signal was very general; the
-only difference is that we now want to subset =ret.s= by all of the financial
-tickers (which are given by =tc.xlf$TIC=).  Also, now that we are running the
-signal generation over multiple stocks, it's a good idea to set
-=subtract.average= to =T= (since this is reported to produce better
-results). (In the future, it might be worth exploring whether or not that
-claim is true, and to what extent.)
-
-#+begin_src R :session *R-jpm-test*  :results silent
-  ret.s.fin <- ret.s[, tc.xlf$TIC, drop=F]
-  system.time(sig.fin <-
-              stock.etf.signals(ret.s.fin, ret.e, tc.xlf,
-                                num.days=N-est.win+1, compact.output=T, subtract.average=T))
-#+end_src
-
-This took just under a minute to run on a quad-core machine.
-
-Now that we have the signals, let's simulate the trades!
-
-** Old sig.gen notes 						   :noexport:
-*** Current format: list with 
-   (1) list of dates and 
-   (2) list of dates with a signal matrix attached
-   Signal generation is performed via a command like
-   sig.list.04.05 <- stock.etf.signals(ret.s,ret.e,tickers.classified,num.days=num.days,compact.output=TRUE)
-   the compact.output=T is necessary to avoid a (giant) overhead of named
-   attributes
-#+BEGIN_SRC R
-  ## compact output format:
-  ## matrix with rows corresponding to stocks; each row is an unnamed numeric array A
-  ## int2logical(A[1],5) gives logical w/ names corr to
-  ## c("model.valid", "bto", "sto", "close.short", "close.long")
-  ## A[2:8] are mr.params, names c("s","k","m","mbar","a","b","varz")
-  ## A[9...] are betas (determined from stock names)
-  ## For date i and ticker j, extract parameters from the matrix via something like
-  sig <- decode.signals(signals[[i]][j,])
-  params <- decode.params(signals[[i]][j,])
-  betas <- decode.betas(signals[[i]][j,])
-#+END_SRC 
-
-*** batch-mode signal generation:
-    see tr_test_spx1_batch.R
-    Can call from the command line using
-    RCmd tr_test_spx1_batch.r -saveSigFile TRUE -filename sig.spx1.RObj
-    use -offsetYear 2005 -yearsBack 3 switch to generate selectively
 * Backtesting
 ** Trading simulation flow 					   :noexport:
   select stocks to trade against ETFs/synthetic ETFs

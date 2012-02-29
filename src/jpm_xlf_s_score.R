@@ -10,8 +10,8 @@ require("xts")
 ## * load the data
 
 filenames.default <-
-  list(stock.ret.mtx="univ1_ret_mtx",
-       etf.ret.mtx="etf_ret_mtx",
+  list(stock.ret.mtx="univ1_ret_mtx.gz",
+       etf.ret.mtx="etf_ret_mtx.gz",
        tic.classified="ticker_to_sec_etf.csv",
        save.sig="sig.file.RObj")
                           

@@ -20,11 +20,10 @@ set.from.cmdargs <- function(cmdargs.default, vstr) {
   arg.val <- as(getCmdArgs(args.cmdstring), arg.class)
 
   if (is.na(arg.val)) 
-    if (is.null(args.default)) {
+    arg.var <- if (!is.null(args.default)) args.default
+    else
       stop("Can't find default arguments")
-    } else {
-    }
-      arg.val <- args.default
+
   arg.val
 }
 
@@ -64,14 +63,6 @@ na.pct.cutoff.filter <- function(pct.cutoff=0.01) {
   }
 }
 
-## DEPRECATED
-## use scale(ret.mtx) instead
-get.adjusted.returns <- function(ret.mtx, ...) {
-  ret.mtx <- get.stock.returns(ret.mtx, ...)
-  vars <- apply(ret.mtx, 2, function(x) var(x, use="complete.obs") )
-  means <- apply(ret.mtx, 2, function(x) mean(x, na.rm=TRUE) )
-  return(t(apply(ret.mtx, 1, function(x) (x-means)/sqrt(vars)) ))
-}
 
 ## Compute empirical correlation matrix (A.L. Eq. 8)
 ## Note that unlike A.L., we keep dates in rows and stocks in columns
@@ -86,19 +77,6 @@ get.emp.corr <- function(ret.mtx, M=252, ...) {
   rho / (M - 1)
 }
 
-
-get.etf.returns <- function(ret.mtx, M=252, offset=0, file=FALSE
-                            , tickers=c("HHH","IYR","IYT","OIH","RKH","RTH"
-                                ,"SMH","UTH","XLE","XLF","XLI","XLK","XLP","XLV","XLY")){
-  if (file) 
-    ret.mtx <- read.csv(ret.mtx, row.names=1)
-  stopifnot(M + offset <= nrow(ret.mtx)) # requested index must be in the matrix
-  ret.mtx <- ret.mtx[nrow(ret.mtx) - seq(offset, len=M), ] # read rows off...(M+off) from the end
-
-  good.names <- tickers
-  good.name.idxs <- as.numeric(na.omit(match(good.names,names(ret.mtx))))
-  ret.mtx <- ret.mtx[,good.name.idxs] #filtered
-}
 
 
 get.classified.tickers <- function(fname){
@@ -173,28 +151,6 @@ fit.ar1 <- function(res, method="mle"){
 
 
 
-## functions that manipulate the signals list structure
-get.signals.mtx <- function(sig.list){
-  tmp.mtx <- prealloc.mtx(  length(sig.list$sig.dates)
-                          , ncol(sig.list$sig.dates[[1]])
-                          , rownames=rev(names(sig.list$sig.dates)))
-  sig.mtx <- array(dim=c(dim(tmp.mtx),length(sig.list$tickers))
-                   , dimnames=list(rev(names(sig.list$sig.dates))
-                       , c("action","s","k","m","mbar","a","b","varz","beta")
-                       , sig.list$tickers))
-  stopifnot(!is.unsorted(rev(names(sig.list$sig.dates)))) ##o/w next line is wrong
-  for(j in seq(along=sig.list$tickers)){
-    for(i in rev(seq(along=sig.list$sig.dates))){
-      tmp.mtx[1+length(sig.list$sig.dates)-i,] <- sig.list$sig.dates[[i]][j,]
-    }
-    sig.mtx[,,j] <- tmp.mtx
-  }
-  if(j==1)
-    as.data.frame(sig.mtx[,,1])
-  else
-    sig.mtx
-}
-
 get.signals.actions <- function(sig.mtx){
   sim.actions <- lapply(sig.mtx[,"action"],decode.signals)
   sim.actions <- as.data.frame(do.call("rbind",sim.actions))
@@ -210,12 +166,14 @@ draw.thresholds <- function(){
   abline(h=thresholds["sbc"],lty=2)
   abline(h=-thresholds["ssc"],lty=2)
 }
+
 draw.signal.lines <- function(act.mtx){
   lines(-as.numeric(act.mtx$bto)*abs(thresholds["sbo"]),col=2)
   lines(as.numeric(act.mtx$sto)*abs(thresholds["sso"]),col=3)
   lines(as.numeric(act.mtx$close.short)*abs(thresholds["sbc"]),col=4)
   lines(-as.numeric(act.mtx$close.long)*abs(thresholds["ssc"]),col=5)
 }
+
 draw.actions.lines <- function(a){ abline(v=which(as.numeric(a)==1),lty=3) }
 
 

@@ -2,6 +2,15 @@
 #+AUTHOR: Leo Alekseyev
 #+property: session *R-babel*
 
+#+BEGIN_HTML
+<?php                                                                                                                             
+define('WP_USE_THEMES', false);                                                                                                   
+require('../../blog/wp-blog-header.php');                                                                                         
+get_header();                                                                                                                     
+?>                                                                                                                                
+#+END_HTML
+
+
 * Introduction
 
 Back when I was still in grad school on the East Coast, I couldn't help
@@ -373,3 +382,7 @@ of price processes.
 I hope that this write-up removes some of the mystery behind the sort of work
 that goes on in quant finance. If you thought that this was helpful, or have
 any other feedback, feel free to drop me a line!
+
+#+BEGIN_HTML
+ <?php get_footer(); ?>
+#+END_HTML

@@ -1,15 +1,98 @@
 #+TITLE: Statistical arbitrage with pairs trading
 #+AUTHOR: Leo Alekseyev
 #+property: session *R-babel*
+## New to Org? Use TAB to expand the headings (denoted by stars)
 
-#+BEGIN_HTML
-<?php                                                                                                                             
-define('WP_USE_THEMES', false);                                                                                                   
-require('../../blog/wp-blog-header.php');                                                                                         
-get_header();                                                                                                                     
-?>                                                                                                                                
-#+END_HTML
+* Introduction (how to use this file) 				   :noexport:
+ 
+Familiar with Emacs, Org, and R?  Here's your TL;DR: 
 
+1. Install the following packages:
+   #+begin_src R
+     install.packages(c("zoo", "timeSeries", "xts", "abind", "foreach", "doMC"))
+   #+end_src 
+2. If you haven't already, clone this project from github
+   (https://github.com/leoalekseyev/statarb-al)
+3. Download data files [[http://dnquark.com/org/statarb/files/univ1_ret_mtx.gz][one]] (20 MB) and [[http://dnquark.com/org/statarb/files/etf_ret_mtx.gz][two]] (2 MB) and put them in the
+   ./workspace directory of the project
+
+Now feel free to skip on to the next section, evaluating code blocks as you
+please.
+
+  
+New to Emacs and/or to Org?  Here's the gist of what you need to know:
+
+- TAB key folds and unfolds headlines (i.e. lines starting with *'s).
+  Folding/unfolding only works if the point (cursor) is on the headline.
+- SHIFT-TAB cycles through folding levels of all headlines in the buffer.
+  It works independently of the current location of the point.
+- Emacs keys combo shorthands look something like =C-x C-s= or =C-x 1= or
+  =M-s o=.  Here, =C= stands for =ctrl= and =M= for =alt=.  =C-x C-s= means
+  first press =ctrl+x=, then press =ctrl+s=. 
+- =M-x= is a special shortcut that prompts you for a command name. Everything
+  you can do in the editor corresponds to a certain command that you can
+  execute with =M-x=.  Many of those commands have additional keybindings.
+- More Emacs terminology: editing / interpreter sessions / documentation
+  viewing inside Emacs takes place in /buffers/.  When several buffers appear
+  side by side in a single Emacs session, they are called /windows/. An Emacs
+  window (in the sense of an application window) is called a /frame/. 
+- Org-mode code snippets can be executed by hitting =C-c C-c= with the point
+  inside a source code block. The code will be then sent to the interpreter
+  (in this project, the interpreter will be R). If something doesn't work
+  quite right, it's often useful to switch to the interpreter buffer and see
+  if the interpreter complained about the code.
+- Emacs documentation is very thorough and accessible. If you are completely
+  new to Emacs, I recommend hitting =C-h t= and browsing through the tutorial
+  for a few minutes. A great online resource is [[http://masteringemacs.org]];
+  Google search for Emacs tutorials will also produce lots of useful
+  information.
+
+
+What is org-mode?
+
+Org-mode is an editing mode inside Emacs; it is automatically invoked when
+you open a file with a .org extension.  Org provides a unified framework for
+taking notes, recording ideas, managing agendas and calendars, managing
+projects, and more. If you are new to org, spend a few minutes browsing
+through [[http://orgmode.org]] to get a feel for what it is about.  Org files are
+just text files with simple markup; they are 100% human-readable and
+portable. Org makes it easy to export these files into formats suitable for
+publication (with LaTeX export), as well as presentation or blogging (with
+HTML export).  Other export formats (e.g. ODT) are also supported.  For
+example, the web version of this tutorial at
+http://dnquark.com/org/statarb/statarb.php is generated directly from the
+current file.
+
+People use org-mode in many different ways. For me, org is (among other
+things) a unified environment for project management, literate programming,
+report generation, and reproducible research. In the ideal scenario, given my
+original data, my analysis code, and the org file containing links to the
+code, stand-alone code snippets, and workflow description, anybody should be
+able to reproduce, critique, and extend my results. This combination of
+flexible and interactive information delivery also makes Org a great teaching
+tool, and  it is my hope that this project illustrates this facet of Org.
+
+
+How Org is used here (or: enough already, let's play with the data!)
+
+You can think of this file as a project report that covers every step in the
+analysis (so as to be perfectly reproducible) and is intended to teach (and
+not just present results).  (It's really a cross between a project report and
+a tutorial.) Every original source file and every code snippet is available
+for you to play with.  Source blocks can be executed with =C-c C-c=.
+
+Before you begin, make sure that you have R and ESS running, as well as the
+relevant packages.  It is also highly recommended that you use the latest
+version of Org mode (which you can get from [[http://orgmode.org]]). (In a few
+weeks/months this step will become easier, since up-to-date Org will ship
+with Emacs 24). 
+
+To install the packages used in this project, launch R and issue the
+following command:
+
+#+begin_src R
+  install.packages(c("zoo", "timeSeries", "xts", "abind", "foreach", "doMC"))
+#+end_src 
 
 * Introduction
 
@@ -53,7 +136,8 @@ ROxygen). The current focus is on getting everything to run smoothly under
 org-babel. So far, the signal generation routines work well; the trading
 simulation should be up shortly.  So if you want to get the flavor of the
 sorts of things Wall Street quants do, grab a fresh version of org-mode,
-clone this project from Github, grab the data files, load =statarb-al.org=
+[[https://github.com/leoalekseyev/statarb-al][clone this project from Github]], grab the data files ([[http://dnquark.com/org/statarb/files/univ1_ret_mtx.gz][one]] and [[http://dnquark.com/org/statarb/files/etf_ret_mtx.gz][two]]), load
+=statarb-al.org= (from the project root) 
 into Emacs, and continue following along in an org-mode buffer!
 
 A quick note on where to get the tools used here: if you are on Windows or OS
@@ -282,7 +366,7 @@ exists in the workspace and source [[file:src/jpm_xlf_s_score.R][jpm-xlf-s-score
 
 To run this from within org-mode, do:
 
-#+header: var env=setup_env[:session *R-jpm-test*]()
+#+header: :var env=setup_env[:session *R-jpm-test*]()
 #+begin_src R :session *R-jpm-test*  :results silent
   source(paste(statarb.al.proj$src.path, "jpm_xlf_s_score.R", sep=""))
 #+end_src
@@ -383,6 +467,3 @@ I hope that this write-up removes some of the mystery behind the sort of work
 that goes on in quant finance. If you thought that this was helpful, or have
 any other feedback, feel free to drop me a line!
 
-#+BEGIN_HTML
- <?php get_footer(); ?>
-#+END_HTML

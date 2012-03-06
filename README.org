@@ -1,0 +1,4 @@
+* Information
+
+This is the repository for the /Statistical arbitrage with pairs trading/
+project/tutorial.  See more at [[http://dnquark.com/org/statarb/statarb.php]]
